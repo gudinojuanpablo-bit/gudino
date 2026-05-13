@@ -435,7 +435,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
         <div class="filtros-wrap" id="filtros-wrap">
           <span style="font-size:10px;color:#aaa;font-weight:700;margin-right:2px">VER:</span>
           <div class="filtro-btn on" onclick="setFiltroEstado('')">Todas</div>
-          <div class="filtro-btn" onclick="setFiltroEstado('activas')">Activas</div>
+          <div class="filtro-btn" onclick="setFiltroEstado('trabajar')">📋 Para trabajar</div>
           <div class="filtro-btn" onclick="setFiltroEstado('resolver')">⚫ A resolver</div>
           <div class="filtro-btn" onclick="setFiltroEstado('urgente')">🔴 Urgentes</div>
         </div>
@@ -1236,7 +1236,7 @@ function rowHTML(c){
         // Audiencia agendada
         if(c.tipo_aud&&TIPOS[c.tipo_aud]){
           const t=TIPOS[c.tipo_aud];
-          let info='Audiencia '+t.lbl;
+          let info=c.tipo_aud==='resolver'?'A resolver':'Audiencia '+t.lbl;
           if(c.ven)info+=' · '+fmtS(c.ven);
           if(c.aud_h)info+=' · '+c.aud_h+' hs';
           if(c.aud_mod)info+=' · '+c.aud_mod;
@@ -1552,7 +1552,7 @@ function renderSecs(cid,filas){
       </div>
       <div class="sec-body">
         ${noMov.map(rowHTML).join('')}
-        ${mov.length?`<div class="mov-wrap"><div class="mov-tog" onclick="this.nextElementSibling.classList.toggle('ab')">▸ ${mov.length} movida${mov.length!==1?'s':''} esta semana</div><div class="mov-body">${mov.map(rowHTML).join('')}</div></div>`:''}
+        ${mov.length&&filtroEstado!=='trabajar'?`<div class="mov-wrap"><div class="mov-tog${filtroEstado===''?' ab':''}" onclick="this.nextElementSibling.classList.toggle('ab')">▸ ${mov.length} movida${mov.length!==1?'s':''} esta semana</div><div class="mov-body${filtroEstado===''?' ab':''}">${mov.map(rowHTML).join('')}</div></div>`:''}
       </div>
     </div>`;
   });
@@ -1570,9 +1570,21 @@ function renderR(){
   const q=document.getElementById('si').value.trim().toLowerCase();
   let fl=causas.filter(c=>c.est!=='archivada');
   if(filtroF)fl=fl.filter(c=>c.fue===filtroF);
-  if(filtroEstado==='activas')fl=fl.filter(c=>c.tipo_aud!=='resolver'&&!(c.not&&c.not.toUpperCase().includes('A RESOLVER')));
+  if(filtroEstado==='trabajar')fl=fl.filter(c=>!movidas.has(c.id));
   if(filtroEstado==='resolver')fl=fl.filter(c=>c.tipo_aud==='resolver'||(c.not&&c.not.toUpperCase().includes('A RESOLVER')));
-  if(filtroEstado==='urgente')fl=fl.filter(c=>c.est==='urgente'||dLeft(c.ven)<=1);
+  if(filtroEstado==='urgente'){
+    fl=fl.filter(c=>(c.est==='urgente'||(c.ven&&c.tipo_venc!=='info'))&&dLeft(c.ven)>=0);
+    fl.sort((a,b)=>{
+      const da=a.ven?dLeft(a.ven):9999;
+      const db=b.ven?dLeft(b.ven):9999;
+      return da-db;
+    });
+    if(q)fl=fl.filter(c=>c.car.toLowerCase().includes(q)||c.ex.toLowerCase().includes(q));
+    // Render flat list, no grouping by juzgado
+    const cont=document.getElementById('reg-secs');
+    cont.innerHTML=fl.length?fl.map(c=>rowHTML(c)).join(''):'<div style="padding:20px;color:#aaa;text-align:center">Sin vencimientos próximos</div>';
+    return;
+  }
   if(q)fl=fl.filter(c=>c.car.toLowerCase().includes(q)||c.ex.toLowerCase().includes(q)||c.juz.toLowerCase().includes(q));
   renderSecs('reg-secs',fl);
 }
@@ -1788,7 +1800,7 @@ function renderRam(){
 }
 
 // ═══ INIT ═══
-const APP_VERSION = '2026-05-13-v19';
+const APP_VERSION = '2026-05-13-v26';
 if(localStorage.getItem('ga_version') !== APP_VERSION){
   Object.keys(localStorage).filter(k=>k.startsWith('ga_')||k.startsWith('ld')).forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('ga_version', APP_VERSION);
