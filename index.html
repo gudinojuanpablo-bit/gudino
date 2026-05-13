@@ -102,6 +102,17 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .cr.res .chk-col{background:#ebebeb;border-color:#ddd}
 .cr.res .ci-car{color:#999}
 .cr.res .ci-not{color:#bbb}
+/* colores por tipo de audiencia */
+.cr.aud-inicial{background:#EAF4FF;border-color:#90C8F0}
+.cr.aud-inicial .chk-col{background:#D5EBFC;border-color:#90C8F0}
+.cr.aud-mediac{background:#FDE8F4;border-color:#F0A0D0}
+.cr.aud-mediac .chk-col{background:#FACEEB;border-color:#F0A0D0}
+.cr.aud-final{background:#FFFDE0;border-color:#E8D800}
+.cr.aud-final .chk-col{background:#FFF9C0;border-color:#E8D800}
+.cr.aud-recursiva{background:#FFF0E0;border-color:#F0A860}
+.cr.aud-recursiva .chk-col{background:#FFE4C0;border-color:#F0A860}
+.cr.aud-resolver{background:#F0F0F0;border-color:#C0C0C0}
+.cr.aud-resolver .chk-col{background:#E8E8E8;border-color:#C0C0C0}
 .chk-col{display:flex;align-items:center;justify-content:center;cursor:pointer;border-right:1px solid var(--border);padding:0 4px;border-radius:5px 0 0 5px}
 .cr.mov .chk-col{background:#d4edda;border-color:#9ED4A0}
 .cr.urg .chk-col{background:var(--red-l);border-color:var(--red-b)}
@@ -124,14 +135,11 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .rnota-del{font-size:9px;padding:1px 6px;border-radius:3px;border:1px solid var(--border);background:var(--bg);color:#aaa;cursor:pointer;flex-shrink:0;text-decoration:none}
 .rnota-del:hover{background:var(--red-l);color:var(--red);border-color:var(--red-b)}
 /* mini editor ramiro inline */
-.ram-editor{background:var(--gold-l);border:1.5px solid var(--gold-b);border-radius:5px;padding:6px 8px;margin-top:4px;display:flex;gap:5px;align-items:center}
-.ram-editor input{flex:1;border:1px solid var(--gold-b);border-radius:4px;padding:3px 7px;font-size:11px;background:#fff;font-family:system-ui;outline:none}
-.ram-editor input:focus{box-shadow:0 0 0 2px #FFB800}
-.ram-editor .rbtn{padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;border:none;font-family:system-ui;font-weight:600}
-.ram-editor .rbtn.ok{background:#FFB800;color:#7B4F00}
-.ram-editor .rbtn.ok:hover{background:#e6a800}
-.ram-editor .rbtn.cl{background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
-.ram-editor .rbtn.cl:hover{background:var(--bg3)}
+.ram-editor{display:inline-flex;gap:4px;align-items:center;margin-top:2px}
+.ram-editor input{border:none;border-bottom:1px solid var(--gold-b);padding:1px 4px;font-size:10px;background:transparent;font-family:system-ui;outline:none;width:160px;color:var(--text)}
+.ram-editor input:focus{border-bottom-color:#e6a800}
+.ram-editor .rbtn{padding:1px 5px;border-radius:3px;font-size:10px;cursor:pointer;border:none;font-family:system-ui;font-weight:600;background:transparent;color:#aaa}
+.ram-editor .rbtn:hover{color:#555}
 .ci-not{font-size:11px;color:var(--text3);line-height:1.5;cursor:text;border-radius:3px;padding:1px 2px;min-height:15px;outline:none;white-space:pre-wrap;word-break:break-word}
 .cr.mov .ci-not{color:#3B6D11}
 .ci-not:focus{background:var(--bg2);border:1px solid var(--border2);color:var(--text);padding:2px 4px}
@@ -197,6 +205,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .cp-plazo{display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;margin-bottom:5px}
 .cp-btns{display:flex;gap:5px}
 .cp-save{flex:1;padding:5px;border-radius:4px;background:var(--blue);color:#fff;border:none;cursor:pointer;font-size:11px;font-family:system-ui}
+.cp-row2{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px}
 .cp-save:hover{background:#0c4478}
 .cp-cl{padding:6px 8px;border-radius:4px;background:var(--bg2);color:var(--text2);border:1px solid var(--border);cursor:pointer;font-size:11px;font-family:system-ui}
 
@@ -642,6 +651,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
     <input class="fi" type="date" id="plazo-inicio">
   </div>
   <div style="margin-bottom:10px">
+    <div class="fl" style="margin-bottom:4px">Dirigido a (opcional)</div>
+    <input class="fi" type="text" id="plazo-dirigido" placeholder="Ej: OSSE, Sindicato, perito...">
+  </div>
+  <div style="margin-bottom:10px">
     <div class="fl" style="margin-bottom:6px">Tipo de diligenciamiento</div>
     <div class="plazo-tipo">
       <div class="plazo-opt" onclick="selPlazoTipo('oficio')" id="pto-oficio">
@@ -842,6 +855,11 @@ function esFer(s){return!!feriados.find(f=>f.f===s);}
 function rowCls(c){
   if(movidas.has(c.id))return'mov';
   if(c.tipo_aud==='resolver'||c.not&&c.not.toUpperCase().includes('A RESOLVER'))return'res';
+  // color de fondo según tipo de audiencia
+  if(c.tipo_aud==='inicial')return'aud-inicial';
+  if(c.tipo_aud==='mediac'||c.tipo_aud==='concil')return'aud-mediac';
+  if(c.tipo_aud==='final')return'aud-final';
+  if(c.tipo_aud==='recursiva')return'aud-recursiva';
   if(c.tipo_venc==='info')return'nor';
   const d=dLeft(c.ven);
   if(c.est==='urgente'||d<=1)return'urg';
@@ -1107,6 +1125,32 @@ function renderVencPanel(){renderVMP();}
 // ═══════════════════════════════════════════════
 // RAMIRO
 // ═══════════════════════════════════════════════
+function editAudObs(id,e){
+  if(e)e.stopPropagation();
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  const row=document.getElementById('cr-'+id);if(!row)return;
+  // Remove existing obs editor
+  row.querySelectorAll('.ci-aud-obs-edit').forEach(el=>el.remove());
+  const ci=row.querySelector('.ci');if(!ci)return;
+  const inp=document.createElement('input');
+  inp.className='ci-aud-obs-edit';
+  inp.type='text';
+  inp.placeholder='Agregar comentario...';
+  inp.value=c.aud_obs||'';
+  inp.onclick=ev=>ev.stopPropagation();
+  inp.onkeydown=ev=>{
+    if(ev.key==='Enter'){c.aud_obs=inp.value.trim();sC();refRow(id);}
+    if(ev.key==='Escape'){inp.remove();}
+  };
+  inp.onblur=()=>{c.aud_obs=inp.value.trim();sC();refRow(id);};
+  // Insert after ci-tv-tag or after ci-car
+  const tvTag=ci.querySelector('.ci-tv-tag');
+  const obsShow=ci.querySelector('.ci-aud-obs-show');
+  if(obsShow)obsShow.replaceWith(inp);
+  else if(tvTag)tvTag.after(inp);
+  else ci.appendChild(inp);
+  inp.focus();
+}
 function editRam(id,e){
   e.stopPropagation();
   closeCP();
@@ -1123,11 +1167,10 @@ function editRam(id,e){
   if(!ci)return;
   const editor=document.createElement('div');
   editor.className='ram-editor';
-  editor.innerHTML=`<span style="font-size:13px">⭐</span>
-    <input id="ram-inp-${id}" placeholder="Tarea para Ramiro..." value="${c.ram||''}">
-    <button class="rbtn ok" onclick="saveRam(${id})">✓</button>
-    <button class="rbtn cl" onclick="this.closest('.ram-editor').remove()">✕</button>
-    ${c.ram?`<button class="rbtn cl" style="color:#a00;border-color:var(--red-b)" onclick="clearRam(${id})">🗑</button>`:''}`;
+  editor.innerHTML=`⭐ <input id="ram-inp-${id}" placeholder="Tarea..." value="${c.ram||''}">
+    <button class="rbtn" onclick="saveRam(${id})">✓</button>
+    <button class="rbtn" onclick="this.closest('.ram-editor').remove()">✕</button>
+    ${c.ram?`<button class="rbtn" style="color:#c00" onclick="clearRam(${id})">🗑</button>`:''}`;
   ci.appendChild(editor);
   const inp=editor.querySelector('input');
   if(inp)inp.focus();
@@ -1189,7 +1232,24 @@ function rowHTML(c){
       <div class="ci-car">${c.car}${c.pl?'<span class="pdot"></span>':''}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':c.ram&&c.rdon?'<span class="rtag done">⭐ ✓</span>':''}
         <span class="${exCls(c)}"> · ${c.ex}</span>
       </div>
-      <div class="ci-not" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id})" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})">${c.not||'—'}</div>
+      <div class="ci-tv-tag">${(()=>{
+        // Audiencia agendada
+        if(c.tipo_aud&&TIPOS[c.tipo_aud]){
+          const t=TIPOS[c.tipo_aud];
+          let info='Audiencia '+t.lbl;
+          if(c.ven)info+=' · '+fmtS(c.ven);
+          if(c.aud_h)info+=' · '+c.aud_h+' hs';
+          if(c.aud_mod)info+=' · '+c.aud_mod;
+          return info;
+        }
+        // Oficio/cedula (para saber)
+        if(c.tipo_venc==='info'&&c.tv)return c.tv;
+        // Vencimiento propio
+        if(c.tipo_venc==='vencimiento'&&c.ven)return '⏰ Vence '+fmtS(c.ven)+(c.tv?' · '+c.tv:'');
+        return '';
+      })()}</div>
+      <div class="${(c.tipo_aud||(c.ven&&c.tv))?'ci-not-h':'ci-not'}" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id})" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))?'style="display:none"':''}>${c.not||'—'}</div>
+      ${c.aud_obs?`<div class="ci-aud-obs-show" onclick="editAudObs(${c.id},event)">${c.aud_obs}</div>`:''}
       ${rNotaHTML(c,false)}
     </div>
     <div class="cr-r">
@@ -1197,11 +1257,12 @@ function rowHTML(c){
         <div class="${vbFull}" id="vbtn-${c.id}" onclick="openCP(${c.id},event)" style="flex:1">${vbt}</div>
         ${c.ven?`<span class="hl" onclick="clearV(${c.id},event)" title="Limpiar fecha" style="font-size:9px;color:#ccc;padding:1px 3px">✕</span>`:''}
       </div>
-      <div class="tv-txt" id="vtv-${c.id}">${c.tv||''}</div>
-      <div style="display:flex;gap:2px">
-        <span class="hl" onclick="showHist(${c.id},event)" title="Historial">🕐</span>
+
+      <div style="display:flex;gap:2px;align-items:center">
         <span class="hl" onclick="editRam(${c.id},event)" title="Tarea Ramiro">⭐</span>
         <span class="hl" onclick="abrirPlazo(${c.id})" title="Calcular plazo">⏱</span>
+        <span class="hl" onclick="editAudObs(${c.id},event)" title="Agregar comentario" style="font-size:14px;font-weight:900;color:#444;padding:0 3px">+</span>
+        <span class="hl" onclick="limpiarCausa(${c.id},event)" title="Limpiar todo" style="font-size:12px;color:#c00">🗑</span>
       </div>
       <div class="cpop" id="cp-${c.id}" onclick="event.stopPropagation()">
         <div class="cp-hdr"><div class="cp-nav" onclick="navCP(${c.id},-1,event)">‹</div><span class="cp-mes">—</span><div class="cp-nav" onclick="navCP(${c.id},1,event)">›</div></div>
@@ -1229,10 +1290,31 @@ function rowHTML(c){
           </div>
         </div>
         <input type="hidden" id="cpvt-${c.id}">
-        <div class="cp-lbl">Descripción</div>
-        <input class="cp-inp" id="cptv-${c.id}" placeholder="Ej: Pericia queda firme" onclick="event.stopPropagation()">
+        <div class="cp-row2">
+          <div>
+            <div class="cp-lbl">Hora</div>
+            <select class="fi" id="cp-hora-${c.id}" style="font-size:11px;padding:3px 5px">
+              <option value="">— Sin hora —</option>
+              ${['07:30','08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30'].map(h=>`<option value="${h}">${h}</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <div class="cp-lbl">Modalidad</div>
+            <select class="fi" id="cp-mod-${c.id}" style="font-size:11px;padding:3px 5px">
+              <option value="">— —</option>
+              <option value="Presencial">Presencial</option>
+              <option value="Virtual">Virtual</option>
+            </select>
+          </div>
+        </div>
+        <input type="hidden" id="cptv-${c.id}" value="${c.tv||''}">
         <label class="cp-plazo"><input type="checkbox" id="cppl-${c.id}" style="width:13px;height:13px"> Tiene plazo activo</label>
         <div class="cp-btns"><button class="cp-save" onclick="saveCP(${c.id},event)">✓ Guardar</button><button class="cp-cl" onclick="clearV(${c.id},event)">Sin fecha</button></div>
+        <hr class="cp-sep">
+        <div style="display:flex;gap:5px">
+          <button class="cp-cl" onclick="showHist(${c.id},event)" style="flex:1;font-size:10px">🕐 Historial</button>
+          <button class="cp-cl" onclick="limpiarCausa(${c.id},event)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0">🗑 Limpiar todo</button>
+        </div>
       </div>
     </div>
   </div>`;
@@ -1255,6 +1337,11 @@ function openCP(id,e){
   const hidVT=document.getElementById('cpvt-'+id);
   if(hidVT)hidVT.value=vt;
   selVT(id,vt,null);
+  // init hora y modalidad
+  const horaEl=document.getElementById('cp-hora-'+id);
+  if(horaEl)horaEl.value=c.aud_h||'';
+  const modEl=document.getElementById('cp-mod-'+id);
+  if(modEl)modEl.value=c.aud_mod||'';
   renderCP(id);
   pop.classList.add('ab');
 }
@@ -1321,13 +1408,17 @@ function saveCP(id,e){
   c.pl=document.getElementById('cppl-'+id).checked;
   const vtEl=document.getElementById('cpvt-'+id);
   let vt=vtEl?vtEl.value||'':'';
-  // Auto-detectar: si el texto menciona oficio o cédula → "para saber" automático
   if(!vt){
     const tvLow=c.tv.toLowerCase();
     const esParaSaber=tvLow.includes('oficio')||tvLow.includes('cédula')||tvLow.includes('cedula')||tvLow.includes('pericia')||tvLow.includes('firme')||tvLow.includes('pago');
     vt=esParaSaber?'info':'vencimiento';
   }
   c.tipo_venc=vt;
+  // Guardar hora y modalidad
+  const horaEl=document.getElementById('cp-hora-'+id);
+  if(horaEl)c.aud_h=horaEl.value||'';
+  const modEl=document.getElementById('cp-mod-'+id);
+  if(modEl)c.aud_mod=modEl.value||'';
   sC();refRow(id);closeCP();updBadges();renderVencPanel();}
 function refRow(id){
   const c=causas.find(x=>x.id===id);if(!c)return;
@@ -1386,9 +1477,18 @@ function abrirPlazo(causaId){
   document.getElementById('plazo-inicio').value=todayISO();
   document.getElementById('plazo-resultado').style.display='none';
   document.getElementById('plazo-causa-id').value=causaId||'';
+  document.getElementById('plazo-dirigido').value='';
   document.querySelectorAll('.plazo-d').forEach(el=>el.classList.remove('on'));
   document.getElementById('plazo-modal').classList.add('ab');
   document.getElementById('plazo-overlay').classList.add('ab');
+}
+function limpiarCausa(id,e){
+  if(e)e.stopPropagation();
+  if(!confirm('¿Limpiar fecha, tipo de audiencia, hora, modalidad y observaciones de esta causa?'))return;
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  c.ven='';c.tv='';c.pl=false;c.tipo_aud='';c.tipo_venc='vencimiento';
+  c.aud_h='';c.aud_mod='';c.aud_obs='';
+  sC();refRow(id);closeCP();updBadges();renderVencPanel();
 }
 function cerrarPlazo(){
   document.getElementById('plazo-modal').classList.remove('ab');
@@ -1404,7 +1504,9 @@ function calcPlazo(e,tipo,dias){
   document.getElementById('plazo-fecha-calc').value=resultado;
   document.getElementById('plazo-fecha-res').textContent=fmtS(resultado);
   const tipoLbl=tipo==='oficio'?'Oficio diligenciado':'Cédula notificada';
-  document.getElementById('plazo-detalle').textContent=tipoLbl+' · '+dias+' días hábiles desde '+fmtS(inicio);
+  const dirigido=document.getElementById('plazo-dirigido').value.trim();
+  const dirTxt=dirigido?' a '+dirigido:'';
+  document.getElementById('plazo-detalle').textContent=tipoLbl+dirTxt+' · diligenciado '+fmtS(inicio)+' · vence '+fmtS(resultado);
   document.getElementById('plazo-resultado').style.display='block';
 }
 function usarPlazo(){
@@ -1686,7 +1788,7 @@ function renderRam(){
 }
 
 // ═══ INIT ═══
-const APP_VERSION = '2026-05-12-v10';
+const APP_VERSION = '2026-05-13-v19';
 if(localStorage.getItem('ga_version') !== APP_VERSION){
   Object.keys(localStorage).filter(k=>k.startsWith('ga_')||k.startsWith('ld')).forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('ga_version', APP_VERSION);
