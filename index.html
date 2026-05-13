@@ -560,8 +560,17 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
       <div class="fg">
         <div class="fgg"><label class="fl">N° expediente</label><input class="fi" id="f-ex" placeholder="Ej: 1607/25"></div>
         <div class="fgg"><label class="fl">Carátula</label><input class="fi" id="f-car" placeholder="Ej: SILVA ALAN C/ASOCIART"></div>
-        <div class="fgg"><label class="fl">Fuero</label><select class="fi" id="f-fue"><option>Laboral</option><option>Civil</option><option>Familia</option><option>Juzgado de Paz</option></select></div>
-        <div class="fgg"><label class="fl">Juzgado</label><input class="fi" id="f-juz" placeholder="Ej: 2° Laboral - Berón"></div>
+        <div class="fgg"><label class="fl">Fuero</label><select class="fi" id="f-fue" onchange="updJuzSelect()">
+          <option value="">— Seleccionar —</option>
+          <option value="Laboral">Laboral</option>
+          <option value="Civil">Civil</option>
+          <option value="Familia">Familia</option>
+          <option value="Juzgado de Paz">Juzgado de Paz</option>
+        </select></div>
+        <div class="fgg"><label class="fl">Juzgado</label>
+        <select class="fi" id="f-juz" style="margin-top:3px">
+          <option value="">— Elegí el fuero primero —</option>
+        </select></div>
         <div class="fgg"><label class="fl">Estado</label><select class="fi" id="f-est"><option value="activa">Activa</option><option value="urgente">Urgente</option><option value="suspendida">Suspendida</option></select></div>
         <div class="fgg" style="padding-top:16px"><label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer"><input type="checkbox" id="f-pl" style="width:13px;height:13px"> Tiene plazo activo</label></div>
         <div class="fgg"><label class="fl">⭐ Tarea para Ramiro</label><input class="fi" id="f-ram" placeholder="Opcional — Ej: Diligenciar cédula"></div>
@@ -1609,6 +1618,14 @@ function renderVen(){
 
 function showHist(id,e){e.stopPropagation();closeCP();const c=causas.find(x=>x.id===id),h=historial[id]||[];alert('Historial — '+c.car+'\n\n'+(h.length?h.map(r=>`${fmtS(r.d)}: ${r.t}`).join('\n\n'):'Sin historial aún.'));}
 
+const JUZ_MAP={"Laboral": ["1° Laboral - Pallitto Matías Leonel", "2° Laboral - Berón Mariela", "3° Laboral - Padín María Gabriela", "4° Laboral - Soria Federico Marcelo", "5° Laboral - Caballero Humberto Gonzalo", "6° Laboral - Podestá de Oro Ana Guillermina", "C.A. Laboral Sala I (Ibañez - Daroni - Quattropani)", "C.A. Laboral Sala II (Parra - Raed de Rago - Vacante)"], "Civil": ["1° Civil - Rollán Héctor", "3° Civil - Arancibia Luis César", "4° Civil - Conti Picco Humberto J.", "5° Civil - Farina Roberto Pablo", "7° Civil - Balmaceda Vilma Emilce", "8° Civil - Otiñano Walter Ramón", "9° Civil - Oritja Pablo Nicolás", "11° Civil - Dias Amanda Rosa", "Contencioso Administrativo - Tettamanti Adriana Verónica", "C.A. Civil Sala I (Saffe Peña - Soria - Fernández Collado)", "C.A. Civil Sala II (Escobar - Pagés Lloveras - de la Torre)", "C.A. Civil Sala III (Pérez - Noguera Ramos - Rodríguez)", "C.A. Civil Sala IV (Romero - Varas - de la Torre)"], "Familia": ["1° Familia - López Marianela", "2° Familia - Romero Silvana", "3° Familia - Vacante", "4° Familia - Valdez Marisa"], "Juzgado de Paz": ["1° Paz Capital - González Bautista María Marta", "2° Paz Capital - Graffigna Fernando A.", "3° Paz Capital - Doña Ana Graciela", "4° Paz Capital - Lorenzo Carlos", "5° Paz Capital - Orellano Ricardo Aníbal", "6° Paz Capital - Gaitano Antonio", "7° Paz Capital - Zuliani Gerardo", "Paz Letrado Rawson - Espín Brkic Roxana Mariela", "Paz Letrado Rivadavia - Guerci Romero Ana Valeria", "Paz Letrado Chimbas - Cattani Hebe Graciela", "Paz Letrado Pocito - Moya Felipe M. / Assandri Laura Cecilia", "Paz Letrado Santa Lucía - Montero Verónica", "Paz Letrado Albardón - Oribe Oliveros Jorge Antonio", "Paz Letrado 25 de Mayo - Rodríguez Graciela A.", "Paz Letrado Iglesia - Aguilera Victoria Belén", "Paz Letrado Jáchal - Peñafort Martín", "Paz Letrado San Martín - Johnson Gerardo", "Paz Letrado Sarmiento - Barassi Minetto María Eugenia", "Paz Letrado Valle Fértil - Mulleady Luis María José", "Paz Letrado Caucete - Salva Mendoza Silvina Luciana", "Paz Letrado Calingasta - Troche Andrés L. Justino", "Paz Letrado Ullum - Conca Alejandra", "Paz Letrado Zonda - Caballero Adolfo Octavio", "Paz Letrado Angaco - Cuevas Carlos Adrián", "Paz Letrado 9 de Julio - Galván Daniel", "Cámara de Paz (Vargas - Pérez - Soria)", "Otros"]};
+function updJuzSelect(){
+  const fue=document.getElementById('f-fue').value;
+  const sel=document.getElementById('f-juz');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— Elegí el juzgado —</option>';
+  if(JUZ_MAP[fue])JUZ_MAP[fue].forEach(j=>{const op=document.createElement('option');op.value=j;op.textContent=j;sel.appendChild(op);});
+}
 function addCausa(){
   const ex=document.getElementById('f-ex').value.trim(),car=document.getElementById('f-car').value.trim();
   if(!ex||!car){alert('Completá expediente y carátula.');return;}
@@ -1800,7 +1817,7 @@ function renderRam(){
 }
 
 // ═══ INIT ═══
-const APP_VERSION = '2026-05-13-v26';
+const APP_VERSION = '2026-05-13-v35';
 if(localStorage.getItem('ga_version') !== APP_VERSION){
   Object.keys(localStorage).filter(k=>k.startsWith('ga_')||k.startsWith('ld')).forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('ga_version', APP_VERSION);
