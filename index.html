@@ -1577,9 +1577,13 @@ function renderR(){
     fl.sort((a,b)=>{
       const da=a.ven?dLeft(a.ven):9999;
       const db=b.ven?dLeft(b.ven):9999;
-      if(!a.ven&&!b.ven)return 0;
       return da-db;
     });
+    if(q)fl=fl.filter(c=>c.car.toLowerCase().includes(q)||c.ex.toLowerCase().includes(q));
+    // Render flat list, no grouping by juzgado
+    const cont=document.getElementById('reg-secs');
+    cont.innerHTML=fl.length?fl.map(c=>rowHTML(c)).join(''):'<div style="padding:20px;color:#aaa;text-align:center">Sin vencimientos próximos</div>';
+    return;
   }
   if(q)fl=fl.filter(c=>c.car.toLowerCase().includes(q)||c.ex.toLowerCase().includes(q)||c.juz.toLowerCase().includes(q));
   renderSecs('reg-secs',fl);
@@ -1796,7 +1800,7 @@ function renderRam(){
 }
 
 // ═══ INIT ═══
-const APP_VERSION = '2026-05-13-v24';
+const APP_VERSION = '2026-05-13-v26';
 if(localStorage.getItem('ga_version') !== APP_VERSION){
   Object.keys(localStorage).filter(k=>k.startsWith('ga_')||k.startsWith('ld')).forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('ga_version', APP_VERSION);
