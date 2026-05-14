@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v46</title>
+<title>Gudiño y Asociados v47</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -2012,19 +2012,18 @@ emailjs.init(EJS_KEY);
 
 function chequearRecordatorios(){
   const ahora = new Date();
-  const en12hs = new Date(ahora.getTime() + 12*60*60*1000);
-  const fechaEn12 = isoD(en12hs);
-  // hora como "HH:MM"
-  const horaEn12 = `${String(en12hs.getHours()).padStart(2,'0')}:${String(en12hs.getMinutes()).padStart(2,'0')}`;
   const yaNotificados = JSON.parse(localStorage.getItem('ga_notif')||'{}');
 
+  // ── TURNOS: alerta 12hs antes ──
+  const en12hs = new Date(ahora.getTime() + 12*60*60*1000);
+  const fechaEn12 = isoD(en12hs);
+  const horaEn12 = `${String(en12hs.getHours()).padStart(2,'0')}:${String(en12hs.getMinutes()).padStart(2,'0')}`;
   turnos.forEach(t=>{
-    if(t.f !== fechaEn12) return; // no es mañana en 12hs
-    if(!t.h) return; // sin hora no avisamos
-    // solo notificar si la hora del turno cae dentro de la próxima hora desde en12hs
+    if(t.f !== fechaEn12) return;
+    if(!t.h) return;
     if(t.h < horaEn12) return;
-    const key = t.id + '_' + t.f;
-    if(yaNotificados[key]) return; // ya se mandó
+    const key = 'tur_' + t.id + '_' + t.f;
+    if(yaNotificados[key]) return;
     emailjs.send(EJS_SVC, EJS_TPL, {
       cliente: t.cli || 'Sin nombre',
       hora:    t.h,
@@ -2033,8 +2032,29 @@ function chequearRecordatorios(){
     }).then(()=>{
       yaNotificados[key] = true;
       localStorage.setItem('ga_notif', JSON.stringify(yaNotificados));
-      console.log('Recordatorio enviado:', t.cli, t.f, t.h);
-    }).catch(e=>console.warn('EmailJS error:', e));
+      console.log('Recordatorio turno enviado:', t.cli, t.f, t.h);
+    }).catch(e=>console.warn('EmailJS error turno:', e));
+  });
+
+  // ── AUDIENCIAS: alerta 24hs antes ──
+  const en24hs = new Date(ahora.getTime() + 24*60*60*1000);
+  const fechaEn24 = isoD(en24hs);
+  const horaEn24 = `${String(en24hs.getHours()).padStart(2,'0')}:${String(en24hs.getMinutes()).padStart(2,'0')}`;
+  audiencias.forEach(a=>{
+    if(a.f !== fechaEn24) return;
+    if(a.h && a.h < horaEn24) return;
+    const key = 'aud_' + a.id + '_' + a.f;
+    if(yaNotificados[key]) return;
+    emailjs.send(EJS_SVC, EJS_TPL, {
+      cliente: a.c || 'Sin causa',
+      hora:    a.h || 'Sin hora',
+      motivo:  '⚖ AUDIENCIA — ' + (a.j||'') + (a.o?' · '+a.o:''),
+      fecha:   a.f.split('-').reverse().join('/')
+    }).then(()=>{
+      yaNotificados[key] = true;
+      localStorage.setItem('ga_notif', JSON.stringify(yaNotificados));
+      console.log('Recordatorio audiencia enviado:', a.c, a.f, a.h);
+    }).catch(e=>console.warn('EmailJS error audiencia:', e));
   });
 }
 
