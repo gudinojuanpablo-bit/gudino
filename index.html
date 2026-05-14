@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v47</title>
+<title>Gudiño y Asociados v48</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1857,7 +1857,7 @@ function renderCal(){
     h+=`<div class="${cl}" onclick="abrirFA('${iso}')"><div class="cal-dn">${d}${isF?' ⚠':''}</div>${da.map(a=>{
       const audiPast=isPast||(isT&&a.h&&a.h<horaAhora);
       const evCls=audiPast?'cal-ev cal-ev-past':'cal-ev t-'+(a.t||'otro');
-      return`<div class="${evCls}" onclick="editFA(${a.id},event)">${a.h?a.h+' ':''}${a.c}</div>`;
+      return`<div class="${evCls}" onclick="editFA('${a.id}',event)">${a.h?a.h+' ':''}${a.c}</div>`;
     }).join('')}</div>`;
   }
   h+='</div>';
@@ -1872,7 +1872,7 @@ function renderCal(){
         const dotStyle=isPastItem?'background:#bbb':'background:'+col;
         const carStyle=isPastItem?'color:#aaa':'';
         const detStyle=isPastItem?'color:#bbb':'';
-        return`<div class="aud-item" style="${itemStyle}"><div><div class="aud-f" style="${carStyle}">${dl}</div>${a.h?`<div class="aud-h" style="${isPastItem?'color:#bbb':''}">${a.h}hs</div>`:''}</div><div style="display:flex;align-items:flex-start;gap:6px;flex:1;min-width:0"><div class="aud-dot" style="${dotStyle}"></div><div style="flex:1;min-width:0"><div class="aud-car" style="${carStyle}">${isPastItem?'<s>':' '}${a.c}${isPastItem?'</s>':''}</div><div class="aud-det" style="${detStyle}">${a.j}${a.o?' · '+a.o:''} · <em style="color:${isPastItem?'#bbb':col}">${tInfo(a.t||'otro').lbl}</em></div></div></div><button class="ib" onclick="editFA(${a.id},event)">✏</button></div>`;
+        return`<div class="aud-item" style="${itemStyle}"><div><div class="aud-f" style="${carStyle}">${dl}</div>${a.h?`<div class="aud-h" style="${isPastItem?'color:#bbb':''}">${a.h}hs</div>`:''}</div><div style="display:flex;align-items:flex-start;gap:6px;flex:1;min-width:0"><div class="aud-dot" style="${dotStyle}"></div><div style="flex:1;min-width:0"><div class="aud-car" style="${carStyle}">${isPastItem?'<s>':' '}${a.c}${isPastItem?'</s>':''}</div><div class="aud-det" style="${detStyle}">${a.j}${a.o?' · '+a.o:''} · <em style="color:${isPastItem?'#bbb':col}">${tInfo(a.t||'otro').lbl}</em></div></div></div><button class="ib" onclick="editFA('${a.id}',event)">✏</button></div>`;
       }).join('')
     :'<div style="color:#aaa;font-size:11px;padding:12px;text-align:center">Sin audiencias este mes. Clic en un día para agregar.</div>';
   document.getElementById('cal-wrap').innerHTML=h;
@@ -1889,8 +1889,8 @@ function abrirFA(fecha){
 }
 function editFA(id,e){
   if(e)e.stopPropagation();
-  const a=audiencias.find(x=>x.id===id);if(!a)return;
-  document.getElementById('af-id').value=id;document.getElementById('af-f').value=a.f;document.getElementById('af-h').value=a.h||'';document.getElementById('af-c').value=a.c;document.getElementById('af-j').value=a.j;document.getElementById('af-o').value=a.o||'';
+  const a=audiencias.find(x=>String(x.id)===String(id));if(!a)return;
+  document.getElementById('af-id').value=String(id);document.getElementById('af-f').value=a.f;document.getElementById('af-h').value=a.h||'';document.getElementById('af-c').value=a.c;document.getElementById('af-j').value=a.j;document.getElementById('af-o').value=a.o||'';
   document.getElementById('af-del').style.display='inline-flex';document.getElementById('af-label').textContent='Editar audiencia';
   document.getElementById('aud-dl').innerHTML=causas.map(c=>`<option value="${c.car}">`).join('');
   resetT();if(a.t)selT(a.t);
@@ -1900,12 +1900,17 @@ function saveA(){
   const fecha=document.getElementById('af-f').value,causa=document.getElementById('af-c').value.trim();
   if(!fecha||!causa){alert('Completá fecha y causa.');return;}
   const tipo=document.getElementById('af-tipo').value||'otro';
-  const eid=parseInt(document.getElementById('af-id').value)||null;
+  const eid=document.getElementById('af-id').value||null;
   const obj={id:eid||Date.now(),f:fecha,h:document.getElementById('af-h').value,c:causa,j:document.getElementById('af-j').value.trim()||'—',o:document.getElementById('af-o').value.trim(),t:tipo};
-  if(eid)audiencias=audiencias.map(a=>a.id===eid?obj:a);else audiencias.push(obj);
+  if(eid)audiencias=audiencias.map(a=>String(a.id)===String(eid)?obj:a);else audiencias.push(obj);
   sA();document.getElementById('af-form').classList.remove('ab');renderCal();
 }
-function delA(){const id=parseInt(document.getElementById('af-id').value);if(!id||!confirm('¿Eliminar?'))return;audiencias=audiencias.filter(a=>a.id!==id);sA();document.getElementById('af-form').classList.remove('ab');renderCal();}
+function delA(){
+  const id=document.getElementById('af-id').value;
+  if(!id||!confirm('¿Eliminar?'))return;
+  audiencias=audiencias.filter(a=>String(a.id)!==String(id));
+  sA();document.getElementById('af-form').classList.remove('ab');renderCal();
+}
 
 function renderG(){
   let tot=0,jp=0,otr=0;gastos.forEach(g=>{tot+=g.m;if(g.q==='JP')jp+=g.m;else otr+=g.m;});
