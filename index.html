@@ -1560,7 +1560,23 @@ function usarPlazo(){
 }
 
 function renderSecs(cid,filas){
-  const jzs=[...new Set(filas.map(c=>c.juz))];
+  // Sort juzgados in logical order
+  const JUZ_ORDER=['1° Laboral','2° Laboral','3° Laboral','4° Laboral','5° Laboral','6° Laboral',
+    'C.A. Laboral Sala I','C.A. Laboral Sala II',
+    '1° Civil','3° Civil','4° Civil','5° Civil','7° Civil','8° Civil','9° Civil','11° Civil',
+    'Contencioso','C.A. Civil Sala I','C.A. Civil Sala II','C.A. Civil Sala III','C.A. Civil Sala IV',
+    '1° Familia','2° Familia','3° Familia','4° Familia',
+    '1° Paz','2° Paz','3° Paz','4° Paz','5° Paz','6° Paz','7° Paz',
+    'Paz Letrado Rawson','Paz Letrado Rivadavia','Paz Letrado Chimbas','Paz Letrado Pocito',
+    'Paz Letrado Santa','Paz Letrado Albardón','Paz Letrado 25','Paz Letrado Iglesia',
+    'Paz Letrado Jáchal','Paz Letrado San Martín','Paz Letrado Sarmiento','Paz Letrado Valle',
+    'Paz Letrado Caucete','Paz Letrado Calingasta','Paz Letrado Ullum','Paz Letrado Zonda',
+    'Paz Letrado Angaco','Paz Letrado 9','Cámara de Paz'];
+  function juzOrder(j){
+    const idx=JUZ_ORDER.findIndex(k=>j.startsWith(k));
+    return idx>=0?idx:999;
+  }
+  const jzs=[...new Set(filas.map(c=>c.juz))].sort((a,b)=>juzOrder(a)-juzOrder(b));
   let h='';
   jzs.forEach(j=>{
     const sub=filas.filter(c=>c.juz===j).sort((a,b)=>{
@@ -1839,7 +1855,7 @@ function renderRam(){
 }
 
 // ═══ INIT ═══
-const APP_VERSION = '2026-05-14-v1';
+const APP_VERSION = '2026-05-14-v2';
 if(localStorage.getItem('ga_version') !== APP_VERSION){
   Object.keys(localStorage).filter(k=>k.startsWith('ga_')||k.startsWith('ld')).forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('ga_version', APP_VERSION);
