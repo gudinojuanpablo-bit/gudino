@@ -343,6 +343,22 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .tog.off{background:#ddd}
 .tog::after{content:'';width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px;transition:right .15s}
 .tog.off::after{right:17px}
+.tur-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px}
+.tur-dia{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px}
+.tur-dia.hoy{border-color:var(--blue);background:var(--blue-l)}
+.tur-dia-hdr{font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px;text-align:center}
+.tur-dia-fecha{font-size:10px;color:var(--text2);text-align:center;margin-bottom:5px}
+.tur-item{background:var(--bg2);border-radius:4px;padding:4px 6px;margin-bottom:3px;font-size:10px;cursor:pointer;border:1px solid var(--border)}
+.tur-item:hover{border-color:var(--blue-b)}
+.tur-item .tur-hora{font-weight:700;color:var(--blue);font-size:10px}
+.tur-item .tur-cli{color:var(--text);font-size:11px}
+.tur-item .tur-mot{color:var(--text2);font-size:9px;font-style:italic}
+.tur-add{width:100%;margin-top:3px;font-size:10px;padding:3px;border-radius:4px;border:1px dashed var(--border);background:transparent;color:var(--text2);cursor:pointer;text-align:center}
+.tur-add:hover{border-color:var(--blue);color:var(--blue)}
+.tur-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:var(--bg);border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.25);padding:18px;width:300px;display:none}
+.tur-modal.ab{display:block}
+.tur-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:99998;display:none}
+.tur-overlay.ab{display:block}
 .info-box{background:var(--blue-l);border:1px solid #B5D4F4;border-radius:5px;padding:10px 12px;font-size:11px;color:#042C53;line-height:1.7;margin-top:8px}
 /* plazo calculator */
 .plazo-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:#fff;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.25);padding:18px;width:320px;display:none}
@@ -1410,6 +1426,29 @@ function clearV(id,e){
   const c=causas.find(x=>x.id===id);if(!c)return;
   c.ven='';c.tv='';c.pl=false;c.tipo_aud='';c.tipo_venc='vencimiento';
   sC();refRow(id);closeCP();updBadges();}
+
+function sincAudiencia(c){
+  // Only sync if cause has a tipo_aud that's a real audiencia type
+  const audTypes=['inicial','mediac','concil','final','recursiva'];
+  if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
+  // Remove existing entry for this cause
+  audiencias=audiencias.filter(a=>a.causaId!==c.id);
+  // Add new entry
+  const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
+  audiencias.push({
+    id:Date.now(),
+    causaId:c.id,
+    f:c.ven,
+    h:c.aud_h||'',
+    c:c.car,
+    j:c.juz,
+    o:c.aud_obs||'',
+    t:t
+  });
+  sA();
+  // Re-render audiencias calendar if visible
+  if(curView==='aud')renderCal();
+}
 function saveCP(id,e){
   e.stopPropagation();
   const c=causas.find(x=>x.id===id);if(!c)return;
@@ -1428,6 +1467,8 @@ function saveCP(id,e){
   if(horaEl)c.aud_h=horaEl.value||'';
   const modEl=document.getElementById('cp-mod-'+id);
   if(modEl)c.aud_mod=modEl.value||'';
+  // Sincronizar con calendario de audiencias si tiene tipo_aud
+  sincAudiencia(c);
   sC();refRow(id);closeCP();updBadges();renderVencPanel();}
 function refRow(id){
   const c=causas.find(x=>x.id===id);if(!c)return;
@@ -1855,7 +1896,7 @@ function renderRam(){
 }
 
 // ═══ INIT ═══
-const APP_VERSION = '2026-05-14-v2';
+const APP_VERSION = '2026-05-14-v4';
 if(localStorage.getItem('ga_version') !== APP_VERSION){
   Object.keys(localStorage).filter(k=>k.startsWith('ga_')||k.startsWith('ld')).forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('ga_version', APP_VERSION);
@@ -1876,6 +1917,134 @@ function resetAudiencias(){
   audiencias=[{id:1,f:"2026-05-11",h:"08:00",c:"FRÍAS C/CASTILLO - Filiación",j:"4° Familia - Valdez",o:"Conciliación",t:"mediac"},{id:2,f:"2026-05-14",h:"",c:"LUCERO ELIO C/OSSE - Mediación",j:"6° Laboral - Podestá de Oro",o:"Mediación preparatoria",t:"mediac"},{id:3,f:"2026-05-15",h:"09:30",c:"GODOY GABRIEL C/ASOCIART",j:"5° Laboral - Caballero",o:"",t:"inicial"},{id:4,f:"2026-05-18",h:"08:30",c:"MONDACA ARIEL C/OSSE",j:"4° Laboral - Soria",o:"SALA II",t:"recursiva"},{id:5,f:"2026-05-22",h:"10:00",c:"BERENGUER MAS C/SAINT-GOBAIN",j:"1° Laboral - Pallitto",o:"",t:"inicial"},{id:6,f:"2026-06-11",h:"10:00",c:"SILVA ALAN IVAN C/ASOCIART",j:"1° Laboral - Pallitto",o:"",t:"inicial"},{id:7,f:"2026-06-16",h:"08:30",c:"PARDO GASTON C/OSSE",j:"4° Laboral - Soria",o:"",t:"inicial"},{id:8,f:"2026-08-06",h:"08:30",c:"LUCERO ELIO C/OSSE - Med. Prep.",j:"6° Laboral - Podestá de Oro",o:"",t:"final"}];
   sA();renderCal();
   alert('✓ Audiencias actualizadas correctamente.');
+}
+
+// ═══════════════════════════════════════════════
+// TURNOS
+// ═══════════════════════════════════════════════
+let turnos = JSON.parse(localStorage.getItem('ga_turnos')||'[]');
+let turSemOff = 0; // semana offset desde hoy
+
+function saveTurnos(){localStorage.setItem('ga_turnos',JSON.stringify(turnos));}
+
+function turLunes(off){
+  const d=new Date(HOY);
+  const dow=d.getDay()===0?6:d.getDay()-1;
+  d.setDate(d.getDate()-dow+off*7);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function isoD(d){return d.toISOString().split('T')[0];}
+const DIAS_SEMANA=['Lun','Mar','Mié','Jue','Vie'];
+const MESES_CORTO=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+function renderTurnos(){
+  const lun=turLunes(turSemOff);
+  const vie=new Date(lun);vie.setDate(vie.getDate()+4);
+  document.getElementById('tur-semana').textContent=
+    `${lun.getDate()} ${MESES_CORTO[lun.getMonth()]} – ${vie.getDate()} ${MESES_CORTO[vie.getMonth()]} ${vie.getFullYear()}`;
+  
+  const grid=document.getElementById('tur-grid');
+  if(!grid)return;
+  const todayISO2=isoD(HOY);
+  let html='';
+  for(let i=0;i<5;i++){
+    const d=new Date(lun);d.setDate(d.getDate()+i);
+    const diso=isoD(d);
+    const esHoy=diso===todayISO2;
+    const dTurnos=turnos.filter(t=>t.f===diso).sort((a,b)=>a.h.localeCompare(b.h));
+    html+=`<div class="tur-dia${esHoy?' hoy':''}">
+      <div class="tur-dia-hdr">${DIAS_SEMANA[i]}</div>
+      <div class="tur-dia-fecha">${d.getDate()}/${d.getMonth()+1}</div>
+      ${dTurnos.map(t=>`<div class="tur-item" onclick="abrirTurModal('${diso}','${t.id}')">
+        <div class="tur-hora">${t.h||'Sin hora'}</div>
+        <div class="tur-cli">${t.cli}</div>
+        ${t.mot?`<div class="tur-mot">${t.mot}</div>`:''}
+      </div>`).join('')}
+      <button class="tur-add" onclick="abrirTurModal('${diso}',null)">+ turno</button>
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function navTur(d){turSemOff+=d;renderTurnos();}
+function turHoy(){turSemOff=0;renderTurnos();}
+
+function abrirTurModal(fecha,turId){
+  // Populate hora select
+  const hSel=document.getElementById('tur-h');
+  hSel.innerHTML='<option value="">— Sin hora —</option>';
+  for(let h=7;h<=20;h++){
+    for(let m=0;m<60;m+=30){
+      const str=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      hSel.innerHTML+=`<option value="${str}">${str}</option>`;
+    }
+  }
+  
+  const delBtn=document.getElementById('tur-del-btn');
+  if(turId){
+    const t=turnos.find(x=>x.id===turId);
+    if(!t)return;
+    document.getElementById('tur-modal-titulo').textContent='Editar turno';
+    document.getElementById('tur-f').value=t.f;
+    hSel.value=t.h||'';
+    document.getElementById('tur-dur').value=t.dur||'60';
+    document.getElementById('tur-cli').value=t.cli||'';
+    document.getElementById('tur-mot').value=t.mot||'';
+    document.getElementById('tur-edit-id').value=turId;
+    delBtn.style.display='block';
+  } else {
+    document.getElementById('tur-modal-titulo').textContent='Nuevo turno';
+    document.getElementById('tur-f').value=fecha||isoD(HOY);
+    hSel.value='';
+    document.getElementById('tur-dur').value='60';
+    document.getElementById('tur-cli').value='';
+    document.getElementById('tur-mot').value='';
+    document.getElementById('tur-edit-id').value='';
+    delBtn.style.display='none';
+  }
+  document.getElementById('tur-modal').classList.add('ab');
+  document.getElementById('tur-overlay').classList.add('ab');
+  document.getElementById('tur-cli').focus();
+}
+
+function cerrarTurModal(){
+  document.getElementById('tur-modal').classList.remove('ab');
+  document.getElementById('tur-overlay').classList.remove('ab');
+}
+
+function guardarTurno(){
+  const f=document.getElementById('tur-f').value;
+  const cli=document.getElementById('tur-cli').value.trim();
+  if(!f||!cli){alert('Completá al menos el día y el cliente.');return;}
+  const id=document.getElementById('tur-edit-id').value;
+  const turno={
+    id:id||String(Date.now()),
+    f,
+    h:document.getElementById('tur-h').value,
+    dur:document.getElementById('tur-dur').value,
+    cli,
+    mot:document.getElementById('tur-mot').value.trim()
+  };
+  if(id){
+    const idx=turnos.findIndex(x=>x.id===id);
+    if(idx>=0)turnos[idx]=turno;
+  } else {
+    turnos.push(turno);
+  }
+  saveTurnos();
+  cerrarTurModal();
+  renderTurnos();
+}
+
+function borrarTurno(){
+  const id=document.getElementById('tur-edit-id').value;
+  if(!id)return;
+  if(!window.confirm('¿Borrar este turno?'))return;
+  turnos=turnos.filter(x=>x.id!==id);
+  saveTurnos();
+  cerrarTurModal();
+  renderTurnos();
 }
 async function iniciarApp(){
   if(JSONBIN_ID&&JSONBIN_KEY){
