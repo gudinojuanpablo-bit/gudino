@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
 <title>Gudiño y Asociados v45</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
 :root{
@@ -294,6 +295,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .cal-cell.hoy .cal-dn{color:var(--blue)}
 .cal-ev{font-size:9px;color:#fff;border-radius:3px;padding:1px 5px;margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5;display:block}
 .cal-ev:hover{opacity:.85}
+.cal-ev-past{font-size:9px;color:#aaa;border-radius:3px;padding:1px 5px;margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5;display:block;background:#e8e8e8;text-decoration:line-through}
 .t-inicial{background:#2980b9}.t-mediac,.t-concil{background:#e91e8c}
 .t-final{background:#f0c000}.t-recursiva{background:#d35400}.t-resolver{background:#7f8c8d}.t-otro{background:#8e44ad}
 .af-wrap{background:var(--bg2);border-radius:6px;padding:12px;margin-top:10px;border:1px solid var(--border);display:none}
@@ -408,6 +410,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
     <div class="ng">Gestión</div>
     <div class="ni" id="ni-vmp" onclick="goP('vencemañana')">🔔 Vence mañana <span class="nb r" id="cnt-vmp">0</span></div>
     <div class="ni" id="ni-ext" onclick="goP('extrajudiciales')">📁 Extrajudiciales <span class="nb" id="cnt-ext">0</span></div>
+    <div class="ni" id="ni-tur" onclick="goP('turnero')">🗓 Turnos <span class="nb" id="cnt-tur">0</span></div>
     <div class="ni" id="ni-aud" onclick="goP('audiencias')">📅 Audiencias</div>
     <div class="ni" id="ni-gas" onclick="goP('gastos')">🧾 Gastos</div>
     <div class="ni" id="ni-nue" onclick="goP('nueva')">➕ Nueva causa</div>
@@ -503,6 +506,48 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
         </div>
       </div>
       <div id="ext-list"></div>
+    </div>
+
+    <div class="ct panel" id="panel-turnero">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="btn ico" onclick="navTur(-1)">‹</button>
+          <div style="font-size:13px;font-weight:700;min-width:180px;text-align:center" id="tur-semana">—</div>
+          <button class="btn ico" onclick="navTur(1)">›</button>
+          <button class="btn" onclick="turHoy()" style="font-size:11px;padding:4px 9px">Hoy</button>
+        </div>
+        <button class="btn p" onclick="abrirTurModal(null,null)" style="font-size:11px">+ Nuevo turno</button>
+      </div>
+      <div class="tur-grid" id="tur-grid"></div>
+    </div>
+
+    <!-- MODAL TURNERO -->
+    <div class="tur-overlay" id="tur-overlay" onclick="cerrarTurModal()"></div>
+    <div class="tur-modal" id="tur-modal">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700" id="tur-modal-titulo">Nuevo turno</div>
+        <button class="btn ico" onclick="cerrarTurModal()">✕</button>
+      </div>
+      <div class="fg" style="grid-template-columns:1fr 1fr">
+        <div class="fgg"><label class="fl">Fecha</label><input class="fi" type="date" id="tur-f"></div>
+        <div class="fgg"><label class="fl">Hora</label><select class="fi" id="tur-h"></select></div>
+        <div class="fgg"><label class="fl">Duración</label>
+          <select class="fi" id="tur-dur">
+            <option value="30">30 min</option>
+            <option value="60" selected>1 hora</option>
+            <option value="90">1h 30min</option>
+            <option value="120">2 horas</option>
+          </select>
+        </div>
+        <div class="fgg"><label class="fl">Cliente / Nombre</label><input class="fi" id="tur-cli" placeholder="Ej: García Juan"></div>
+        <div class="fgg full"><label class="fl">Motivo / Observaciones</label><input class="fi" id="tur-mot" placeholder="Ej: Consulta laboral"></div>
+      </div>
+      <input type="hidden" id="tur-edit-id">
+      <div class="fa" style="margin-top:12px">
+        <button class="btn p" onclick="guardarTurno()">✓ Guardar</button>
+        <button class="btn" onclick="cerrarTurModal()">Cancelar</button>
+        <button class="btn" id="tur-del-btn" style="display:none;color:#a00;border-color:var(--red-b);background:var(--red-l);margin-left:auto" onclick="borrarTurno()">🗑 Eliminar</button>
+      </div>
     </div>
 
     <div class="ct panel" id="panel-audiencias">
@@ -1081,22 +1126,23 @@ function showRegLayout(v){
 }
 function showOtherPanel(id){
   document.getElementById('panel-reg-wrap').style.display='none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero'].forEach(p=>{
     document.getElementById('panel-'+p).classList.toggle('on',p===id);
   });
 }
 function goR(){filtroF=null;showRegLayout(true);niOn('reg');document.getElementById('ptitle').textContent='Registro de causas';renderBan();renderR();}
 function goF(f){filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vence mañana'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vence mañana',turnero:'Turnos'};
   document.getElementById('ptitle').textContent=t[p]||p;
   showOtherPanel(p);
-  niOn({extrajudiciales:'ext',audiencias:'aud',gastos:'gas',nueva:'nue',config:'cfg','vencemañana':'vmp'}[p]||p);
+  niOn({extrajudiciales:'ext',audiencias:'aud',gastos:'gas',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'tur'}[p]||p);
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
-  if(p==='audiencias')renderCal();
+  if(p==='audiencias'){sincTodasAudiencias();renderCal();}
   if(p==='extrajudiciales')renderExt();
   if(p==='vencemañana')renderVMP();
+  if(p==='turnero')renderTurnos();
 }
 function swV(v){curView=v;['reg','ale','ven','ram'].forEach(x=>{document.getElementById('view-'+x).classList.toggle('on',x===v);document.getElementById('tab-'+x).classList.toggle('on',x===v);});if(v==='ale')renderAle();if(v==='ven')renderVen();if(v==='ram')renderRam();}
 
@@ -1106,6 +1152,8 @@ function updBadges(){
   const r=causas.filter(c=>c.ram&&!c.rdon).length+extraj.filter(e=>e.ram&&!e.rdon).length;
   document.getElementById('rbadge').textContent=r;
   document.getElementById('cnt-ext').textContent=extraj.filter(e=>e.est!=='cerrado').length;
+  const cntTur=document.getElementById('cnt-tur');
+  if(cntTur){const hoyTur=turnos.filter(t=>t.f===isoD(HOY)).length;cntTur.textContent=hoyTur;cntTur.style.display=hoyTur?'':'none';}
   const vmp=causas.filter(c=>c.ven===manaISO()&&c.est!=='archivada').length;
   const vmpEl=document.getElementById('cnt-vmp');
   if(vmpEl){vmpEl.textContent=vmp;vmpEl.style.display=vmp?'':'none';}
@@ -1427,9 +1475,21 @@ function clearV(id,e){
   c.ven='';c.tv='';c.pl=false;c.tipo_aud='';c.tipo_venc='vencimiento';
   sC();refRow(id);closeCP();updBadges();}
 
+function sincTodasAudiencias(){
+  // Sync all causas that have a tipo_aud set — ensures calendar is always up to date
+  const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
+  causas.forEach(c=>{
+    if(c.tipo_aud&&audTypes.includes(c.tipo_aud)&&c.ven){
+      audiencias=audiencias.filter(a=>a.causaId!==c.id);
+      const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
+      audiencias.push({id:c.id+'_sync',causaId:c.id,f:c.ven,h:c.aud_h||'',c:c.car,j:c.juz,o:c.aud_obs||'',t});
+    }
+  });
+  sA();
+}
 function sincAudiencia(c){
-  // Only sync if cause has a tipo_aud that's a real audiencia type
-  const audTypes=['inicial','mediac','concil','final','recursiva'];
+  // Sync all audiencia types including resolver
+  const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
   if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
   // Remove existing entry for this cause
   audiencias=audiencias.filter(a=>a.causaId!==c.id);
@@ -1446,8 +1506,9 @@ function sincAudiencia(c){
     t:t
   });
   sA();
-  // Re-render audiencias calendar if visible
-  if(curView==='aud')renderCal();
+  // Re-render audiencias calendar if panel is visible
+  const panelAud=document.getElementById('panel-audiencias');
+  if(panelAud&&panelAud.classList.contains('on'))renderCal();
 }
 function saveCP(id,e){
   e.stopPropagation();
@@ -1789,7 +1850,15 @@ function renderCal(){
     const da=audiencias.filter(a=>a.f===iso).sort((a,b)=>(a.h||'99')>(b.h||'99')?1:-1);
     const isT=iso===ts,isF=esFer(iso);
     let cl='cal-cell';if(isT)cl+=' hoy';if(isF&&!da.length)cl+=' fer';
-    h+=`<div class="${cl}" onclick="abrirFA('${iso}')"><div class="cal-dn">${d}${isF?' ⚠':''}</div>${da.map(a=>`<div class="cal-ev t-${a.t||'otro'}" onclick="editFA(${a.id},event)">${a.h?a.h+' ':''} ${a.c}</div>`).join('')}</div>`;
+    // isPast: fecha anterior a hoy, O es hoy pero ya pasó la hora de cada audiencia
+    const isPast=iso<ts;
+    if(isPast&&!isT)cl+=' pas';
+    const horaAhora=`${String(HOY.getHours()).padStart(2,'0')}:${String(HOY.getMinutes()).padStart(2,'0')}`;
+    h+=`<div class="${cl}" onclick="abrirFA('${iso}')"><div class="cal-dn">${d}${isF?' ⚠':''}</div>${da.map(a=>{
+      const audiPast=isPast||(isT&&a.h&&a.h<horaAhora);
+      const evCls=audiPast?'cal-ev cal-ev-past':'cal-ev t-'+(a.t||'otro');
+      return`<div class="${evCls}" onclick="editFA(${a.id},event)">${a.h?a.h+' ':''}${a.c}</div>`;
+    }).join('')}</div>`;
   }
   h+='</div>';
   const ma=audiencias.filter(a=>{const[ay,am]=a.f.split('-');return parseInt(ay)===y&&parseInt(am)-1===m;}).sort((a,b)=>a.f>b.f?1:a.f<b.f?-1:(a.h||'')>(b.h||'')?1:-1);
@@ -1797,7 +1866,13 @@ function renderCal(){
     ?`<div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;margin:12px 0 6px">Audiencias del mes (${ma.length})</div>`+ma.map(a=>{
         const dl=new Date(a.f).toLocaleDateString('es-AR',{weekday:'short',day:'2-digit',month:'2-digit'});
         const col=tInfo(a.t||'otro').col;
-        return`<div class="aud-item"><div><div class="aud-f">${dl}</div>${a.h?`<div class="aud-h">${a.h}hs</div>`:''}</div><div style="display:flex;align-items:flex-start;gap:6px;flex:1;min-width:0"><div class="aud-dot" style="background:${col}"></div><div style="flex:1;min-width:0"><div class="aud-car">${a.c}</div><div class="aud-det">${a.j}${a.o?' · '+a.o:''} · <em style="color:${col}">${tInfo(a.t||'otro').lbl}</em></div></div></div><button class="ib" onclick="editFA(${a.id},event)">✏</button></div>`;
+        const horaAhoraL=`${String(HOY.getHours()).padStart(2,'0')}:${String(HOY.getMinutes()).padStart(2,'0')}`;
+        const isPastItem=a.f<ts||(a.f===ts&&a.h&&a.h<horaAhoraL);
+        const itemStyle=isPastItem?'background:#f5f5f5;opacity:.65;border-color:#e0e0e0':'';
+        const dotStyle=isPastItem?'background:#bbb':'background:'+col;
+        const carStyle=isPastItem?'color:#aaa':'';
+        const detStyle=isPastItem?'color:#bbb':'';
+        return`<div class="aud-item" style="${itemStyle}"><div><div class="aud-f" style="${carStyle}">${dl}</div>${a.h?`<div class="aud-h" style="${isPastItem?'color:#bbb':''}">${a.h}hs</div>`:''}</div><div style="display:flex;align-items:flex-start;gap:6px;flex:1;min-width:0"><div class="aud-dot" style="${dotStyle}"></div><div style="flex:1;min-width:0"><div class="aud-car" style="${carStyle}">${isPastItem?'<s>':' '}${a.c}${isPastItem?'</s>':''}</div><div class="aud-det" style="${detStyle}">${a.j}${a.o?' · '+a.o:''} · <em style="color:${isPastItem?'#bbb':col}">${tInfo(a.t||'otro').lbl}</em></div></div></div><button class="ib" onclick="editFA(${a.id},event)">✏</button></div>`;
       }).join('')
     :'<div style="color:#aaa;font-size:11px;padding:12px;text-align:center">Sin audiencias este mes. Clic en un día para agregar.</div>';
   document.getElementById('cal-wrap').innerHTML=h;
@@ -1926,6 +2001,48 @@ let turnos = JSON.parse(localStorage.getItem('ga_turnos')||'[]');
 let turSemOff = 0; // semana offset desde hoy
 
 function saveTurnos(){localStorage.setItem('ga_turnos',JSON.stringify(turnos));}
+
+// ═══════════════════════════════════════════════
+// EMAILJS — RECORDATORIOS DE TURNOS (12hs antes)
+// ═══════════════════════════════════════════════
+const EJS_SVC  = 'service_ulmfq3b';
+const EJS_TPL  = 'template_ztczu1n';
+const EJS_KEY  = 'aYT9Y-t5k7X4TNQf9';
+emailjs.init(EJS_KEY);
+
+function chequearRecordatorios(){
+  const ahora = new Date();
+  const en12hs = new Date(ahora.getTime() + 12*60*60*1000);
+  const fechaEn12 = isoD(en12hs);
+  // hora como "HH:MM"
+  const horaEn12 = `${String(en12hs.getHours()).padStart(2,'0')}:${String(en12hs.getMinutes()).padStart(2,'0')}`;
+  const yaNotificados = JSON.parse(localStorage.getItem('ga_notif')||'{}');
+
+  turnos.forEach(t=>{
+    if(t.f !== fechaEn12) return; // no es mañana en 12hs
+    if(!t.h) return; // sin hora no avisamos
+    // solo notificar si la hora del turno cae dentro de la próxima hora desde en12hs
+    if(t.h < horaEn12) return;
+    const key = t.id + '_' + t.f;
+    if(yaNotificados[key]) return; // ya se mandó
+    emailjs.send(EJS_SVC, EJS_TPL, {
+      cliente: t.cli || 'Sin nombre',
+      hora:    t.h,
+      motivo:  t.mot || '—',
+      fecha:   t.f.split('-').reverse().join('/')
+    }).then(()=>{
+      yaNotificados[key] = true;
+      localStorage.setItem('ga_notif', JSON.stringify(yaNotificados));
+      console.log('Recordatorio enviado:', t.cli, t.f, t.h);
+    }).catch(e=>console.warn('EmailJS error:', e));
+  });
+}
+
+// Chequear al cargar y cada 30 minutos
+setTimeout(()=>{
+  chequearRecordatorios();
+  setInterval(chequearRecordatorios, 30*60*1000);
+}, 3000);
 
 function turLunes(off){
   const d=new Date(HOY);
