@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v49</title>
+<title>Gudiño y Asociados v50</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -429,6 +429,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
     <div class="tb-title" id="ptitle">Registro de causas</div>
     <span class="sync-dot" id="sync-dot" title="Estado de sincronización"></span>
     <span class="sync-label" id="sync-label">local</span>
+    <span id="presencia-indicator" style="font-size:11px;color:#aaa;margin-left:8px"></span>
     <div class="srch">🔍 <input id="si" placeholder="Buscar..." oninput="renderR()"></div>
     <button class="btn" onclick="confirmReset()">↺ Nuevo lunes</button>
     <button class="btn p" onclick="goP('nueva')">+ Nueva causa</button>
@@ -643,7 +644,16 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
     </div>
 
     <div class="ct panel" id="panel-config">
-      <!-- BLOQUE PRINCIPAL: CÓMO PONER ONLINE -->
+      <!-- SELECTOR DE USUARIO -->
+      <div style="background:#f0f4ff;border:1.5px solid #c5d0f0;border-radius:8px;padding:14px;margin-bottom:12px">
+        <h3 style="font-size:13px;font-weight:700;color:#2a3a8a;margin-bottom:8px">👤 ¿Quién sos en este dispositivo?</h3>
+        <p style="font-size:11px;color:#444;margin-bottom:10px">Esto permite que el otro vea si estás conectado en tiempo real.</p>
+        <div style="display:flex;gap:10px">
+          <button id="btn-soy-jp" class="btn" onclick="elegirUsuario('Juan Pablo')" style="flex:1;padding:8px;font-size:12px">👤 Juan Pablo</button>
+          <button id="btn-soy-ram" class="btn" onclick="elegirUsuario('Ramiro')" style="flex:1;padding:8px;font-size:12px">⭐ Ramiro</button>
+        </div>
+        <div id="usuario-actual" style="font-size:11px;color:#666;margin-top:8px;text-align:center"></div>
+      </div>
       <div style="background:#EAF3DE;border:1.5px solid #C0DD97;border-radius:8px;padding:14px;margin-bottom:12px">
         <h3 style="font-size:13px;font-weight:700;color:#27500A;margin-bottom:8px">🌐 Sincronización online — GRATIS PARA SIEMPRE</h3>
         <p style="font-size:11px;color:#3B6D11;line-height:1.7;margin-bottom:10px">Usa <strong>JSONBin.io</strong> — gratuito, sin tarjeta, sin vencimiento. Vos y Ramiro ven los cambios del otro en menos de 10 segundos desde cualquier dispositivo.</p>
@@ -2224,6 +2234,75 @@ async function iniciarApp(){
   }
   updProgress();renderBan();renderR();
 }
+// ═══════════════════════════════════════
+// PRESENCIA — quién está conectado
+// ═══════════════════════════════════════
+let miUsuario = localStorage.getItem('ga_usuario') || '';
+
+function elegirUsuario(nombre){
+  miUsuario = nombre;
+  localStorage.setItem('ga_usuario', nombre);
+  renderUsuarioActual();
+  latido();
+}
+
+function renderUsuarioActual(){
+  const el = document.getElementById('usuario-actual');
+  if(el) el.textContent = miUsuario ? '✓ Estás usando el sistema como: ' + miUsuario : 'No elegiste usuario todavía.';
+  const jp = document.getElementById('btn-soy-jp');
+  const ram = document.getElementById('btn-soy-ram');
+  if(jp && ram){
+    jp.style.fontWeight = miUsuario==='Juan Pablo' ? '700' : '400';
+    jp.style.borderColor = miUsuario==='Juan Pablo' ? '#2a3a8a' : '';
+    ram.style.fontWeight = miUsuario==='Ramiro' ? '700' : '400';
+    ram.style.borderColor = miUsuario==='Ramiro' ? '#2a3a8a' : '';
+  }
+}
+
+async function latido(){
+  if(!miUsuario || !JSONBIN_ID || !JSONBIN_KEY) return;
+  try {
+    const ts = Date.now();
+    // guardamos en un bin separado de presencia usando el mismo key
+    // usamos localStorage como puente compartido via JSONBin main bin
+    const data = await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{
+      headers:{'X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY}
+    }).then(r=>r.json());
+    const actual = data.record || {};
+    actual._presencia = actual._presencia || {};
+    actual._presencia[miUsuario] = ts;
+    await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY},
+      body:JSON.stringify(actual)
+    });
+  } catch(e){}
+}
+
+async function chequearPresencia(){
+  if(!JSONBIN_ID || !JSONBIN_KEY) return;
+  try {
+    const data = await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{
+      headers:{'X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY}
+    }).then(r=>r.json());
+    const presencia = (data.record||{})._presencia || {};
+    const ahora = Date.now();
+    const otro = miUsuario === 'Ramiro' ? 'Juan Pablo' : 'Ramiro';
+    const otroTs = presencia[otro] || 0;
+    const online = (ahora - otroTs) < 90000; // 90 segundos = online
+    const el = document.getElementById('presencia-indicator');
+    if(el) el.innerHTML = online
+      ? `<span style="color:#3B6D11">🟢 ${otro} conectado</span>`
+      : `<span style="color:#bbb">⚫ ${otro} desconectado</span>`;
+  } catch(e){}
+}
+
+// Latido cada 45s, chequeo cada 30s
+if(miUsuario) setTimeout(()=>{latido();setInterval(latido,45000);},5000);
+setInterval(chequearPresencia, 30000);
+setTimeout(chequearPresencia, 6000);
+setTimeout(renderUsuarioActual, 500);
+
 iniciarApp();
 </script>
 </body>
