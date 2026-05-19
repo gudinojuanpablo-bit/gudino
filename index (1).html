@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados</title>
+<title>Gudiño y Asociados v81</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
 :root{
@@ -170,7 +171,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .hl:hover{background:var(--bg2);color:var(--text2)}
 
 /* ── POPOVER CALENDARIO ── */
-.cpop{position:fixed;right:10px;top:80px;z-index:9999;background:var(--bg);border:1px solid var(--border2);border-radius:8px;box-shadow:0 6px 32px rgba(0,0,0,.22);padding:10px;width:236px;display:none;max-height:calc(100vh - 100px);overflow-y:auto}
+.cpop{position:fixed;right:10px;top:80px;z-index:99999;background:var(--bg);border:1px solid var(--border2);border-radius:8px;box-shadow:0 6px 32px rgba(0,0,0,.22);padding:10px;width:236px;display:none;max-height:calc(100vh - 100px);overflow-y:auto}
 .cpop.ab{display:block}
 .cp-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
 .cp-nav{width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:4px;border:1px solid var(--border);cursor:pointer;font-size:12px;background:var(--bg2);user-select:none}
@@ -294,6 +295,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .cal-cell.hoy .cal-dn{color:var(--blue)}
 .cal-ev{font-size:9px;color:#fff;border-radius:3px;padding:1px 5px;margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5;display:block}
 .cal-ev:hover{opacity:.85}
+.cal-ev-past{font-size:9px;color:#aaa;border-radius:3px;padding:1px 5px;margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5;display:block;background:#e8e8e8;text-decoration:line-through}
 .t-inicial{background:#2980b9}.t-mediac,.t-concil{background:#e91e8c}
 .t-final{background:#f0c000}.t-recursiva{background:#d35400}.t-resolver{background:#7f8c8d}.t-otro{background:#8e44ad}
 .af-wrap{background:var(--bg2);border-radius:6px;padding:12px;margin-top:10px;border:1px solid var(--border);display:none}
@@ -343,6 +345,22 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .tog.off{background:#ddd}
 .tog::after{content:'';width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px;transition:right .15s}
 .tog.off::after{right:17px}
+.tur-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px}
+.tur-dia{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px}
+.tur-dia.hoy{border-color:var(--blue);background:var(--blue-l)}
+.tur-dia-hdr{font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px;text-align:center}
+.tur-dia-fecha{font-size:10px;color:var(--text2);text-align:center;margin-bottom:5px}
+.tur-item{background:var(--bg2);border-radius:4px;padding:4px 6px;margin-bottom:3px;font-size:10px;cursor:pointer;border:1px solid var(--border)}
+.tur-item:hover{border-color:var(--blue-b)}
+.tur-item .tur-hora{font-weight:700;color:var(--blue);font-size:10px}
+.tur-item .tur-cli{color:var(--text);font-size:11px}
+.tur-item .tur-mot{color:var(--text2);font-size:9px;font-style:italic}
+.tur-add{width:100%;margin-top:3px;font-size:10px;padding:3px;border-radius:4px;border:1px dashed var(--border);background:transparent;color:var(--text2);cursor:pointer;text-align:center}
+.tur-add:hover{border-color:var(--blue);color:var(--blue)}
+.tur-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:var(--bg);border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.25);padding:18px;width:300px;display:none}
+.tur-modal.ab{display:block}
+.tur-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:99998;display:none}
+.tur-overlay.ab{display:block}
 .info-box{background:var(--blue-l);border:1px solid #B5D4F4;border-radius:5px;padding:10px 12px;font-size:11px;color:#042C53;line-height:1.7;margin-top:8px}
 /* plazo calculator */
 .plazo-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:#fff;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.25);padding:18px;width:320px;display:none}
@@ -366,6 +384,8 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 
 /* ── SYNC STATUS ── */
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#ddd;display:inline-block;margin-right:4px;transition:background .3s}
+@keyframes vmp-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.04)}}
+.vmp-urgente{animation:vmp-pulse 1.2s ease-in-out infinite}
 .sync-dot.ok{background:#3B6D11}
 .sync-dot.saving{background:#FFB800;animation:pulse .8s infinite}
 .sync-dot.err{background:#e24b4a}
@@ -385,16 +405,23 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
   <nav class="nav">
     <div class="ni on" id="ni-reg" onclick="goR()">📋 Registro</div>
     <div class="ng">Fueros</div>
-    <div class="ni" id="ni-lab" onclick="goF('Laboral')">💼 Laboral <span class="nb" id="cnt-Laboral">0</span></div>
-    <div class="ni" id="ni-civ" onclick="goF('Civil')">🏛 Civil <span class="nb" id="cnt-Civil">0</span></div>
+    <div class="ni" id="ni-lab" onclick="goF('Laboral')">👷 Laboral <span class="nb" id="cnt-Laboral">0</span></div>
+    <div class="ni" id="ni-civ" onclick="goF('Civil')">🏠 Civil <span class="nb" id="cnt-Civil">0</span></div>
     <div class="ni" id="ni-fam" onclick="goF('Familia')">👥 Familia <span class="nb" id="cnt-Familia">0</span></div>
-    <div class="ni" id="ni-paz" onclick="goF('Juzgado de Paz')">🔨 Paz Letrado <span class="nb" id="cnt-Juzgado de Paz">0</span></div>
+    <div class="ni" id="ni-paz" onclick="goF('Juzgado de Paz')">🕊️ Paz Letrado <span class="nb" id="cnt-Juzgado de Paz">0</span></div>
     <div class="ng">Gestión</div>
-    <div class="ni" id="ni-vmp" onclick="goP('vencemañana')">🔔 Vence mañana <span class="nb r" id="cnt-vmp">0</span></div>
-    <div class="ni" id="ni-ext" onclick="goP('extrajudiciales')">📁 Extrajudiciales <span class="nb" id="cnt-ext">0</span></div>
+    <div id="ni-vmp" onclick="goP('vencemañana')" style="margin:4px 6px;border-radius:7px;cursor:pointer;overflow:hidden;border:1.5px solid transparent;transition:border .15s" onmouseenter="this.style.borderColor='#e67e22'" onmouseleave="this.style.borderColor='transparent'">
+      <div id="vmp-btn-inner" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);padding:7px 10px;display:flex;align-items:center;gap:7px">
+        <span style="font-size:18px">⚡</span>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:#b84d00">Vencimientos</div>
+        </div>
+        <span class="nb r" id="cnt-vmp" style="background:#e24b4a;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700">0</span>
+      </div>
+    </div>
     <div class="ni" id="ni-aud" onclick="goP('audiencias')">📅 Audiencias</div>
-    <div class="ni" id="ni-gas" onclick="goP('gastos')">🧾 Gastos</div>
     <div class="ni" id="ni-nue" onclick="goP('nueva')">➕ Nueva causa</div>
+    <div class="ni" id="ni-her" onclick="goP('herramientas')" style="color:#2980b9">🔧 Herramientas</div>
     <div class="ni" id="ni-cfg" onclick="goP('config')">⚙ Config. / Online</div>
   </nav>
   <div class="prog">
@@ -410,9 +437,8 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
     <div class="tb-title" id="ptitle">Registro de causas</div>
     <span class="sync-dot" id="sync-dot" title="Estado de sincronización"></span>
     <span class="sync-label" id="sync-label">local</span>
+    <span id="presencia-indicator" style="font-size:11px;color:#aaa;margin-left:8px"></span>
     <div class="srch">🔍 <input id="si" placeholder="Buscar..." oninput="renderR()"></div>
-    <button class="btn" onclick="confirmReset()">↺ Nuevo lunes</button>
-    <button class="btn p" onclick="goP('nueva')">+ Nueva causa</button>
   </div>
 
   <!-- PANELS CON LAYOUT ESPECIAL PARA REGISTRO -->
@@ -420,32 +446,27 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 
     <!-- REGISTRO (tiene layout propio con panel derecho) -->
     <div style="flex:1;display:flex;flex-direction:column;overflow:hidden" id="panel-reg-wrap">
-      <!-- TABS -->
-      <div class="tabs" id="tabs-wrap">
-        <div class="tab on" id="tab-reg" onclick="swV('reg')">📋 Registro</div>
-        <div class="tab" id="tab-ale" onclick="swV('ale')">🔔 Alertas <span class="tbadge r" id="abadge">0</span></div>
-        <div class="tab" id="tab-ven" onclick="swV('ven')">📆 Vencimientos</div>
-        <div class="tab" id="tab-ram" onclick="swV('ram')">⭐ Ramiro <span class="tbadge y" id="rbadge">0</span></div>
-      </div>
+
       <div class="reg-layout">
         <!-- CONTENIDO PRINCIPAL -->
         <div class="ct" id="ct-reg">
           <div id="top-ban"></div>
+          <div class="filtros-wrap" id="filtros-wrap">
+            <span style="font-size:10px;color:#aaa;font-weight:700;margin-right:2px">VER:</span>
+            <div class="filtro-btn on" onclick="setFiltroEstado('');swV('reg')">Todas</div>
+            <div class="filtro-btn" onclick="setFiltroEstado('trabajar');swV('reg')">📋 Para trabajar</div>
+            <div class="filtro-btn" id="btn-ram-fil" onclick="swV('ram')" style="display:flex;align-items:center;gap:4px">⭐ Ramiro <span class="tbadge y" id="rbadge" style="position:static;margin-left:2px">0</span></div>
+          </div>
           <div class="view on" id="view-reg">
-        <div class="filtros-wrap" id="filtros-wrap">
-          <span style="font-size:10px;color:#aaa;font-weight:700;margin-right:2px">VER:</span>
-          <div class="filtro-btn on" onclick="setFiltroEstado('')">Todas</div>
-          <div class="filtro-btn" onclick="setFiltroEstado('trabajar')">📋 Para trabajar</div>
-          <div class="filtro-btn" onclick="setFiltroEstado('resolver')">⚫ A resolver</div>
-          <div class="filtro-btn" onclick="setFiltroEstado('urgente')">🔴 Urgentes</div>
-        </div>
-        <div id="reg-secs"></div>
-      </div>
+            <div id="reg-secs"></div>
+          </div>
           <div class="view" id="view-ale"><div id="ale-body"></div></div>
           <div class="view" id="view-ven"><div id="ven-body"></div></div>
-          <div class="view" id="view-ram"><div id="ram-body"></div></div>
+          <div class="view" id="view-ram">
+            <div id="ram-body"></div>
+          </div>
+          <div class="view" id="view-resolver"><div id="resolver-body"></div></div>
         </div>
-
       </div>
     </div>
 
@@ -487,6 +508,48 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
         </div>
       </div>
       <div id="ext-list"></div>
+    </div>
+
+    <div class="ct panel" id="panel-turnero">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="btn ico" onclick="navTur(-1)">‹</button>
+          <div style="font-size:13px;font-weight:700;min-width:180px;text-align:center" id="tur-semana">—</div>
+          <button class="btn ico" onclick="navTur(1)">›</button>
+          <button class="btn" onclick="turHoy()" style="font-size:11px;padding:4px 9px">Hoy</button>
+        </div>
+        <button class="btn p" onclick="abrirTurModal(null,null)" style="font-size:11px">+ Nuevo turno</button>
+      </div>
+      <div class="tur-grid" id="tur-grid"></div>
+    </div>
+
+    <!-- MODAL TURNERO -->
+    <div class="tur-overlay" id="tur-overlay" onclick="cerrarTurModal()"></div>
+    <div class="tur-modal" id="tur-modal">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700" id="tur-modal-titulo">Nuevo turno</div>
+        <button class="btn ico" onclick="cerrarTurModal()">✕</button>
+      </div>
+      <div class="fg" style="grid-template-columns:1fr 1fr">
+        <div class="fgg"><label class="fl">Fecha</label><input class="fi" type="date" id="tur-f"></div>
+        <div class="fgg"><label class="fl">Hora</label><select class="fi" id="tur-h"></select></div>
+        <div class="fgg"><label class="fl">Duración</label>
+          <select class="fi" id="tur-dur">
+            <option value="30">30 min</option>
+            <option value="60" selected>1 hora</option>
+            <option value="90">1h 30min</option>
+            <option value="120">2 horas</option>
+          </select>
+        </div>
+        <div class="fgg"><label class="fl">Cliente / Nombre</label><input class="fi" id="tur-cli" placeholder="Ej: García Juan"></div>
+        <div class="fgg full"><label class="fl">Motivo / Observaciones</label><input class="fi" id="tur-mot" placeholder="Ej: Consulta laboral"></div>
+      </div>
+      <input type="hidden" id="tur-edit-id">
+      <div class="fa" style="margin-top:12px">
+        <button class="btn p" onclick="guardarTurno()">✓ Guardar</button>
+        <button class="btn" onclick="cerrarTurModal()">Cancelar</button>
+        <button class="btn" id="tur-del-btn" style="display:none;color:#a00;border-color:var(--red-b);background:var(--red-l);margin-left:auto" onclick="borrarTurno()">🗑 Eliminar</button>
+      </div>
     </div>
 
     <div class="ct panel" id="panel-audiencias">
@@ -556,12 +619,40 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
       <table class="gtbl"><thead><tr><th>Fecha</th><th>Proceso</th><th>Monto</th><th>Pagó</th><th>Observaciones</th><th></th></tr></thead><tbody id="g-body"></tbody></table>
     </div>
 
+    <div class="ct panel" id="panel-herramientas">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div onclick="goP('extrajudiciales')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
+          <span style="font-size:24px">📁</span>
+          <div><div style="font-size:13px;font-weight:700">Extrajudiciales</div><div style="font-size:11px;color:#aaa">Gestión de expedientes extrajudiciales</div></div>
+          <span class="nb" id="cnt-ext" style="margin-left:auto">0</span>
+        </div>
+        <div onclick="goP('turnero')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
+          <span style="font-size:24px">🗓</span>
+          <div><div style="font-size:13px;font-weight:700">Turnos</div><div style="font-size:11px;color:#aaa">Agenda de consultas y turnos</div></div>
+          <span class="nb" id="cnt-tur" style="margin-left:auto">0</span>
+        </div>
+        <div onclick="goP('gastos')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
+          <span style="font-size:24px">🧾</span>
+          <div><div style="font-size:13px;font-weight:700">Gastos</div><div style="font-size:11px;color:#aaa">Sellados y gastos del estudio</div></div>
+        </div>
+      </div>
+    </div>
+
     <div class="ct panel" id="panel-nueva">
       <div class="fg">
         <div class="fgg"><label class="fl">N° expediente</label><input class="fi" id="f-ex" placeholder="Ej: 1607/25"></div>
         <div class="fgg"><label class="fl">Carátula</label><input class="fi" id="f-car" placeholder="Ej: SILVA ALAN C/ASOCIART"></div>
-        <div class="fgg"><label class="fl">Fuero</label><select class="fi" id="f-fue"><option>Laboral</option><option>Civil</option><option>Familia</option><option>Juzgado de Paz</option></select></div>
-        <div class="fgg"><label class="fl">Juzgado</label><input class="fi" id="f-juz" placeholder="Ej: 2° Laboral - Berón"></div>
+        <div class="fgg"><label class="fl">Fuero</label><select class="fi" id="f-fue" onchange="updJuzSelect()">
+          <option value="">— Seleccionar —</option>
+          <option value="Laboral">Laboral</option>
+          <option value="Civil">Civil</option>
+          <option value="Familia">Familia</option>
+          <option value="Juzgado de Paz">Juzgado de Paz</option>
+        </select></div>
+        <div class="fgg"><label class="fl">Juzgado</label>
+        <select class="fi" id="f-juz" style="margin-top:3px">
+          <option value="">— Elegí el fuero primero —</option>
+        </select></div>
         <div class="fgg"><label class="fl">Estado</label><select class="fi" id="f-est"><option value="activa">Activa</option><option value="urgente">Urgente</option><option value="suspendida">Suspendida</option></select></div>
         <div class="fgg" style="padding-top:16px"><label style="display:flex;align-items:center;gap:7px;font-size:11px;cursor:pointer"><input type="checkbox" id="f-pl" style="width:13px;height:13px"> Tiene plazo activo</label></div>
         <div class="fgg"><label class="fl">⭐ Tarea para Ramiro</label><input class="fi" id="f-ram" placeholder="Opcional — Ej: Diligenciar cédula"></div>
@@ -573,7 +664,24 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
     </div>
 
     <div class="ct panel" id="panel-config">
-      <!-- BLOQUE PRINCIPAL: CÓMO PONER ONLINE -->
+      <!-- NUEVO LUNES -->
+      <div style="background:#f5f5f5;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;font-weight:700">↺ Nuevo lunes</div>
+          <div style="font-size:11px;color:#aaa">Borra todos los verdes de la semana</div>
+        </div>
+        <button class="btn" onclick="confirmReset()" style="font-size:12px">Simular lunes</button>
+      </div>
+      <!-- SELECTOR DE USUARIO -->
+      <div style="background:#f0f4ff;border:1.5px solid #c5d0f0;border-radius:8px;padding:14px;margin-bottom:12px">
+        <h3 style="font-size:13px;font-weight:700;color:#2a3a8a;margin-bottom:8px">👤 ¿Quién sos en este dispositivo?</h3>
+        <p style="font-size:11px;color:#444;margin-bottom:10px">Esto permite que el otro vea si estás conectado en tiempo real.</p>
+        <div style="display:flex;gap:10px">
+          <button id="btn-soy-jp" class="btn" onclick="elegirUsuario('Juan Pablo')" style="flex:1;padding:8px;font-size:12px">👤 Juan Pablo</button>
+          <button id="btn-soy-ram" class="btn" onclick="elegirUsuario('Ramiro')" style="flex:1;padding:8px;font-size:12px">⭐ Ramiro</button>
+        </div>
+        <div id="usuario-actual" style="font-size:11px;color:#666;margin-top:8px;text-align:center"></div>
+      </div>
       <div style="background:#EAF3DE;border:1.5px solid #C0DD97;border-radius:8px;padding:14px;margin-bottom:12px">
         <h3 style="font-size:13px;font-weight:700;color:#27500A;margin-bottom:8px">🌐 Sincronización online — GRATIS PARA SIEMPRE</h3>
         <p style="font-size:11px;color:#3B6D11;line-height:1.7;margin-bottom:10px">Usa <strong>JSONBin.io</strong> — gratuito, sin tarjeta, sin vencimiento. Vos y Ramiro ven los cambios del otro en menos de 10 segundos desde cualquier dispositivo.</p>
@@ -655,6 +763,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
     <input class="fi" type="text" id="plazo-dirigido" placeholder="Ej: OSSE, Sindicato, perito...">
   </div>
   <div style="margin-bottom:10px">
+    <div class="fl" style="margin-bottom:4px">Plazo para: <span style="color:#e24b4a">*</span></div>
+    <input class="fi" type="text" id="plazo-para" placeholder="que conteste demanda, que acepte cargo..." oninput="actualizarPreviaPlazo()">
+  </div>
+  <div style="margin-bottom:10px">
     <div class="fl" style="margin-bottom:6px">Tipo de diligenciamiento</div>
     <div class="plazo-tipo">
       <div class="plazo-opt" onclick="selPlazoTipo('oficio')" id="pto-oficio">
@@ -678,6 +790,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
   <div class="plazo-resultado" id="plazo-resultado">
     <strong>📅 Vence el: <span id="plazo-fecha-res">—</span></strong><br>
     <span id="plazo-detalle" style="font-size:10px;color:#3B6D11"></span><br>
+    <div id="plazo-previa" style="display:none;margin:6px 0;padding:5px 8px;background:#f0f4ff;border-radius:4px;font-size:10px;color:#444;border:1px solid #c5d0f0;line-height:1.5"></div>
     <button class="btn p" onclick="usarPlazo()" style="font-size:11px;margin-top:8px;width:100%">📎 Usar como "Para saber"</button>
   </div>
   <input type="hidden" id="plazo-causa-id">
@@ -721,81 +834,81 @@ const EXT_EST={nuevo:{lbl:'Nuevo',cls:'ep-nuevo'},gestion:{lbl:'En gestión',cls
 // ═══════════════════════════════════════════════
 const C0=[
   // 1° LABORAL - Pallitto
-  {id:1,ex:'41042',car:'GIMENEZ GUILLERMO ORLANDO C/OSSE',fue:'Laboral',juz:'1° Laboral - Pallitto',est:'activa',ven:'2026-05-20',tv:'Plazo OSSE básicos y decisiones',tipo_aud:'',pl:true,not:'El Juzgado intimó a OSSE a acompañar básicos y decisiones. Vence el miércoles 20/05.',ram:'',rdon:false},
-  {id:2,ex:'83/25',car:'MERCADO QUIROGA C/ADARO - SALA II',fue:'Laboral',juz:'1° Laboral - Pallitto',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Se pagó primera y segunda cuota del acuerdo.',ram:'',rdon:false},
-  {id:3,ex:'840/25',car:'CARBAJAL C/LA SEGUNDA ART',fue:'Laboral',juz:'1° Laboral - Pallitto',est:'activa',ven:'2026-05-28',tv:'Pago acordado',tipo_aud:'',pl:false,not:'Acordamos. El jueves 28/05 pagan. Cédula diligenciada 8/5.',ram:'',rdon:false},
-  {id:4,ex:'1607/25',car:'SILVA ALAN IVAN C/ASOCIART',fue:'Laboral',juz:'1° Laboral - Pallitto',est:'activa',ven:'2026-06-11',tv:'Audiencia inicial',tipo_aud:'inicial',pl:false,not:'AUDIENCIA INICIAL: Jueves 11 de junio de 2026 a las 10 horas.',ram:'',rdon:false},
-  {id:5,ex:'2087/25',car:'BERENGUER MAS C/SAINT-GOBAIN',fue:'Laboral',juz:'1° Laboral - Pallitto',est:'activa',ven:'2026-05-22',tv:'Audiencia inicial',tipo_aud:'inicial',pl:false,not:'AUDIENCIA INICIAL: VIERNES 22 DE MAYO DE 2026 a las 10.00 horas.',ram:'',rdon:false},
+  {id:1,ex:'41042',car:'GIMENEZ GUILLERMO ORLANDO C/OSSE',fue:'Laboral',juz:'1° Laboral - Pallitto Matías Leonel',est:'activa',ven:'2026-05-20',tv:'Plazo OSSE básicos y decisiones',tipo_aud:'',pl:true,not:'El Juzgado intimó a OSSE a acompañar básicos y decisiones. Vence el miércoles 20/05.',ram:'',rdon:false},
+  {id:2,ex:'83/25',car:'MERCADO QUIROGA C/ADARO - SALA II',fue:'Laboral',juz:'1° Laboral - Pallitto Matías Leonel',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Se pagó primera y segunda cuota del acuerdo.',ram:'',rdon:false},
+  {id:3,ex:'840/25',car:'CARBAJAL C/LA SEGUNDA ART',fue:'Laboral',juz:'1° Laboral - Pallitto Matías Leonel',est:'activa',ven:'2026-05-28',tv:'Pago acordado',tipo_aud:'',pl:false,not:'Acordamos. El jueves 28/05 pagan. Cédula diligenciada 8/5.',ram:'',rdon:false},
+  {id:4,ex:'1607/25',car:'SILVA ALAN IVAN C/ASOCIART',fue:'Laboral',juz:'1° Laboral - Pallitto Matías Leonel',est:'activa',ven:'2026-06-11',tv:'Audiencia inicial',tipo_aud:'inicial',pl:false,not:'AUDIENCIA INICIAL: Jueves 11 de junio de 2026 a las 10 horas.',ram:'',rdon:false},
+  {id:5,ex:'2087/25',car:'BERENGUER MAS C/SAINT-GOBAIN',fue:'Laboral',juz:'1° Laboral - Pallitto Matías Leonel',est:'activa',ven:'2026-05-22',tv:'Audiencia inicial',tipo_aud:'inicial',pl:false,not:'AUDIENCIA INICIAL: VIERNES 22 DE MAYO DE 2026 a las 10.00 horas.',ram:'',rdon:false},
   // 2° LABORAL - Berón
-  {id:6,ex:'41040',car:'ALCARAZ ANTONIO C/OSSE',fue:'Laboral',juz:'2° Laboral - Berón',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Reiteración oficio diligenciado 11/5.',ram:'',rdon:false},
-  {id:7,ex:'13438/S2',car:'SILVA VALENTINI C/SANCHEZ - SALA II',fue:'Laboral',juz:'2° Laboral - Berón',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Conteste traslado al adelanto de gastos pedido por la perito.',ram:'',rdon:false},
-  {id:8,ex:'1358/25',car:'FURINI MAURO C/ASOCIART',fue:'Laboral',juz:'2° Laboral - Berón',est:'activa',ven:'2026-05-13',tv:'Pericia queda firme',tipo_aud:'resolver',pl:true,not:'La perito le dio 11,30% de incapacidad laboral. La pericia queda firme el miércoles 13/05.',ram:'',rdon:false},
-  {id:9,ex:'1653/25',car:'FUENTES DIEGO C/FED. PATRONAL',fue:'Laboral',juz:'2° Laboral - Berón',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Cédula diligenciada 11/5.',ram:'',rdon:false},
-  {id:10,ex:'1756/25',car:'MORENO VICTORIA C/OSSE - Med. Prep.',fue:'Laboral',juz:'2° Laboral - Berón',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Oficio diligenciado 11/5.',ram:'',rdon:false},
-  {id:11,ex:'222/26',car:'NAVEDA FLORENCIA C/ASOCIART',fue:'Laboral',juz:'2° Laboral - Berón',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Le pasé oficio a Yani para que lo mande a la SRT.',ram:'',rdon:false},
-  {id:12,ex:'644/26',car:'ACOSTA CAMPILLAY C/ASOCIART',fue:'Laboral',juz:'2° Laboral - Berón',est:'activa',ven:'',tv:'',tipo_aud:'',pl:true,not:'El 28/04/26 ASOCIART se notificó de la demanda.',ram:'',rdon:false},
+  {id:6,ex:'41040',car:'ALCARAZ ANTONIO C/OSSE',fue:'Laboral',juz:'2° Laboral - Berón Mariela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Reiteración oficio diligenciado 11/5.',ram:'',rdon:false},
+  {id:7,ex:'13438/S2',car:'SILVA VALENTINI C/SANCHEZ - SALA II',fue:'Laboral',juz:'2° Laboral - Berón Mariela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Conteste traslado al adelanto de gastos pedido por la perito.',ram:'',rdon:false},
+  {id:8,ex:'1358/25',car:'FURINI MAURO C/ASOCIART',fue:'Laboral',juz:'2° Laboral - Berón Mariela',est:'activa',ven:'2026-05-13',tv:'Pericia queda firme',tipo_aud:'resolver',pl:true,not:'La perito le dio 11,30% de incapacidad laboral. La pericia queda firme el miércoles 13/05.',ram:'',rdon:false},
+  {id:9,ex:'1653/25',car:'FUENTES DIEGO C/FED. PATRONAL',fue:'Laboral',juz:'2° Laboral - Berón Mariela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Cédula diligenciada 11/5.',ram:'',rdon:false},
+  {id:10,ex:'1756/25',car:'MORENO VICTORIA C/OSSE - Med. Prep.',fue:'Laboral',juz:'2° Laboral - Berón Mariela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Oficio diligenciado 11/5.',ram:'',rdon:false},
+  {id:11,ex:'222/26',car:'NAVEDA FLORENCIA C/ASOCIART',fue:'Laboral',juz:'2° Laboral - Berón Mariela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Le pasé oficio a Yani para que lo mande a la SRT.',ram:'',rdon:false},
+  {id:12,ex:'644/26',car:'ACOSTA CAMPILLAY C/ASOCIART',fue:'Laboral',juz:'2° Laboral - Berón Mariela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:true,not:'El 28/04/26 ASOCIART se notificó de la demanda.',ram:'',rdon:false},
   // 3° LABORAL - Padín
-  {id:13,ex:'41039',car:'AGUILAR RUBEN Y OTROS C/OSSE - SALA II',fue:'Laboral',juz:'3° Laboral - Padín',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'A RESOLVER DESDE EL 07/05.',ram:'',rdon:false},
-  {id:14,ex:'43215',car:'GUEGLIO PAEZ C/OSSE - SALA II',fue:'Laboral',juz:'3° Laboral - Padín',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'A RESOLVER DESDE EL 21/04.',ram:'',rdon:false},
-  {id:15,ex:'45585',car:'TEJADA ALEJANDRO Y OTROS C/OSSE',fue:'Laboral',juz:'3° Laboral - Padín',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'REDACTAR DEMANDA SOLO DE Sr. FERNÁNDEZ LEANDRO MAXIMILIANO.',ram:'',rdon:false},
-  {id:16,ex:'43543',car:'NIEVAS ALEJANDRO C/OSSE',fue:'Laboral',juz:'3° Laboral - Padín',est:'activa',ven:'',tv:'',tipo_aud:'inicial',pl:false,not:'Pedí que se fije fecha para celebrar audiencia inicial.',ram:'',rdon:false},
-  {id:17,ex:'952/24',car:'CABRERA DARIO C/ASOCIART',fue:'Laboral',juz:'3° Laboral - Padín',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Centeno presentó pericia con el 23,50%. Impugnaron pericia. Centeno tiene para contestar hasta el jueves 20/04.',ram:'',rdon:false},
-  {id:18,ex:'45684/L3',car:'MOLINA DIEGO C/OSSE - SALA I',fue:'Laboral',juz:'3° Laboral - Padín',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'Votos 1° Daroni, 2° Ibañez, 3° Quattropani.',ram:'',rdon:false},
-  {id:19,ex:'1645/25',car:'CASTRO GABRIELA C/ASOCIART - Med. Prep.',fue:'Laboral',juz:'3° Laboral - Padín',est:'activa',ven:'',tv:'',tipo_aud:'',pl:true,not:'ASOCIART se notificó el 28/04 de las inconstitucionalidades.',ram:'',rdon:false},
-  {id:20,ex:'1798/25',car:'PEREZ MARTIN C/GALENO ART',fue:'Laboral',juz:'3° Laboral - Padín',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Adjunté la CD dirigida a los liquidadores de Galeno.',ram:'',rdon:false},
-  {id:21,ex:'2251/25',car:'ALCAIDE HERMAN C/ASOCIART',fue:'Laboral',juz:'3° Laboral - Padín',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'El 21/04 se notificó por cédula la demanda a ASOCIART.',ram:'',rdon:false},
+  {id:13,ex:'41039',car:'AGUILAR RUBEN Y OTROS C/OSSE - SALA II',fue:'Laboral',juz:'3° Laboral - Padín María Gabriela',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'A RESOLVER DESDE EL 07/05.',ram:'',rdon:false},
+  {id:14,ex:'43215',car:'GUEGLIO PAEZ C/OSSE - SALA II',fue:'Laboral',juz:'3° Laboral - Padín María Gabriela',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'A RESOLVER DESDE EL 21/04.',ram:'',rdon:false},
+  {id:15,ex:'45585',car:'TEJADA ALEJANDRO Y OTROS C/OSSE',fue:'Laboral',juz:'3° Laboral - Padín María Gabriela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'REDACTAR DEMANDA SOLO DE Sr. FERNÁNDEZ LEANDRO MAXIMILIANO.',ram:'',rdon:false},
+  {id:16,ex:'43543',car:'NIEVAS ALEJANDRO C/OSSE',fue:'Laboral',juz:'3° Laboral - Padín María Gabriela',est:'activa',ven:'',tv:'',tipo_aud:'inicial',pl:false,not:'Pedí que se fije fecha para celebrar audiencia inicial.',ram:'',rdon:false},
+  {id:17,ex:'952/24',car:'CABRERA DARIO C/ASOCIART',fue:'Laboral',juz:'3° Laboral - Padín María Gabriela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Centeno presentó pericia con el 23,50%. Impugnaron pericia. Centeno tiene para contestar hasta el jueves 20/04.',ram:'',rdon:false},
+  {id:18,ex:'45684/L3',car:'MOLINA DIEGO C/OSSE - SALA I',fue:'Laboral',juz:'3° Laboral - Padín María Gabriela',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'Votos 1° Daroni, 2° Ibañez, 3° Quattropani.',ram:'',rdon:false},
+  {id:19,ex:'1645/25',car:'CASTRO GABRIELA C/ASOCIART - Med. Prep.',fue:'Laboral',juz:'3° Laboral - Padín María Gabriela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:true,not:'ASOCIART se notificó el 28/04 de las inconstitucionalidades.',ram:'',rdon:false},
+  {id:20,ex:'1798/25',car:'PEREZ MARTIN C/GALENO ART',fue:'Laboral',juz:'3° Laboral - Padín María Gabriela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Adjunté la CD dirigida a los liquidadores de Galeno.',ram:'',rdon:false},
+  {id:21,ex:'2251/25',car:'ALCAIDE HERMAN C/ASOCIART',fue:'Laboral',juz:'3° Laboral - Padín María Gabriela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'El 21/04 se notificó por cédula la demanda a ASOCIART.',ram:'',rdon:false},
   // 4° LABORAL - Soria
-  {id:22,ex:'43511',car:'MONDACA ARIEL C/OSSE - SALA II',fue:'Laboral',juz:'4° Laboral - Soria',est:'activa',ven:'2026-05-18',tv:'Audiencia de vista recursiva',tipo_aud:'recursiva',pl:false,not:'AUDIENCIA DE VISTA RECURSIVA: LUNES 18/05/2026 8.30 hs.',ram:'',rdon:false},
-  {id:23,ex:'45521',car:'GONZALEZ FABRICIO C/OSSE',fue:'Laboral',juz:'4° Laboral - Soria',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Esperar a que Daroni mande oficio a OSSE.',ram:'',rdon:false},
-  {id:24,ex:'1565/24',car:'PARDO GASTON C/OSSE',fue:'Laboral',juz:'4° Laboral - Soria',est:'activa',ven:'2026-06-16',tv:'Audiencia inicial',tipo_aud:'inicial',pl:false,not:'AUDIENCIA INICIAL MARTES 16 DE JUNIO - 8.30 HS.',ram:'',rdon:false},
-  {id:25,ex:'363/26',car:'FLORES QUIROGA C/ASOCIART - Med. Prep.',fue:'Laboral',juz:'4° Laboral - Soria',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Notificamos la demanda.',ram:'',rdon:false},
-  {id:26,ex:'365/26',car:'GONZALEZ ALEJANDRO C/EXPERTA ART',fue:'Laboral',juz:'4° Laboral - Soria',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'El 11/05 pedí que designen perito médico.',ram:'',rdon:false},
+  {id:22,ex:'43511',car:'MONDACA ARIEL C/OSSE - SALA II',fue:'Laboral',juz:'4° Laboral - Soria Federico Marcelo',est:'activa',ven:'2026-05-18',tv:'Audiencia de vista recursiva',tipo_aud:'recursiva',pl:false,not:'AUDIENCIA DE VISTA RECURSIVA: LUNES 18/05/2026 8.30 hs.',ram:'',rdon:false},
+  {id:23,ex:'45521',car:'GONZALEZ FABRICIO C/OSSE',fue:'Laboral',juz:'4° Laboral - Soria Federico Marcelo',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Esperar a que Daroni mande oficio a OSSE.',ram:'',rdon:false},
+  {id:24,ex:'1565/24',car:'PARDO GASTON C/OSSE',fue:'Laboral',juz:'4° Laboral - Soria Federico Marcelo',est:'activa',ven:'2026-06-16',tv:'Audiencia inicial',tipo_aud:'inicial',pl:false,not:'AUDIENCIA INICIAL MARTES 16 DE JUNIO - 8.30 HS.',ram:'',rdon:false},
+  {id:25,ex:'363/26',car:'FLORES QUIROGA C/ASOCIART - Med. Prep.',fue:'Laboral',juz:'4° Laboral - Soria Federico Marcelo',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Notificamos la demanda.',ram:'',rdon:false},
+  {id:26,ex:'365/26',car:'GONZALEZ ALEJANDRO C/EXPERTA ART',fue:'Laboral',juz:'4° Laboral - Soria Federico Marcelo',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'El 11/05 pedí que designen perito médico.',ram:'',rdon:false},
   // 5° LABORAL - Caballero
-  {id:27,ex:'994/25',car:'GODOY GABRIEL C/ASOCIART',fue:'Laboral',juz:'5° Laboral - Caballero',est:'activa',ven:'2026-05-15',tv:'Audiencia inicial',tipo_aud:'inicial',pl:false,not:'AUDIENCIA INICIAL para el día 15 de mayo de 2026 a las 9:30 horas. Le dieron al trabajador 6,12% de incapacidad.',ram:'',rdon:false},
-  {id:28,ex:'815/26',car:'FERNANDEZ GABRIELA C/ASOCIART',fue:'Laboral',juz:'5° Laboral - Caballero',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Demanda iniciada el 05/05/2026. Pagar sellado.',ram:'',rdon:false},
+  {id:27,ex:'994/25',car:'GODOY GABRIEL C/ASOCIART',fue:'Laboral',juz:'5° Laboral - Caballero Humberto Gonzalo',est:'activa',ven:'2026-05-15',tv:'Audiencia inicial',tipo_aud:'inicial',pl:false,not:'AUDIENCIA INICIAL para el día 15 de mayo de 2026 a las 9:30 horas. Le dieron al trabajador 6,12% de incapacidad.',ram:'',rdon:false},
+  {id:28,ex:'815/26',car:'FERNANDEZ GABRIELA C/ASOCIART',fue:'Laboral',juz:'5° Laboral - Caballero Humberto Gonzalo',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Demanda iniciada el 05/05/2026. Pagar sellado.',ram:'',rdon:false},
   // 6° LABORAL - Podestá de Oro
-  {id:29,ex:'43863',car:'LUCERO ELIO C/OSSE - Med. Prep.',fue:'Laboral',juz:'6° Laboral - Podestá de Oro',est:'activa',ven:'2026-08-06',tv:'Audiencia final',tipo_aud:'final',pl:false,not:'AUDIENCIA FINAL: Jueves 6 de agosto de 2026 a las 8:30 hs. Producir prueba: Oficio al Sindicato diligenciado 11/5. Cédula para perito contadora diligenciada 11/5.',ram:'',rdon:false},
-  {id:30,ex:'45420',car:'GONZALEZ DEBORA C/LA AGUILANA',fue:'Laboral',juz:'6° Laboral - Podestá de Oro',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Solicitamos que se reitere oficio.',ram:'',rdon:false},
-  {id:31,ex:'45538/L6',car:'PELAYES YESICA Y OTROS C/OLIVERA',fue:'Laboral',juz:'6° Laboral - Podestá de Oro',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Le pidieron a la codemandada una partida de nacimiento. Dejar que ellos muevan el expediente.',ram:'',rdon:false},
-  {id:32,ex:'1823/25',car:'LUCERO ELIO C/OSSE - Mediación',fue:'Laboral',juz:'6° Laboral - Podestá de Oro',est:'urgente',ven:'2026-05-14',tv:'Vence mediación',tipo_aud:'mediac',pl:true,not:'La demandada se notificó el 30/03. Se vence el 14/05.',ram:'',rdon:false},
-  {id:33,ex:'1935/25',car:'TEJADA MAURICIO C/ASOCIART',fue:'Laboral',juz:'6° Laboral - Podestá de Oro',est:'activa',ven:'2026-05-12',tv:'Plazo aceptación cargo perito médico',tipo_aud:'',pl:true,not:'El martes 12/05 vence el plazo para que el perito médico acepte el cargo.',ram:'',rdon:false},
-  {id:34,ex:'2044/25',car:'AGUILAR RUBEN C/OSSE - Med. Prep.',fue:'Laboral',juz:'6° Laboral - Podestá de Oro',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Armar demanda, ya tenemos todo.',ram:'',rdon:false},
-  {id:35,ex:'600/26',car:'LUNA JULIO C/OSSE - Med. Prep.',fue:'Laboral',juz:'6° Laboral - Podestá de Oro',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Le pase el oficio firmado a Yani para que lo envíe.',ram:'',rdon:false},
+  {id:29,ex:'43863',car:'LUCERO ELIO C/OSSE - Med. Prep.',fue:'Laboral',juz:'6° Laboral - Podestá de Oro Ana Guillermina',est:'activa',ven:'2026-08-06',tv:'Audiencia final',tipo_aud:'final',pl:false,not:'AUDIENCIA FINAL: Jueves 6 de agosto de 2026 a las 8:30 hs. Producir prueba: Oficio al Sindicato diligenciado 11/5. Cédula para perito contadora diligenciada 11/5.',ram:'',rdon:false},
+  {id:30,ex:'45420',car:'GONZALEZ DEBORA C/LA AGUILANA',fue:'Laboral',juz:'6° Laboral - Podestá de Oro Ana Guillermina',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Solicitamos que se reitere oficio.',ram:'',rdon:false},
+  {id:31,ex:'45538/L6',car:'PELAYES YESICA Y OTROS C/OLIVERA',fue:'Laboral',juz:'6° Laboral - Podestá de Oro Ana Guillermina',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Le pidieron a la codemandada una partida de nacimiento. Dejar que ellos muevan el expediente.',ram:'',rdon:false},
+  {id:32,ex:'1823/25',car:'LUCERO ELIO C/OSSE - Mediación',fue:'Laboral',juz:'6° Laboral - Podestá de Oro Ana Guillermina',est:'urgente',ven:'2026-05-14',tv:'Vence mediación',tipo_aud:'mediac',pl:true,not:'La demandada se notificó el 30/03. Se vence el 14/05.',ram:'',rdon:false},
+  {id:33,ex:'1935/25',car:'TEJADA MAURICIO C/ASOCIART',fue:'Laboral',juz:'6° Laboral - Podestá de Oro Ana Guillermina',est:'activa',ven:'2026-05-12',tv:'Plazo aceptación cargo perito médico',tipo_aud:'',pl:true,not:'El martes 12/05 vence el plazo para que el perito médico acepte el cargo.',ram:'',rdon:false},
+  {id:34,ex:'2044/25',car:'AGUILAR RUBEN C/OSSE - Med. Prep.',fue:'Laboral',juz:'6° Laboral - Podestá de Oro Ana Guillermina',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Armar demanda, ya tenemos todo.',ram:'',rdon:false},
+  {id:35,ex:'600/26',car:'LUNA JULIO C/OSSE - Med. Prep.',fue:'Laboral',juz:'6° Laboral - Podestá de Oro Ana Guillermina',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Le pase el oficio firmado a Yani para que lo envíe.',ram:'',rdon:false},
   // CIVIL
-  {id:36,ex:'178569',car:'RAMIREZ HUGO - Sucesorio',fue:'Civil',juz:'1° Civil - Rollán',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Hacer transferencia del auto.',ram:'',rdon:false},
-  {id:37,ex:'186137',car:'VERA C/NAVEDA - Ordinario',fue:'Civil',juz:'1° Civil - Rollán',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'A resolver.',ram:'',rdon:false},
-  {id:38,ex:'52778',car:'MAYORGA ALBERTO - Sucesorio',fue:'Civil',juz:'3° Civil - Arancibia',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Se regularon honorarios a favor de la Dra. Salas.',ram:'',rdon:false},
-  {id:39,ex:'177901',car:'FIGUEROA C/RAMOS - Resolución de Contrato',fue:'Civil',juz:'4° Civil - Conti Picco',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Pedir avalúo fiscal en rentas del inmueble a subastar.',ram:'',rdon:false},
-  {id:40,ex:'185881',car:'OLIVENCIA Y OTROS C/STAFF NEGOCIOS',fue:'Civil',juz:'4° Civil - Conti Picco',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Esperar que clausuren término de prueba.',ram:'',rdon:false},
-  {id:41,ex:'93192',car:'PULIDO Y TOLEDO C/DECIO - Usucapión',fue:'Civil',juz:'4° Civil - Conti Picco',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'La semana próxima iniciar el proceso de restricción a la capacidad de la actora.',ram:'',rdon:false},
-  {id:42,ex:'812/26',car:'MUÑOZ MAS - Diligencias Preliminares',fue:'Civil',juz:'4° Civil - Conti Picco',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Armar demanda y presentarla.',ram:'',rdon:false},
-  {id:43,ex:'275/26',car:'ONTIVERO - Beneficio de Litigar sin Gastos',fue:'Civil',juz:'5° Civil',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Presentar demanda hoy.',ram:'',rdon:false},
-  {id:44,ex:'110920',car:'ARUSTIZIA FELIX - Sucesorio',fue:'Civil',juz:'8° Civil - Otiñano',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Valor del bien U$S 40.000. Instar a que pongan el cartel de se vende.',ram:'',rdon:false},
-  {id:45,ex:'566/26',car:'FLORES SANTIAGO - Diligencias Preliminares',fue:'Civil',juz:'8° Civil - Otiñano',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'YA TENEMOS EL SUMARIO PENAL. Pedir el sellado para flores, para iniciar beneficio de litigar sin gastos.',ram:'',rdon:false},
-  {id:46,ex:'186419',car:'VALDEZ C/GARCIA - Ordinario',fue:'Civil',juz:'9° Civil - Oritja',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'A resolver en definitiva desde el 13/03.',ram:'',rdon:false},
-  {id:47,ex:'1249/25',car:'CORTEZ Y RODRIGUEZ - BLSG',fue:'Civil',juz:'9° Civil - Oritja',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Pruebas: Reg. Inmob. (falta que conteste sobre Rodriguez), Rentas (preguntar si tiene auto dominio 914 GUS). Falta: Declaración jurada de ingresos. Notificar por cédula el BLSG a los demandados.',ram:'',rdon:false},
-  {id:48,ex:'1506/25',car:'CORTEZ Y RODRIGUEZ C/LARREA - Ordinario',fue:'Civil',juz:'9° Civil - Oritja',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Oficio a secretaría electoral DILIGENCIADO 4/5.',ram:'',rdon:false},
+  {id:36,ex:'178569',car:'RAMIREZ HUGO - Sucesorio',fue:'Civil',juz:'1° Civil - Rollán Héctor',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Hacer transferencia del auto.',ram:'',rdon:false},
+  {id:37,ex:'186137',car:'VERA C/NAVEDA - Ordinario',fue:'Civil',juz:'1° Civil - Rollán Héctor',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'A resolver.',ram:'',rdon:false},
+  {id:38,ex:'52778',car:'MAYORGA ALBERTO - Sucesorio',fue:'Civil',juz:'3° Civil - Arancibia Luis César',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Se regularon honorarios a favor de la Dra. Salas.',ram:'',rdon:false},
+  {id:39,ex:'177901',car:'FIGUEROA C/RAMOS - Resolución de Contrato',fue:'Civil',juz:'4° Civil - Conti Picco Humberto J.',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Pedir avalúo fiscal en rentas del inmueble a subastar.',ram:'',rdon:false},
+  {id:40,ex:'185881',car:'OLIVENCIA Y OTROS C/STAFF NEGOCIOS',fue:'Civil',juz:'4° Civil - Conti Picco Humberto J.',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Esperar que clausuren término de prueba.',ram:'',rdon:false},
+  {id:41,ex:'93192',car:'PULIDO Y TOLEDO C/DECIO - Usucapión',fue:'Civil',juz:'4° Civil - Conti Picco Humberto J.',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'La semana próxima iniciar el proceso de restricción a la capacidad de la actora.',ram:'',rdon:false},
+  {id:42,ex:'812/26',car:'MUÑOZ MAS - Diligencias Preliminares',fue:'Civil',juz:'4° Civil - Conti Picco Humberto J.',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Armar demanda y presentarla.',ram:'',rdon:false},
+  {id:43,ex:'275/26',car:'ONTIVERO - Beneficio de Litigar sin Gastos',fue:'Civil',juz:'5° Civil - Farina Roberto Pablo',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Presentar demanda hoy.',ram:'',rdon:false},
+  {id:44,ex:'110920',car:'ARUSTIZIA FELIX - Sucesorio',fue:'Civil',juz:'8° Civil - Otiñano Walter Ramón',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Valor del bien U$S 40.000. Instar a que pongan el cartel de se vende.',ram:'',rdon:false},
+  {id:45,ex:'566/26',car:'FLORES SANTIAGO - Diligencias Preliminares',fue:'Civil',juz:'8° Civil - Otiñano Walter Ramón',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'YA TENEMOS EL SUMARIO PENAL. Pedir el sellado para flores, para iniciar beneficio de litigar sin gastos.',ram:'',rdon:false},
+  {id:46,ex:'186419',car:'VALDEZ C/GARCIA - Ordinario',fue:'Civil',juz:'9° Civil - Oritja Pablo Nicolás',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'A resolver en definitiva desde el 13/03.',ram:'',rdon:false},
+  {id:47,ex:'1249/25',car:'CORTEZ Y RODRIGUEZ - BLSG',fue:'Civil',juz:'9° Civil - Oritja Pablo Nicolás',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Pruebas: Reg. Inmob. (falta que conteste sobre Rodriguez), Rentas (preguntar si tiene auto dominio 914 GUS). Falta: Declaración jurada de ingresos. Notificar por cédula el BLSG a los demandados.',ram:'',rdon:false},
+  {id:48,ex:'1506/25',car:'CORTEZ Y RODRIGUEZ C/LARREA - Ordinario',fue:'Civil',juz:'9° Civil - Oritja Pablo Nicolás',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Oficio a secretaría electoral DILIGENCIADO 4/5.',ram:'',rdon:false},
   // USUCAPIONES → fuero Civil, mismo agrupamiento por juzgado
-  {id:49,ex:'188774',car:'GOMEZ ANTONIO - Usucapión',fue:'Civil',juz:'1° Civil - Rollán',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Imprimir y firmar oficio para el registro civil.',ram:'',rdon:false},
-  {id:50,ex:'42/26',car:'HERRERA JACINTA - Usucapión 1°',fue:'Civil',juz:'1° Civil - Rollán',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'N.C. 04-54-180360. Falta redondear los hechos. Falta informe de dominio. Falta avalúo. Falta pago de sellado.',ram:'',rdon:false},
-  {id:51,ex:'188044',car:'HERRERA JACINTA - Usucapión 3°',fue:'Civil',juz:'3° Civil - Arancibia',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'El 05/05 presenté alegato.',ram:'',rdon:false},
-  {id:52,ex:'190343',car:'TELLO RODOLFO - Usucapión 5°',fue:'Civil',juz:'5° Civil',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'DTR aceptada!!!',ram:'',rdon:false},
-  {id:53,ex:'43/26',car:'HERRERA JACINTA - Usucapión 9°',fue:'Civil',juz:'9° Civil - Oritja',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'N.C. 04-54-200310. Falta redondear los hechos. Titulares CANO-GONZALEZ-FARJAT. Falta avalúo. Falta pago de sellado.',ram:'',rdon:false},
-  {id:54,ex:'682/25',car:'FIGUEROA JUAN C/ - Usucapión Contencioso Adm.',fue:'Civil',juz:'Contencioso Administrativo',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Se clausuró el término de prueba. El 04/05 retirar el expediente para alegar. Chequear si en el estudio tenemos la documental original y digitalizar.',ram:'',rdon:false},
+  {id:49,ex:'188774',car:'GOMEZ ANTONIO - Usucapión',fue:'Civil',juz:'1° Civil - Rollán Héctor',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Imprimir y firmar oficio para el registro civil.',ram:'',rdon:false},
+  {id:50,ex:'42/26',car:'HERRERA JACINTA - Usucapión 1°',fue:'Civil',juz:'1° Civil - Rollán Héctor',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'N.C. 04-54-180360. Falta redondear los hechos. Falta informe de dominio. Falta avalúo. Falta pago de sellado.',ram:'',rdon:false},
+  {id:51,ex:'188044',car:'HERRERA JACINTA - Usucapión 3°',fue:'Civil',juz:'3° Civil - Arancibia Luis César',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'El 05/05 presenté alegato.',ram:'',rdon:false},
+  {id:52,ex:'190343',car:'TELLO RODOLFO - Usucapión 5°',fue:'Civil',juz:'5° Civil - Farina Roberto Pablo',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'DTR aceptada!!!',ram:'',rdon:false},
+  {id:53,ex:'43/26',car:'HERRERA JACINTA - Usucapión 9°',fue:'Civil',juz:'9° Civil - Oritja Pablo Nicolás',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'N.C. 04-54-200310. Falta redondear los hechos. Titulares CANO-GONZALEZ-FARJAT. Falta avalúo. Falta pago de sellado.',ram:'',rdon:false},
+  {id:54,ex:'682/25',car:'FIGUEROA JUAN C/ - Usucapión Contencioso Adm.',fue:'Civil',juz:'Contencioso Administrativo - Tettamanti Adriana Verónica',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Se clausuró el término de prueba. El 04/05 retirar el expediente para alegar. Chequear si en el estudio tenemos la documental original y digitalizar.',ram:'',rdon:false},
   // PAZ LETRADO
-  {id:55,ex:'19951/25',car:'SARMIENTO C/CHICALA - Desalojo',fue:'Juzgado de Paz',juz:'2° Paz Letrado Capital',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Presentar demanda cobro de pesos.',ram:'',rdon:false},
-  {id:56,ex:'6832/25',car:'BUSTOS RODOLFO - Sucesorio (Ana María Bustos)',fue:'Juzgado de Paz',juz:'7° Paz Letrado Capital',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'El 06/05/2025 se rechazó el trámite conjunto de Aguero Azucena por estar divorciados. Bustos Rodolfo se volvió a casar en 2003 con Manuela Aguilera. Mandar cédulas a María Azucena, Jorge Ariel Bustos y Aguilera Manuela.',ram:'',rdon:false},
-  {id:57,ex:'48/21',car:'FIGUEROA JUAN CARLOS - Sucesorio',fue:'Juzgado de Paz',juz:'Paz Letrado Albardón',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Notificar herederos - lejos - iniciar sucesión de la Sra.',ram:'',rdon:false},
-  {id:58,ex:'341/21',car:'REINOSO MARCOS Y REINOSO JUSTO - Sucesorio',fue:'Juzgado de Paz',juz:'Paz Letrado Albardón',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'Está a resolver la ampliación de la declaratoria de herederos.',ram:'',rdon:false},
-  {id:59,ex:'24458/25',car:'REINOSO IGNACIA - Sucesión Ab Intestato',fue:'Juzgado de Paz',juz:'Paz Letrado Albardón',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Se retiraron y publicaron Edictos.',ram:'',rdon:false},
-  {id:60,ex:'31815/24',car:'ROBLE Y FLORES - Sucesorio',fue:'Juzgado de Paz',juz:'Paz Letrado Chimbas',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Hay que ratificar personalmente el acuerdo particionario. Evaluar la posibilidad de certificación notarial.',ram:'',rdon:false},
-  {id:61,ex:'15086/25',car:'CASTILLO DANIEL - Sucesorio',fue:'Juzgado de Paz',juz:'Paz Letrado Pocito',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'El 27/04 pedí pase a resolver.',ram:'',rdon:false},
+  {id:55,ex:'19951/25',car:'SARMIENTO C/CHICALA - Desalojo',fue:'Juzgado de Paz',juz:'2° Paz Capital - Graffigna Fernando A.',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Presentar demanda cobro de pesos.',ram:'',rdon:false},
+  {id:56,ex:'6832/25',car:'BUSTOS RODOLFO - Sucesorio (Ana María Bustos)',fue:'Juzgado de Paz',juz:'7° Paz Capital - Zuliani Gerardo',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'El 06/05/2025 se rechazó el trámite conjunto de Aguero Azucena por estar divorciados. Bustos Rodolfo se volvió a casar en 2003 con Manuela Aguilera. Mandar cédulas a María Azucena, Jorge Ariel Bustos y Aguilera Manuela.',ram:'',rdon:false},
+  {id:57,ex:'48/21',car:'FIGUEROA JUAN CARLOS - Sucesorio',fue:'Juzgado de Paz',juz:'Paz Letrado Albardón - Oribe Oliveros Jorge Antonio',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Notificar herederos - lejos - iniciar sucesión de la Sra.',ram:'',rdon:false},
+  {id:58,ex:'341/21',car:'REINOSO MARCOS Y REINOSO JUSTO - Sucesorio',fue:'Juzgado de Paz',juz:'Paz Letrado Albardón - Oribe Oliveros Jorge Antonio',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'Está a resolver la ampliación de la declaratoria de herederos.',ram:'',rdon:false},
+  {id:59,ex:'24458/25',car:'REINOSO IGNACIA - Sucesión Ab Intestato',fue:'Juzgado de Paz',juz:'Paz Letrado Albardón - Oribe Oliveros Jorge Antonio',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Se retiraron y publicaron Edictos.',ram:'',rdon:false},
+  {id:60,ex:'31815/24',car:'ROBLE Y FLORES - Sucesorio',fue:'Juzgado de Paz',juz:'Paz Letrado Chimbas - Cattani Hebe Graciela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Hay que ratificar personalmente el acuerdo particionario. Evaluar la posibilidad de certificación notarial.',ram:'',rdon:false},
+  {id:61,ex:'15086/25',car:'CASTILLO DANIEL - Sucesorio',fue:'Juzgado de Paz',juz:'Paz Letrado Pocito - Moya Felipe M. / Assandri Laura Cecilia',est:'activa',ven:'',tv:'',tipo_aud:'resolver',pl:false,not:'El 27/04 pedí pase a resolver.',ram:'',rdon:false},
   // FAMILIA
-  {id:62,ex:'10299/25',car:'YOSSA AGUILAR Y QUINTEROS - Homologación',fue:'Familia',juz:'1° Familia - López',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Repuse sellado (cobrarle $9.310). Pedir avalúo fiscal en rentas de: Casa habitación Barrio Colón, Lote N° 2, Capital. Nomenclatura: 01-20-788383. Calcular el 0,6% del sellado.',ram:'',rdon:false},
-  {id:63,ex:'19700/C',car:'FERNANDEZ DE FIGUEROA - Sucesorio',fue:'Familia',juz:'2° Familia - Romero',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'El 23/04 pedí que se designe de oficio perito partidor.',ram:'',rdon:false},
-  {id:64,ex:'2433/24',car:'QUIROGA C/HEREDIA - Modificación Régimen Comunicación',fue:'Familia',juz:'2° Familia - Romero',est:'activa',ven:'',tv:'',tipo_aud:'mediac',pl:false,not:'Alexis fue citado por el gabinete técnico. Esperar a ver que propone la otra parte a la mediadora.',ram:'',rdon:false},
-  {id:65,ex:'530/25',car:'GOMEZ C/CORREA - Liquidación Comunidad de Ganancias',fue:'Familia',juz:'2° Familia - Romero',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Contestamos traslado.',ram:'',rdon:false},
-  {id:66,ex:'9307/25',car:'FRÍAS C/CASTILLO - Filiación Post Mortem',fue:'Familia',juz:'4° Familia - Valdez',est:'activa',ven:'2026-05-11',tv:'Audiencia de conciliación',tipo_aud:'concil',pl:false,not:'AUDIENCIA DE CONCILIACIÓN - LUNES 11/05 8 HS.',ram:'',rdon:false},
+  {id:62,ex:'10299/25',car:'YOSSA AGUILAR Y QUINTEROS - Homologación',fue:'Familia',juz:'1° Familia - López Marianela',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Repuse sellado (cobrarle $9.310). Pedir avalúo fiscal en rentas de: Casa habitación Barrio Colón, Lote N° 2, Capital. Nomenclatura: 01-20-788383. Calcular el 0,6% del sellado.',ram:'',rdon:false},
+  {id:63,ex:'19700/C',car:'FERNANDEZ DE FIGUEROA - Sucesorio',fue:'Familia',juz:'2° Familia - Romero Silvana',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'El 23/04 pedí que se designe de oficio perito partidor.',ram:'',rdon:false},
+  {id:64,ex:'2433/24',car:'QUIROGA C/HEREDIA - Modificación Régimen Comunicación',fue:'Familia',juz:'2° Familia - Romero Silvana',est:'activa',ven:'',tv:'',tipo_aud:'mediac',pl:false,not:'Alexis fue citado por el gabinete técnico. Esperar a ver que propone la otra parte a la mediadora.',ram:'',rdon:false},
+  {id:65,ex:'530/25',car:'GOMEZ C/CORREA - Liquidación Comunidad de Ganancias',fue:'Familia',juz:'2° Familia - Romero Silvana',est:'activa',ven:'',tv:'',tipo_aud:'',pl:false,not:'Contestamos traslado.',ram:'',rdon:false},
+  {id:66,ex:'9307/25',car:'FRÍAS C/CASTILLO - Filiación Post Mortem',fue:'Familia',juz:'4° Familia - Valdez Marisa',est:'activa',ven:'2026-05-11',tv:'Audiencia de conciliación',tipo_aud:'concil',pl:false,not:'AUDIENCIA DE CONCILIACIÓN - LUNES 11/05 8 HS.',ram:'',rdon:false},
 ];
 const G0=[
   {id:1,f:'2025-06-23',p:'Figueroa Hector',m:28476.60,q:'JP',o:'Anotación RGI'},
@@ -1050,40 +1163,49 @@ function desconectarSync(){
 function niOn(id){document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));const el=document.getElementById('ni-'+id);if(el)el.classList.add('on');}
 function showRegLayout(v){
   document.getElementById('panel-reg-wrap').style.display=v?'flex':'none';
-  ['extrajudiciales','audiencias','gastos','nueva','config'].forEach(p=>{
-    document.getElementById('panel-'+p).classList.toggle('on',false);
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas'].forEach(p=>{
+    document.getElementById('panel-'+p).classList.remove('on');
   });
 }
 function showOtherPanel(id){
   document.getElementById('panel-reg-wrap').style.display='none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas'].forEach(p=>{
     document.getElementById('panel-'+p).classList.toggle('on',p===id);
   });
 }
 function goR(){filtroF=null;showRegLayout(true);niOn('reg');document.getElementById('ptitle').textContent='Registro de causas';renderBan();renderR();}
 function goF(f){filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vence mañana'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas'};
   document.getElementById('ptitle').textContent=t[p]||p;
   showOtherPanel(p);
-  niOn({extrajudiciales:'ext',audiencias:'aud',gastos:'gas',nueva:'nue',config:'cfg','vencemañana':'vmp'}[p]||p);
+  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her'}[p]||p);
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
-  if(p==='audiencias')renderCal();
+  if(p==='audiencias'){sincTodasAudiencias();renderCal();}
   if(p==='extrajudiciales')renderExt();
   if(p==='vencemañana')renderVMP();
+  if(p==='turnero')renderTurnos();
 }
-function swV(v){curView=v;['reg','ale','ven','ram'].forEach(x=>{document.getElementById('view-'+x).classList.toggle('on',x===v);document.getElementById('tab-'+x).classList.toggle('on',x===v);});if(v==='ale')renderAle();if(v==='ven')renderVen();if(v==='ram')renderRam();}
+function swV(v){curView=v;['reg','ale','ven','ram','resolver'].forEach(x=>{const ve=document.getElementById('view-'+x);if(ve)ve.classList.toggle('on',x===v);});const ramBtn=document.getElementById('btn-ram-fil');if(ramBtn)ramBtn.classList.toggle('on',v==='ram');if(v==='ale')renderAle();if(v==='ven')renderVen();if(v==='ram')renderRam();if(v==='resolver')renderResolver();}
 
 function updBadges(){
-  const n=causas.filter(c=>c.ven&&dLeft(c.ven)<=7&&dLeft(c.ven)>=0).length;
-  document.getElementById('abadge').textContent=n;
   const r=causas.filter(c=>c.ram&&!c.rdon).length+extraj.filter(e=>e.ram&&!e.rdon).length;
-  document.getElementById('rbadge').textContent=r;
+  const rbEl=document.getElementById('rbadge');if(rbEl)rbEl.textContent=r;
   document.getElementById('cnt-ext').textContent=extraj.filter(e=>e.est!=='cerrado').length;
-  const vmp=causas.filter(c=>c.ven===manaISO()&&c.est!=='archivada').length;
+  const cntTur=document.getElementById('cnt-tur');
+  if(cntTur){const hoyTur=turnos.filter(t=>t.f===isoD(HOY)).length;cntTur.textContent=hoyTur;cntTur.style.display=hoyTur?'':'none';}
+  const hoy5=isoD(HOY);
+  const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
+  const vmpProx=causas.filter(c=>c.ven&&c.ven>=hoy5&&c.ven<=en5&&c.est!=='archivada'&&c.pl);
+  const vmp=vmpProx.length;
   const vmpEl=document.getElementById('cnt-vmp');
   if(vmpEl){vmpEl.textContent=vmp;vmpEl.style.display=vmp?'':'none';}
+  // pulse si alguno vence hoy o mañana
+  const hayUrgente=vmpProx.some(c=>{const d=Math.round((new Date(c.ven+' 12:00')-new Date(hoy5+' 12:00'))/(1000*60*60*24));return d<=1;});
+  const btn=document.getElementById('vmp-btn-inner');
+  if(btn)btn.classList.toggle('vmp-urgente',hayUrgente);
+  renderBannerAlertas();
 }
 function updProgress(){
   const tot=causas.filter(c=>c.est!=='archivada').length;
@@ -1095,30 +1217,38 @@ function updProgress(){
   }
 
 // ═══════════════════════════════════════════════
-// PANEL LATERAL VENCIMIENTOS MAÑANA
+// PANEL LATERAL VENCIMIENTOS PRÓXIMOS
 // ═══════════════════════════════════════════════
 function renderVMP(){
-  const man=manaISO();
-  const vm=causas.filter(c=>c.ven===man&&c.est!=="archivada").sort((a,b)=>a.car>b.car?1:-1);
-  const lbl=document.getElementById("vmp-fecha-label");
-  if(lbl)lbl.textContent="Fecha: "+fmtS(man);
-  const el=document.getElementById("vmp-list");
+  const hoy=isoD(HOY);
+  const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
+  const vm=causas.filter(c=>c.ven&&c.ven>=hoy&&c.ven<=en5&&c.est!=='archivada'&&c.pl)
+    .sort((a,b)=>a.ven>b.ven?1:a.ven<b.ven?-1:0);
+  const el=document.getElementById('vmp-list');
   if(!el)return;
   if(!vm.length){
-    el.innerHTML='<div style="color:#888;text-align:center;padding:30px;font-size:13px">Sin vencimientos mañana ✓<br><small style="color:#bbb">No hay causas que venzan '+fmtS(man)+'</small></div>';
+    el.innerHTML='<div style="color:#888;text-align:center;padding:30px;font-size:13px">✓ Sin vencimientos en los próximos 5 días</div>';
     return;
   }
   el.innerHTML=vm.map(c=>{
+    const dias=Math.round((new Date(c.ven+' 12:00')-new Date(hoy+' 12:00'))/(1000*60*60*24));
+    const label=dias===0?'HOY':dias===1?'Mañana':`En ${dias} días`;
+    const color=dias===0?'#e24b4a':dias<=2?'#e67e22':'#b84d00';
+    const bg=dias===0?'#fff0f0':dias<=2?'#fff7f0':'#fffbe6';
+    const border=dias===0?'#ffb3b3':dias<=2?'#ffd09e':'#ffe066';
     const ti=c.tipo_aud&&tInfo(c.tipo_aud);
-    return '<div style="padding:10px 12px;border-radius:6px;border:1px solid var(--red-b);background:var(--red-l);margin-bottom:6px">'
-      +'<div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:3px">'+c.car+(c.pl?'<span class="pdot"></span>':'')+'</div>'
-      +'<div style="font-size:11px;color:#a00;font-weight:600">📅 '+fmtS(c.ven)+'</div>'
-      +(c.tv?'<div style="font-size:10px;color:#c44;margin-top:2px">'+c.tv+'</div>':'')
-      +(ti?'<div style="margin-top:3px"><span style="background:'+ti.col+';color:#fff;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700">'+ti.lbl+'</span></div>':'')
-      +'<div style="font-size:10px;color:#888;margin-top:3px">'+c.juz+' · Expte. '+c.ex+'</div>'
-      +(c.not?'<div style="font-size:11px;color:#555;margin-top:4px;background:#fff;padding:4px 7px;border-radius:4px;border-left:3px solid var(--red-b)">'+c.not+'</div>':'')
-      +'</div>';
-  }).join("");
+    return `<div style="padding:10px 12px;border-radius:6px;border:1px solid ${border};background:${bg};margin-bottom:6px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:10px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:.5px">${label}</span>
+        <span style="font-size:10px;color:#aaa">${c.ven.split('-').reverse().join('/')}</span>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:2px">${c.car}${c.pl?'<span class="pdot"></span>':''}</div>
+      ${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}
+      ${ti?`<div style="margin-top:3px"><span style="background:${ti.col};color:#fff;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700">${ti.lbl}</span></div>`:''}
+      <div style="font-size:10px;color:#aaa;margin-top:3px">${c.juz} · ${c.ex}</div>
+      ${c.not?`<div style="font-size:11px;color:#555;margin-top:4px;background:#fff8;padding:4px 7px;border-radius:4px;border-left:3px solid ${border}">${c.not}</div>`:''}
+    </div>`;
+  }).join('');
 }
 function renderVencPanel(){renderVMP();}
 
@@ -1197,8 +1327,8 @@ function clearRam(id){
   refRow(id);updBadges();
   if(curView==='ram')renderRam();
 }
-function togRam(id){const c=causas.find(x=>x.id===id);if(!c)return;c.rdon=!c.rdon;sC();refRow(id);updBadges();if(curView==='ram')renderRam();}
-function togRamE(id){const e=extraj.find(x=>x.id===id);if(!e)return;e.rdon=!e.rdon;sE();renderExt();updBadges();if(curView==='ram')renderRam();}
+function togRam(id){const c=causas.find(x=>x.id===id);if(!c)return;c.ram='';c.rdon=false;sC();refRow(id);updBadges();if(curView==='ram')renderRam();}
+function togRamE(id){const e=extraj.find(x=>x.id===id);if(!e)return;e.ram='';e.rdon=false;sE();renderExt();updBadges();if(curView==='ram')renderRam();}
 function borrarRam(id,e){
   e.stopPropagation();
   if(!confirm('¿Borrar la tarea de Ramiro de esta causa?'))return;
@@ -1227,13 +1357,12 @@ function rowHTML(c){
   const vbc=vBtnCls(c),vbt=vBtnTxt(c);
   const vbFull=vbc.startsWith('vbtn ')?vbc:'vbtn '+vbc;
   return`<div class="cr ${cls}" id="cr-${c.id}">
-    <div class="chk-col" onclick="togMov(${c.id})"><div class="chkbox${on?' on':''}">${on?'✓':''}</div></div>
+    <div class="chk-col" data-mov="${c.id}"><div class="chkbox${on?' on':''}">${on?'✓':''}</div></div>
     <div class="ci">
       <div class="ci-car">${c.car}${c.pl?'<span class="pdot"></span>':''}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':c.ram&&c.rdon?'<span class="rtag done">⭐ ✓</span>':''}
         <span class="${exCls(c)}"> · ${c.ex}</span>
       </div>
       <div class="ci-tv-tag">${(()=>{
-        // Audiencia agendada
         if(c.tipo_aud&&TIPOS[c.tipo_aud]){
           const t=TIPOS[c.tipo_aud];
           let info=c.tipo_aud==='resolver'?'A resolver':'Audiencia '+t.lbl;
@@ -1242,13 +1371,28 @@ function rowHTML(c){
           if(c.aud_mod)info+=' · '+c.aud_mod;
           return info;
         }
-        // Oficio/cedula (para saber)
-        if(c.tipo_venc==='info'&&c.tv)return c.tv;
-        // Vencimiento propio
-        if(c.tipo_venc==='vencimiento'&&c.ven)return '⏰ Vence '+fmtS(c.ven)+(c.tv?' · '+c.tv:'');
+        if(!c.ven)return'';
+        const d=dLeft(c.ven);
+        const esMio=c.tipo_venc==='vencimiento'||c.pl;
+        let tag='';
+        if(d<0){
+          tag=esMio
+            ?` <span style="color:#c0392b;font-size:10px;font-weight:600">✓ plazo vencido</span>`
+            :` <span style="color:#27ae60;font-size:10px;font-weight:600">✓ plazo vencido</span>`;
+        } else if(d===0){
+          tag=` <span style="color:#aaa;font-size:10px">· vence hoy</span>`;
+        } else {
+          tag=` <span style="color:#ccc;font-size:10px">· falta ${d}d</span>`;
+        }
+        const tvTxt=c.tv?'Plazo para '+c.tv:'';
+        if(c.tipo_venc==='info'){
+          const plazo=c.tv_plazo||c.tv||'';
+          return plazo?`📎 Plazo para ${plazo} · vence ${fmtS(c.ven)}${tag}`:'';
+        }
+        if(c.ven)return(esMio?'⏰ ':'')+(c.tv?'Plazo para '+c.tv+' · vence ':'vence ')+fmtS(c.ven)+tag;
         return '';
       })()}</div>
-      <div class="${(c.tipo_aud||(c.ven&&c.tv))?'ci-not-h':'ci-not'}" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id})" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))?'style="display:none"':''}>${c.not||'—'}</div>
+      <div class="${(c.tipo_aud||(c.ven&&c.tv))?'ci-not-h':'ci-not'}" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))?'style="display:none"':''}>${c.not||'—'}</div>
       ${c.aud_obs?`<div class="ci-aud-obs-show" onclick="editAudObs(${c.id},event)">${c.aud_obs}</div>`:''}
       ${rNotaHTML(c,false)}
     </div>
@@ -1262,9 +1406,9 @@ function rowHTML(c){
         <span class="hl" onclick="editRam(${c.id},event)" title="Tarea Ramiro">⭐</span>
         <span class="hl" onclick="abrirPlazo(${c.id})" title="Calcular plazo">⏱</span>
         <span class="hl" onclick="editAudObs(${c.id},event)" title="Agregar comentario" style="font-size:14px;font-weight:900;color:#444;padding:0 3px">+</span>
-        <span class="hl" onclick="limpiarCausa(${c.id},event)" title="Limpiar todo" style="font-size:12px;color:#c00">🗑</span>
       </div>
       <div class="cpop" id="cp-${c.id}" onclick="event.stopPropagation()">
+        <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${c.car}">${c.car}</div>
         <div class="cp-hdr"><div class="cp-nav" onclick="navCP(${c.id},-1,event)">‹</div><span class="cp-mes">—</span><div class="cp-nav" onclick="navCP(${c.id},1,event)">›</div></div>
         <div class="cp-grid" id="cpg-${c.id}"></div>
         <hr class="cp-sep">
@@ -1307,13 +1451,23 @@ function rowHTML(c){
             </select>
           </div>
         </div>
-        <input type="hidden" id="cptv-${c.id}" value="${c.tv||''}">
+        <!-- CAMPO VENCIMIENTO -->
+        <div id="cp-campo-ven-${c.id}" style="margin-bottom:8px">
+          <div class="cp-lbl">Plazo para: <span style="color:#e24b4a">*</span></div>
+          <input class="fi" type="text" id="cptv-${c.id}" value="${c.tv||''}" placeholder="que nos paguen, que conteste..." style="font-size:11px;padding:4px 7px">
+        </div>
+        <!-- CAMPOS PARA SABER -->
+        <div id="cp-campo-info-${c.id}" style="display:none;margin-bottom:8px">
+          <div class="cp-lbl">Plazo para: <span style="color:#e24b4a">*</span></div>
+          <input class="fi" type="text" id="cp-plazo-${c.id}" value="${c.tv_plazo||c.tv||''}" placeholder="que OSSE conteste, que el perito acepte..." style="font-size:11px;padding:4px 7px">
+        </div>
         <label class="cp-plazo"><input type="checkbox" id="cppl-${c.id}" style="width:13px;height:13px"> Tiene plazo activo</label>
         <div class="cp-btns"><button class="cp-save" onclick="saveCP(${c.id},event)">✓ Guardar</button><button class="cp-cl" onclick="clearV(${c.id},event)">Sin fecha</button></div>
         <hr class="cp-sep">
         <div style="display:flex;gap:5px">
           <button class="cp-cl" onclick="showHist(${c.id},event)" style="flex:1;font-size:10px">🕐 Historial</button>
-          <button class="cp-cl" onclick="limpiarCausa(${c.id},event)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0">🗑 Limpiar todo</button>
+          <button class="cp-cl" onclick="limpiarCausa(${c.id},event)" style="flex:1;font-size:10px;color:#888">🧹 Limpiar</button>
+          <button class="cp-cl" id="btn-borrar-${c.id}" onclick="confirmarBorrar(${c.id},this)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0;font-weight:700">✕ Borrar</button>
         </div>
       </div>
     </div>
@@ -1332,12 +1486,13 @@ function openCP(id,e){
   document.getElementById('cppl-'+id).checked=c.pl||false;
   const cpSel=document.getElementById('cpt-sel-'+id);
   if(cpSel)cpSel.value=c.tipo_aud||'';
-  // init tipo_venc selector
   const vt=c.tipo_venc||'vencimiento';
   const hidVT=document.getElementById('cpvt-'+id);
   if(hidVT)hidVT.value=vt;
+  // init info fields
+  const plazoEl=document.getElementById('cp-plazo-'+id);
+  if(plazoEl)plazoEl.value=c.tv_plazo||c.tv||'';
   selVT(id,vt,null);
-  // init hora y modalidad
   const horaEl=document.getElementById('cp-hora-'+id);
   if(horaEl)horaEl.value=c.aud_h||'';
   const modEl=document.getElementById('cp-mod-'+id);
@@ -1353,6 +1508,11 @@ function selVT(id,t,e){
   const elI=document.getElementById('cpvt-i-'+id);
   if(elP){elP.style.opacity=t==='vencimiento'?'1':'0.4';elP.style.outline=t==='vencimiento'?'2px solid #a00':'none';}
   if(elI){elI.style.opacity=t==='info'?'1':'0.4';elI.style.outline=t==='info'?'2px solid #888':'none';}
+  // show/hide fields
+  const campoVen=document.getElementById('cp-campo-ven-'+id);
+  const campoInfo=document.getElementById('cp-campo-info-'+id);
+  if(campoVen)campoVen.style.display=t==='vencimiento'?'block':'none';
+  if(campoInfo)campoInfo.style.display=t==='info'?'block':'none';
 }
 function closeCP(){if(openCID===null)return;const p=document.getElementById('cp-'+openCID);if(p)p.classList.remove('ab');openCID=null;}
 function navCP(id,dir,e){e.stopPropagation();if(!calM_map[id])calM_map[id]={y:HOY.getFullYear(),m:HOY.getMonth()};calM_map[id].m+=dir;if(calM_map[id].m>11){calM_map[id].m=0;calM_map[id].y++;}if(calM_map[id].m<0){calM_map[id].m=11;calM_map[id].y--;}renderCP(id);}
@@ -1401,36 +1561,108 @@ function clearV(id,e){
   const c=causas.find(x=>x.id===id);if(!c)return;
   c.ven='';c.tv='';c.pl=false;c.tipo_aud='';c.tipo_venc='vencimiento';
   sC();refRow(id);closeCP();updBadges();}
+
+function sincTodasAudiencias(){
+  // Solo actualiza audiencias que ya tienen causaId — no crea nuevas
+  // Esto evita duplicados al reabrir el panel
+  const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
+  causas.forEach(c=>{
+    if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
+    const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
+    const existe=audiencias.find(a=>String(a.causaId)===String(c.id));
+    if(existe){
+      // Actualizar la existente sin crear una nueva
+      existe.f=c.ven;
+      existe.h=c.aud_h||'';
+      existe.c=c.car;
+      existe.j=c.juz;
+      existe.o=c.aud_obs||'';
+      existe.t=t;
+    }
+    // Si no existe no la crea — se crea solo cuando el usuario carga la fecha desde la causa
+  });
+  sA();
+}
+function sincAudiencia(c){
+  const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
+  if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
+  const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
+  const existe=audiencias.find(a=>String(a.causaId)===String(c.id));
+  if(existe){
+    existe.f=c.ven; existe.h=c.aud_h||''; existe.c=c.car;
+    existe.j=c.juz; existe.o=c.aud_obs||''; existe.t=t;
+  } else {
+    audiencias.push({id:Date.now(),causaId:c.id,f:c.ven,h:c.aud_h||'',c:c.car,j:c.juz,o:c.aud_obs||'',t});
+  }
+  sA();
+  const panelAud=document.getElementById('panel-audiencias');
+  if(panelAud&&panelAud.classList.contains('on'))renderCal();
+}
 function saveCP(id,e){
   e.stopPropagation();
   const c=causas.find(x=>x.id===id);if(!c)return;
-  c.tv=document.getElementById('cptv-'+id).value.trim();
-  c.pl=document.getElementById('cppl-'+id).checked;
   const vtEl=document.getElementById('cpvt-'+id);
-  let vt=vtEl?vtEl.value||'':'';
-  if(!vt){
-    const tvLow=c.tv.toLowerCase();
-    const esParaSaber=tvLow.includes('oficio')||tvLow.includes('cédula')||tvLow.includes('cedula')||tvLow.includes('pericia')||tvLow.includes('firme')||tvLow.includes('pago');
-    vt=esParaSaber?'info':'vencimiento';
-  }
+  const vt=vtEl?vtEl.value||'vencimiento':'vencimiento';
   c.tipo_venc=vt;
-  // Guardar hora y modalidad
+  if(vt==='info'){
+    const plazo=document.getElementById('cp-plazo-'+id).value.trim();
+    if(!plazo){const inp=document.getElementById('cp-plazo-'+id);if(inp){inp.style.borderColor='#e24b4a';inp.focus();}return;}
+    c.tv_plazo=plazo;
+    c.tv_accion='';
+    c.tv=plazo;
+    c.pl=false;
+  } else {
+    const tvVal=document.getElementById('cptv-'+id).value.trim();
+    if(!tvVal){const inp=document.getElementById('cptv-'+id);if(inp){inp.style.borderColor='#e24b4a';inp.focus();inp.placeholder='⚠ Obligatorio';}return;}
+    c.tv=tvVal;
+    c.tv_accion='';c.tv_plazo='';
+    c.pl=document.getElementById('cppl-'+id).checked;
+  }
   const horaEl=document.getElementById('cp-hora-'+id);
   if(horaEl)c.aud_h=horaEl.value||'';
   const modEl=document.getElementById('cp-mod-'+id);
   if(modEl)c.aud_mod=modEl.value||'';
-  sC();refRow(id);closeCP();updBadges();renderVencPanel();}
+  sincAudiencia(c);
+  sC();refRow(id);closeCP();updBadges();renderVencPanel();
+}
 function refRow(id){
   const c=causas.find(x=>x.id===id);if(!c)return;
   const row=document.getElementById('cr-'+id);if(!row)return;
   const t=document.createElement('div');t.innerHTML=rowHTML(c);row.replaceWith(t.firstChild);
 }
 
-function edSt(id){if(openCID!==null){closeCP();return;}if(activeEd===id)return;if(activeEd!==null)edEn(activeEd);activeEd=id;const el=document.getElementById('not-'+id);if(el){el.contentEditable='true';el.focus();}}
+function togMov(id){
+  id=parseInt(id);
+  if(movidas.has(id))movidas.delete(id);else movidas.add(id);
+  sM();
+  updProgress();
+  const row=document.getElementById('cr-'+id);
+  if(!row)return;
+  const on=movidas.has(id);
+  // update row background class
+  const c=causas.find(x=>x.id===id)||{};
+  row.className='cr '+(on?'mov':rowCls(c));
+  // update chkbox
+  const box=row.querySelector('.chkbox');
+  if(box){box.className='chkbox'+(on?' on':'');box.textContent=on?'✓':'';}
+  // update chk-col background via forcing CSS recalc
+  const col=row.querySelector('.chk-col');
+  if(col){col.style.background='';col.style.borderColor='';}
+}
+function edSt(id,e){if(e&&e.target&&e.target.closest('.chk-col'))return;if(openCID!==null){closeCP();return;}if(activeEd===id)return;if(activeEd!==null)edEn(activeEd);activeEd=id;const el=document.getElementById('not-'+id);if(el){el.contentEditable='true';el.focus();}}
 function edEn(id){const el=document.getElementById('not-'+id);if(!el){activeEd=null;return;}el.contentEditable='false';const c=causas.find(x=>x.id===id);if(!c){activeEd=null;return;}const nuevo=el.innerText.trim();if(nuevo!==c.not){if(!historial[id])historial[id]=[];historial[id].unshift({d:todayISO(),t:c.not});if(historial[id].length>30)historial[id]=historial[id].slice(0,30);c.not=nuevo;sC();sH();}activeEd=null;}
 function edK(e,id){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();edEn(id);}if(e.key==='Escape'){const el=document.getElementById('not-'+id);if(el)el.contentEditable='false';activeEd=null;}}
-function togMov(id){if(movidas.has(id))movidas.delete(id);else movidas.add(id);sM();updProgress();refRow(id);}
 
+
+// ── CHECKBOX DELEGATION ──
+document.addEventListener('click',function(e){
+  const col=e.target.closest('[data-mov]');
+  if(col){
+    e.stopPropagation();
+    e.preventDefault();
+    togMov(col.dataset.mov);
+  }
+},true);
 
 // ── FILTRO ESTADO ──
 let filtroEstado = '';
@@ -1478,18 +1710,41 @@ function abrirPlazo(causaId){
   document.getElementById('plazo-resultado').style.display='none';
   document.getElementById('plazo-causa-id').value=causaId||'';
   document.getElementById('plazo-dirigido').value='';
+  document.getElementById('plazo-para').value='';
   document.querySelectorAll('.plazo-d').forEach(el=>el.classList.remove('on'));
   document.getElementById('plazo-modal').classList.add('ab');
   document.getElementById('plazo-overlay').classList.add('ab');
 }
 function limpiarCausa(id,e){
   if(e)e.stopPropagation();
-  if(!confirm('¿Limpiar fecha, tipo de audiencia, hora, modalidad y observaciones de esta causa?'))return;
+  const ok=window.confirm?window.confirm('¿Limpiar datos de la causa?'):true;
+  if(!ok)return;
   const c=causas.find(x=>x.id===id);if(!c)return;
   c.ven='';c.tv='';c.pl=false;c.tipo_aud='';c.tipo_venc='vencimiento';
   c.aud_h='';c.aud_mod='';c.aud_obs='';
   sC();refRow(id);closeCP();updBadges();renderVencPanel();
 }
+function borrarCausa(id){
+  causas=causas.filter(x=>x.id!==id);
+  movidas.delete(id);
+  closeCP();
+  sC();renderR();updBadges();renderVencPanel();
+}
+function confirmarBorrar(id,btn){
+  if(btn.dataset.confirm==='1'){
+    borrarCausa(id);
+  } else {
+    btn.dataset.confirm='1';
+    btn.textContent='¿Seguro?';
+    btn.style.background='#c00';
+    btn.style.color='#fff';
+    setTimeout(()=>{
+      if(btn){btn.dataset.confirm='';btn.textContent='✕ Borrar';btn.style.background='';btn.style.color='#c00';}
+    },3000);
+  }
+}
+let _basuraMenu=null;
+
 function cerrarPlazo(){
   document.getElementById('plazo-modal').classList.remove('ab');
   document.getElementById('plazo-overlay').classList.remove('ab');
@@ -1508,28 +1763,58 @@ function calcPlazo(e,tipo,dias){
   const dirTxt=dirigido?' a '+dirigido:'';
   document.getElementById('plazo-detalle').textContent=tipoLbl+dirTxt+' · diligenciado '+fmtS(inicio)+' · vence '+fmtS(resultado);
   document.getElementById('plazo-resultado').style.display='block';
+  actualizarPreviaPlazo();
 }
 function usarPlazo(){
   const fecha=document.getElementById('plazo-fecha-calc').value;
   const cid=parseInt(document.getElementById('plazo-causa-id').value);
+  const plazoParaTxt=document.getElementById('plazo-para').value.trim();
   if(!fecha)return;
   if(cid){
     const c=causas.find(x=>x.id===cid);
     if(c){
       c.ven=fecha;
-      // Siempre "para saber" — los plazos de oficio y cédula son de los otros
       c.tipo_venc='info';
-      // Copiar descripción del detalle
-      const det=document.getElementById('plazo-detalle');
-      if(det&&det.textContent)c.tv=det.textContent;
+      c.pl=false;
+      c.tv_plazo=plazoParaTxt;
+      c.tv=plazoParaTxt||document.getElementById('plazo-detalle').textContent;
       sC();refRow(cid);updBadges();renderVencPanel();
     }
   }
   cerrarPlazo();
 }
+function actualizarPreviaPlazo(){
+  const det=document.getElementById('plazo-detalle');
+  const para=document.getElementById('plazo-para').value.trim();
+  const fechaRes=document.getElementById('plazo-fecha-res').textContent;
+  const previa=document.getElementById('plazo-previa');
+  if(!previa)return;
+  if(!det||!fechaRes||fechaRes==='—'){previa.style.display='none';return;}
+  const accion=det.textContent||'';
+  let txt='📎 '+accion;
+  if(para)txt+=' · plazo para '+para;
+  previa.textContent=txt;
+  previa.style.display='block';
+}
 
 function renderSecs(cid,filas){
-  const jzs=[...new Set(filas.map(c=>c.juz))];
+  // Sort juzgados in logical order
+  const JUZ_ORDER=['1° Laboral','2° Laboral','3° Laboral','4° Laboral','5° Laboral','6° Laboral',
+    'C.A. Laboral Sala I','C.A. Laboral Sala II',
+    '1° Civil','3° Civil','4° Civil','5° Civil','7° Civil','8° Civil','9° Civil','11° Civil',
+    'Contencioso','C.A. Civil Sala I','C.A. Civil Sala II','C.A. Civil Sala III','C.A. Civil Sala IV',
+    '1° Familia','2° Familia','3° Familia','4° Familia',
+    '1° Paz','2° Paz','3° Paz','4° Paz','5° Paz','6° Paz','7° Paz',
+    'Paz Letrado Rawson','Paz Letrado Rivadavia','Paz Letrado Chimbas','Paz Letrado Pocito',
+    'Paz Letrado Santa','Paz Letrado Albardón','Paz Letrado 25','Paz Letrado Iglesia',
+    'Paz Letrado Jáchal','Paz Letrado San Martín','Paz Letrado Sarmiento','Paz Letrado Valle',
+    'Paz Letrado Caucete','Paz Letrado Calingasta','Paz Letrado Ullum','Paz Letrado Zonda',
+    'Paz Letrado Angaco','Paz Letrado 9','Cámara de Paz'];
+  function juzOrder(j){
+    const idx=JUZ_ORDER.findIndex(k=>j.startsWith(k));
+    return idx>=0?idx:999;
+  }
+  const jzs=[...new Set(filas.map(c=>c.juz))].sort((a,b)=>juzOrder(a)-juzOrder(b));
   let h='';
   jzs.forEach(j=>{
     const sub=filas.filter(c=>c.juz===j).sort((a,b)=>{
@@ -1563,7 +1848,6 @@ function renderBan(){
   let h='';
   if(ES_LUN)h+=`<div class="ban azul">🌅 <strong>¡Lunes!</strong> Semana nueva — verdes borrados.</div>`;
   else if(ES_VIE){const sin=causas.filter(c=>c.est!=='archivada'&&!movidas.has(c.id)).length;h+=`<div class="ban rojo">⚠️ <strong>Viernes — ${sin} causa${sin!==1?'s':''} sin mover.</strong></div>`;}
-  else h+=`<div class="ban gris">📅 Semana ${fmt2(LUN)} – ${fmt2(VIE)} · ✓ para mover · clic en texto para editar · clic en la fecha para calendario</div>`;
   document.getElementById('top-ban').innerHTML=h;
 }
 function renderR(){
@@ -1609,6 +1893,14 @@ function renderVen(){
 
 function showHist(id,e){e.stopPropagation();closeCP();const c=causas.find(x=>x.id===id),h=historial[id]||[];alert('Historial — '+c.car+'\n\n'+(h.length?h.map(r=>`${fmtS(r.d)}: ${r.t}`).join('\n\n'):'Sin historial aún.'));}
 
+const JUZ_MAP={"Laboral": ["1° Laboral - Pallitto Matías Leonel", "2° Laboral - Berón Mariela", "3° Laboral - Padín María Gabriela", "4° Laboral - Soria Federico Marcelo", "5° Laboral - Caballero Humberto Gonzalo", "6° Laboral - Podestá de Oro Ana Guillermina", "C.A. Laboral Sala I (Ibañez - Daroni - Quattropani)", "C.A. Laboral Sala II (Parra - Raed de Rago - Vacante)"], "Civil": ["1° Civil - Rollán Héctor", "3° Civil - Arancibia Luis César", "4° Civil - Conti Picco Humberto J.", "5° Civil - Farina Roberto Pablo", "7° Civil - Balmaceda Vilma Emilce", "8° Civil - Otiñano Walter Ramón", "9° Civil - Oritja Pablo Nicolás", "11° Civil - Dias Amanda Rosa", "Contencioso Administrativo - Tettamanti Adriana Verónica", "C.A. Civil Sala I (Saffe Peña - Soria - Fernández Collado)", "C.A. Civil Sala II (Escobar - Pagés Lloveras - de la Torre)", "C.A. Civil Sala III (Pérez - Noguera Ramos - Rodríguez)", "C.A. Civil Sala IV (Romero - Varas - de la Torre)"], "Familia": ["1° Familia - López Marianela", "2° Familia - Romero Silvana", "3° Familia - Vacante", "4° Familia - Valdez Marisa"], "Juzgado de Paz": ["1° Paz Capital - González Bautista María Marta", "2° Paz Capital - Graffigna Fernando A.", "3° Paz Capital - Doña Ana Graciela", "4° Paz Capital - Lorenzo Carlos", "5° Paz Capital - Orellano Ricardo Aníbal", "6° Paz Capital - Gaitano Antonio", "7° Paz Capital - Zuliani Gerardo", "Paz Letrado Rawson - Espín Brkic Roxana Mariela", "Paz Letrado Rivadavia - Guerci Romero Ana Valeria", "Paz Letrado Chimbas - Cattani Hebe Graciela", "Paz Letrado Pocito - Moya Felipe M. / Assandri Laura Cecilia", "Paz Letrado Santa Lucía - Montero Verónica", "Paz Letrado Albardón - Oribe Oliveros Jorge Antonio", "Paz Letrado 25 de Mayo - Rodríguez Graciela A.", "Paz Letrado Iglesia - Aguilera Victoria Belén", "Paz Letrado Jáchal - Peñafort Martín", "Paz Letrado San Martín - Johnson Gerardo", "Paz Letrado Sarmiento - Barassi Minetto María Eugenia", "Paz Letrado Valle Fértil - Mulleady Luis María José", "Paz Letrado Caucete - Salva Mendoza Silvina Luciana", "Paz Letrado Calingasta - Troche Andrés L. Justino", "Paz Letrado Ullum - Conca Alejandra", "Paz Letrado Zonda - Caballero Adolfo Octavio", "Paz Letrado Angaco - Cuevas Carlos Adrián", "Paz Letrado 9 de Julio - Galván Daniel", "Cámara de Paz (Vargas - Pérez - Soria)", "Otros"]};
+function updJuzSelect(){
+  const fue=document.getElementById('f-fue').value;
+  const sel=document.getElementById('f-juz');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— Elegí el juzgado —</option>';
+  if(JUZ_MAP[fue])JUZ_MAP[fue].forEach(j=>{const op=document.createElement('option');op.value=j;op.textContent=j;sel.appendChild(op);});
+}
 function addCausa(){
   const ex=document.getElementById('f-ex').value.trim(),car=document.getElementById('f-car').value.trim();
   if(!ex||!car){alert('Completá expediente y carátula.');return;}
@@ -1693,15 +1985,30 @@ function renderCal(){
     const da=audiencias.filter(a=>a.f===iso).sort((a,b)=>(a.h||'99')>(b.h||'99')?1:-1);
     const isT=iso===ts,isF=esFer(iso);
     let cl='cal-cell';if(isT)cl+=' hoy';if(isF&&!da.length)cl+=' fer';
-    h+=`<div class="${cl}" onclick="abrirFA('${iso}')"><div class="cal-dn">${d}${isF?' ⚠':''}</div>${da.map(a=>`<div class="cal-ev t-${a.t||'otro'}" onclick="editFA(${a.id},event)">${a.h?a.h+' ':''} ${a.c}</div>`).join('')}</div>`;
+    // isPast: fecha anterior a hoy, O es hoy pero ya pasó la hora de cada audiencia
+    const isPast=iso<ts;
+    if(isPast&&!isT)cl+=' pas';
+    const horaAhora=`${String(HOY.getHours()).padStart(2,'0')}:${String(HOY.getMinutes()).padStart(2,'0')}`;
+    h+=`<div class="${cl}" onclick="abrirFA('${iso}')"><div class="cal-dn">${d}${isF?' ⚠':''}</div>${da.map(a=>{
+      const audiPast=isPast||(isT&&a.h&&a.h<horaAhora);
+      const evCls=audiPast?'cal-ev cal-ev-past':'cal-ev t-'+(a.t||'otro');
+      return`<div class="${evCls}" onclick="editFA('${a.id}',event)">${a.h?a.h+' ':''}${a.c}</div>`;
+    }).join('')}</div>`;
   }
   h+='</div>';
   const ma=audiencias.filter(a=>{const[ay,am]=a.f.split('-');return parseInt(ay)===y&&parseInt(am)-1===m;}).sort((a,b)=>a.f>b.f?1:a.f<b.f?-1:(a.h||'')>(b.h||'')?1:-1);
   let lista=ma.length
     ?`<div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;margin:12px 0 6px">Audiencias del mes (${ma.length})</div>`+ma.map(a=>{
-        const dl=new Date(a.f).toLocaleDateString('es-AR',{weekday:'short',day:'2-digit',month:'2-digit'});
+        const [ay2,am2,ad2]=a.f.split('-').map(Number);
+        const dl=new Date(ay2,am2-1,ad2).toLocaleDateString('es-AR',{weekday:'short',day:'2-digit',month:'2-digit'});
         const col=tInfo(a.t||'otro').col;
-        return`<div class="aud-item"><div><div class="aud-f">${dl}</div>${a.h?`<div class="aud-h">${a.h}hs</div>`:''}</div><div style="display:flex;align-items:flex-start;gap:6px;flex:1;min-width:0"><div class="aud-dot" style="background:${col}"></div><div style="flex:1;min-width:0"><div class="aud-car">${a.c}</div><div class="aud-det">${a.j}${a.o?' · '+a.o:''} · <em style="color:${col}">${tInfo(a.t||'otro').lbl}</em></div></div></div><button class="ib" onclick="editFA(${a.id},event)">✏</button></div>`;
+        const horaAhoraL=`${String(HOY.getHours()).padStart(2,'0')}:${String(HOY.getMinutes()).padStart(2,'0')}`;
+        const isPastItem=a.f<ts||(a.f===ts&&a.h&&a.h<horaAhoraL);
+        const itemStyle=isPastItem?'background:#f5f5f5;opacity:.65;border-color:#e0e0e0':'';
+        const dotStyle=isPastItem?'background:#bbb':'background:'+col;
+        const carStyle=isPastItem?'color:#aaa':'';
+        const detStyle=isPastItem?'color:#bbb':'';
+        return`<div class="aud-item" style="${itemStyle}"><div><div class="aud-f" style="${carStyle}">${dl}</div>${a.h?`<div class="aud-h" style="${isPastItem?'color:#bbb':''}">${a.h}hs</div>`:''}</div><div style="display:flex;align-items:flex-start;gap:6px;flex:1;min-width:0"><div class="aud-dot" style="${dotStyle}"></div><div style="flex:1;min-width:0"><div class="aud-car" style="${carStyle}">${isPastItem?'<s>':' '}${a.c}${isPastItem?'</s>':''}</div><div class="aud-det" style="${detStyle}">${a.j}${a.o?' · '+a.o:''} · <em style="color:${isPastItem?'#bbb':col}">${tInfo(a.t||'otro').lbl}</em></div></div></div><button class="ib" onclick="editFA('${a.id}',event)">✏</button></div>`;
       }).join('')
     :'<div style="color:#aaa;font-size:11px;padding:12px;text-align:center">Sin audiencias este mes. Clic en un día para agregar.</div>';
   document.getElementById('cal-wrap').innerHTML=h;
@@ -1718,8 +2025,8 @@ function abrirFA(fecha){
 }
 function editFA(id,e){
   if(e)e.stopPropagation();
-  const a=audiencias.find(x=>x.id===id);if(!a)return;
-  document.getElementById('af-id').value=id;document.getElementById('af-f').value=a.f;document.getElementById('af-h').value=a.h||'';document.getElementById('af-c').value=a.c;document.getElementById('af-j').value=a.j;document.getElementById('af-o').value=a.o||'';
+  const a=audiencias.find(x=>String(x.id)===String(id));if(!a)return;
+  document.getElementById('af-id').value=String(id);document.getElementById('af-f').value=a.f;document.getElementById('af-h').value=a.h||'';document.getElementById('af-c').value=a.c;document.getElementById('af-j').value=a.j;document.getElementById('af-o').value=a.o||'';
   document.getElementById('af-del').style.display='inline-flex';document.getElementById('af-label').textContent='Editar audiencia';
   document.getElementById('aud-dl').innerHTML=causas.map(c=>`<option value="${c.car}">`).join('');
   resetT();if(a.t)selT(a.t);
@@ -1729,12 +2036,17 @@ function saveA(){
   const fecha=document.getElementById('af-f').value,causa=document.getElementById('af-c').value.trim();
   if(!fecha||!causa){alert('Completá fecha y causa.');return;}
   const tipo=document.getElementById('af-tipo').value||'otro';
-  const eid=parseInt(document.getElementById('af-id').value)||null;
+  const eid=document.getElementById('af-id').value||null;
   const obj={id:eid||Date.now(),f:fecha,h:document.getElementById('af-h').value,c:causa,j:document.getElementById('af-j').value.trim()||'—',o:document.getElementById('af-o').value.trim(),t:tipo};
-  if(eid)audiencias=audiencias.map(a=>a.id===eid?obj:a);else audiencias.push(obj);
+  if(eid)audiencias=audiencias.map(a=>String(a.id)===String(eid)?obj:a);else audiencias.push(obj);
   sA();document.getElementById('af-form').classList.remove('ab');renderCal();
 }
-function delA(){const id=parseInt(document.getElementById('af-id').value);if(!id||!confirm('¿Eliminar?'))return;audiencias=audiencias.filter(a=>a.id!==id);sA();document.getElementById('af-form').classList.remove('ab');renderCal();}
+function delA(){
+  const id=document.getElementById('af-id').value;
+  if(!id||!confirm('¿Eliminar?'))return;
+  audiencias=audiencias.filter(a=>String(a.id)!==String(id));
+  sA();document.getElementById('af-form').classList.remove('ab');renderCal();
+}
 
 function renderG(){
   let tot=0,jp=0,otr=0;gastos.forEach(g=>{tot+=g.m;if(g.q==='JP')jp+=g.m;else otr+=g.m;});
@@ -1799,8 +2111,23 @@ function renderRam(){
   el.innerHTML=h;
 }
 
-// ═══ INIT ═══
-const APP_VERSION = '2026-05-13-v26';
+function renderResolver(){
+  const el=document.getElementById('resolver-body');
+  if(!el)return;
+  const lista=causas.filter(c=>c.tipo_aud==='resolver'||c.est==='resolver');
+  let h=`<div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;margin-bottom:8px">⚫ A resolver (${lista.length})</div>`;
+  if(!lista.length){h+='<div style="color:#aaa;text-align:center;padding:30px">No hay causas a resolver.</div>';}
+  else{lista.forEach(c=>{
+    h+=`<div class="r-card" style="border-left:3px solid #888"><div class="r-info"><div class="r-car" style="color:#555">${c.car}</div><div class="r-meta">${c.juz} · ${c.ex}</div>${c.not?`<div class="r-task" style="color:#888">${c.not}</div>`:''}</div></div>`;
+  });}
+  el.innerHTML=h;
+}
+
+let bannerAbierto=false;
+function toggleBannerAlertas(){}
+
+function renderBannerAlertas(){}
+const APP_VERSION = '2026-05-14-v4';
 if(localStorage.getItem('ga_version') !== APP_VERSION){
   Object.keys(localStorage).filter(k=>k.startsWith('ga_')||k.startsWith('ld')).forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('ga_version', APP_VERSION);
@@ -1821,6 +2148,196 @@ function resetAudiencias(){
   audiencias=[{id:1,f:"2026-05-11",h:"08:00",c:"FRÍAS C/CASTILLO - Filiación",j:"4° Familia - Valdez",o:"Conciliación",t:"mediac"},{id:2,f:"2026-05-14",h:"",c:"LUCERO ELIO C/OSSE - Mediación",j:"6° Laboral - Podestá de Oro",o:"Mediación preparatoria",t:"mediac"},{id:3,f:"2026-05-15",h:"09:30",c:"GODOY GABRIEL C/ASOCIART",j:"5° Laboral - Caballero",o:"",t:"inicial"},{id:4,f:"2026-05-18",h:"08:30",c:"MONDACA ARIEL C/OSSE",j:"4° Laboral - Soria",o:"SALA II",t:"recursiva"},{id:5,f:"2026-05-22",h:"10:00",c:"BERENGUER MAS C/SAINT-GOBAIN",j:"1° Laboral - Pallitto",o:"",t:"inicial"},{id:6,f:"2026-06-11",h:"10:00",c:"SILVA ALAN IVAN C/ASOCIART",j:"1° Laboral - Pallitto",o:"",t:"inicial"},{id:7,f:"2026-06-16",h:"08:30",c:"PARDO GASTON C/OSSE",j:"4° Laboral - Soria",o:"",t:"inicial"},{id:8,f:"2026-08-06",h:"08:30",c:"LUCERO ELIO C/OSSE - Med. Prep.",j:"6° Laboral - Podestá de Oro",o:"",t:"final"}];
   sA();renderCal();
   alert('✓ Audiencias actualizadas correctamente.');
+}
+
+// ═══════════════════════════════════════════════
+// TURNOS
+// ═══════════════════════════════════════════════
+let turnos = JSON.parse(localStorage.getItem('ga_turnos')||'[]');
+let turSemOff = 0; // semana offset desde hoy
+
+function saveTurnos(){localStorage.setItem('ga_turnos',JSON.stringify(turnos));}
+
+// ═══════════════════════════════════════════════
+// EMAILJS — RECORDATORIOS DE TURNOS (12hs antes)
+// ═══════════════════════════════════════════════
+const EJS_SVC  = 'service_ulmfq3b';
+const EJS_TPL  = 'template_ztczu1n';
+const EJS_KEY  = 'aYT9Y-t5k7X4TNQf9';
+emailjs.init(EJS_KEY);
+
+function chequearRecordatorios(){
+  const ahora = new Date();
+  const yaNotificados = JSON.parse(localStorage.getItem('ga_notif')||'{}');
+
+  // ── TURNOS: alerta 12hs antes ──
+  const en12hs = new Date(ahora.getTime() + 12*60*60*1000);
+  const fechaEn12 = isoD(en12hs);
+  const horaEn12 = `${String(en12hs.getHours()).padStart(2,'0')}:${String(en12hs.getMinutes()).padStart(2,'0')}`;
+  turnos.forEach(t=>{
+    if(t.f !== fechaEn12) return;
+    if(!t.h) return;
+    if(t.h < horaEn12) return;
+    const key = 'tur_' + t.id + '_' + t.f;
+    if(yaNotificados[key]) return;
+    emailjs.send(EJS_SVC, EJS_TPL, {
+      cliente: t.cli || 'Sin nombre',
+      hora:    t.h,
+      motivo:  t.mot || '—',
+      fecha:   t.f.split('-').reverse().join('/')
+    }).then(()=>{
+      yaNotificados[key] = true;
+      localStorage.setItem('ga_notif', JSON.stringify(yaNotificados));
+      console.log('Recordatorio turno enviado:', t.cli, t.f, t.h);
+    }).catch(e=>console.warn('EmailJS error turno:', e));
+  });
+
+  // ── AUDIENCIAS: alerta 24hs antes ──
+  const en24hs = new Date(ahora.getTime() + 24*60*60*1000);
+  const fechaEn24 = isoD(en24hs);
+  const horaEn24 = `${String(en24hs.getHours()).padStart(2,'0')}:${String(en24hs.getMinutes()).padStart(2,'0')}`;
+  audiencias.forEach(a=>{
+    if(a.f !== fechaEn24) return;
+    if(a.h && a.h < horaEn24) return;
+    const key = 'aud_' + a.id + '_' + a.f;
+    if(yaNotificados[key]) return;
+    emailjs.send(EJS_SVC, EJS_TPL, {
+      cliente: a.c || 'Sin causa',
+      hora:    a.h || 'Sin hora',
+      motivo:  '⚖ AUDIENCIA — ' + (a.j||'') + (a.o?' · '+a.o:''),
+      fecha:   a.f.split('-').reverse().join('/')
+    }).then(()=>{
+      yaNotificados[key] = true;
+      localStorage.setItem('ga_notif', JSON.stringify(yaNotificados));
+      console.log('Recordatorio audiencia enviado:', a.c, a.f, a.h);
+    }).catch(e=>console.warn('EmailJS error audiencia:', e));
+  });
+}
+
+// Chequear al cargar y cada 30 minutos
+setTimeout(()=>{
+  chequearRecordatorios();
+  setInterval(chequearRecordatorios, 30*60*1000);
+}, 3000);
+
+function turLunes(off){
+  const d=new Date(HOY);
+  const dow=d.getDay()===0?6:d.getDay()-1;
+  d.setDate(d.getDate()-dow+off*7);
+  d.setHours(0,0,0,0);
+  return d;
+}
+function isoD(d){return d.toISOString().split('T')[0];}
+const DIAS_SEMANA=['Lun','Mar','Mié','Jue','Vie'];
+const MESES_CORTO=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+function renderTurnos(){
+  const lun=turLunes(turSemOff);
+  const vie=new Date(lun);vie.setDate(vie.getDate()+4);
+  document.getElementById('tur-semana').textContent=
+    `${lun.getDate()} ${MESES_CORTO[lun.getMonth()]} – ${vie.getDate()} ${MESES_CORTO[vie.getMonth()]} ${vie.getFullYear()}`;
+  
+  const grid=document.getElementById('tur-grid');
+  if(!grid)return;
+  const todayISO2=isoD(HOY);
+  let html='';
+  for(let i=0;i<5;i++){
+    const d=new Date(lun);d.setDate(d.getDate()+i);
+    const diso=isoD(d);
+    const esHoy=diso===todayISO2;
+    const dTurnos=turnos.filter(t=>t.f===diso).sort((a,b)=>a.h.localeCompare(b.h));
+    html+=`<div class="tur-dia${esHoy?' hoy':''}">
+      <div class="tur-dia-hdr">${DIAS_SEMANA[i]}</div>
+      <div class="tur-dia-fecha">${d.getDate()}/${d.getMonth()+1}</div>
+      ${dTurnos.map(t=>`<div class="tur-item" onclick="abrirTurModal('${diso}','${t.id}')">
+        <div class="tur-hora">${t.h||'Sin hora'}</div>
+        <div class="tur-cli">${t.cli}</div>
+        ${t.mot?`<div class="tur-mot">${t.mot}</div>`:''}
+      </div>`).join('')}
+      <button class="tur-add" onclick="abrirTurModal('${diso}',null)">+ turno</button>
+    </div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function navTur(d){turSemOff+=d;renderTurnos();}
+function turHoy(){turSemOff=0;renderTurnos();}
+
+function abrirTurModal(fecha,turId){
+  // Populate hora select
+  const hSel=document.getElementById('tur-h');
+  hSel.innerHTML='<option value="">— Sin hora —</option>';
+  for(let h=7;h<=20;h++){
+    for(let m=0;m<60;m+=30){
+      const str=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+      hSel.innerHTML+=`<option value="${str}">${str}</option>`;
+    }
+  }
+  
+  const delBtn=document.getElementById('tur-del-btn');
+  if(turId){
+    const t=turnos.find(x=>x.id===turId);
+    if(!t)return;
+    document.getElementById('tur-modal-titulo').textContent='Editar turno';
+    document.getElementById('tur-f').value=t.f;
+    hSel.value=t.h||'';
+    document.getElementById('tur-dur').value=t.dur||'60';
+    document.getElementById('tur-cli').value=t.cli||'';
+    document.getElementById('tur-mot').value=t.mot||'';
+    document.getElementById('tur-edit-id').value=turId;
+    delBtn.style.display='block';
+  } else {
+    document.getElementById('tur-modal-titulo').textContent='Nuevo turno';
+    document.getElementById('tur-f').value=fecha||isoD(HOY);
+    hSel.value='';
+    document.getElementById('tur-dur').value='60';
+    document.getElementById('tur-cli').value='';
+    document.getElementById('tur-mot').value='';
+    document.getElementById('tur-edit-id').value='';
+    delBtn.style.display='none';
+  }
+  document.getElementById('tur-modal').classList.add('ab');
+  document.getElementById('tur-overlay').classList.add('ab');
+  document.getElementById('tur-cli').focus();
+}
+
+function cerrarTurModal(){
+  document.getElementById('tur-modal').classList.remove('ab');
+  document.getElementById('tur-overlay').classList.remove('ab');
+}
+
+function guardarTurno(){
+  const f=document.getElementById('tur-f').value;
+  const cli=document.getElementById('tur-cli').value.trim();
+  if(!f||!cli){alert('Completá al menos el día y el cliente.');return;}
+  const id=document.getElementById('tur-edit-id').value;
+  const turno={
+    id:id||String(Date.now()),
+    f,
+    h:document.getElementById('tur-h').value,
+    dur:document.getElementById('tur-dur').value,
+    cli,
+    mot:document.getElementById('tur-mot').value.trim()
+  };
+  if(id){
+    const idx=turnos.findIndex(x=>x.id===id);
+    if(idx>=0)turnos[idx]=turno;
+  } else {
+    turnos.push(turno);
+  }
+  saveTurnos();
+  cerrarTurModal();
+  renderTurnos();
+}
+
+function borrarTurno(){
+  const id=document.getElementById('tur-edit-id').value;
+  if(!id)return;
+  if(!window.confirm('¿Borrar este turno?'))return;
+  turnos=turnos.filter(x=>x.id!==id);
+  saveTurnos();
+  cerrarTurModal();
+  renderTurnos();
 }
 async function iniciarApp(){
   if(JSONBIN_ID&&JSONBIN_KEY){
@@ -1857,6 +2374,75 @@ async function iniciarApp(){
   }
   updProgress();renderBan();renderR();
 }
+// ═══════════════════════════════════════
+// PRESENCIA — quién está conectado
+// ═══════════════════════════════════════
+let miUsuario = localStorage.getItem('ga_usuario') || '';
+
+function elegirUsuario(nombre){
+  miUsuario = nombre;
+  localStorage.setItem('ga_usuario', nombre);
+  renderUsuarioActual();
+  latido();
+}
+
+function renderUsuarioActual(){
+  const el = document.getElementById('usuario-actual');
+  if(el) el.textContent = miUsuario ? '✓ Estás usando el sistema como: ' + miUsuario : 'No elegiste usuario todavía.';
+  const jp = document.getElementById('btn-soy-jp');
+  const ram = document.getElementById('btn-soy-ram');
+  if(jp && ram){
+    jp.style.fontWeight = miUsuario==='Juan Pablo' ? '700' : '400';
+    jp.style.borderColor = miUsuario==='Juan Pablo' ? '#2a3a8a' : '';
+    ram.style.fontWeight = miUsuario==='Ramiro' ? '700' : '400';
+    ram.style.borderColor = miUsuario==='Ramiro' ? '#2a3a8a' : '';
+  }
+}
+
+async function latido(){
+  if(!miUsuario || !JSONBIN_ID || !JSONBIN_KEY) return;
+  try {
+    const ts = Date.now();
+    // guardamos en un bin separado de presencia usando el mismo key
+    // usamos localStorage como puente compartido via JSONBin main bin
+    const data = await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{
+      headers:{'X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY}
+    }).then(r=>r.json());
+    const actual = data.record || {};
+    actual._presencia = actual._presencia || {};
+    actual._presencia[miUsuario] = ts;
+    await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY},
+      body:JSON.stringify(actual)
+    });
+  } catch(e){}
+}
+
+async function chequearPresencia(){
+  if(!JSONBIN_ID || !JSONBIN_KEY) return;
+  try {
+    const data = await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{
+      headers:{'X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY}
+    }).then(r=>r.json());
+    const presencia = (data.record||{})._presencia || {};
+    const ahora = Date.now();
+    const otro = miUsuario === 'Ramiro' ? 'Juan Pablo' : 'Ramiro';
+    const otroTs = presencia[otro] || 0;
+    const online = (ahora - otroTs) < 90000; // 90 segundos = online
+    const el = document.getElementById('presencia-indicator');
+    if(el) el.innerHTML = online
+      ? `<span style="color:#3B6D11">🟢 ${otro} conectado</span>`
+      : ``;
+  } catch(e){}
+}
+
+// Latido cada 45s, chequeo cada 30s
+if(miUsuario) setTimeout(()=>{latido();setInterval(latido,45000);},5000);
+setInterval(chequearPresencia, 30000);
+setTimeout(chequearPresencia, 6000);
+setTimeout(renderUsuarioActual, 500);
+
 iniciarApp();
 </script>
 </body>
