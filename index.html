@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v51</title>
+<title>Gudiño y Asociados v60</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -384,6 +384,8 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 
 /* ── SYNC STATUS ── */
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#ddd;display:inline-block;margin-right:4px;transition:background .3s}
+@keyframes vmp-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.04)}}
+.vmp-urgente{animation:vmp-pulse 1.2s ease-in-out infinite}
 .sync-dot.ok{background:#3B6D11}
 .sync-dot.saving{background:#FFB800;animation:pulse .8s infinite}
 .sync-dot.err{background:#e24b4a}
@@ -403,17 +405,23 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
   <nav class="nav">
     <div class="ni on" id="ni-reg" onclick="goR()">📋 Registro</div>
     <div class="ng">Fueros</div>
-    <div class="ni" id="ni-lab" onclick="goF('Laboral')">💼 Laboral <span class="nb" id="cnt-Laboral">0</span></div>
-    <div class="ni" id="ni-civ" onclick="goF('Civil')">🏛 Civil <span class="nb" id="cnt-Civil">0</span></div>
+    <div class="ni" id="ni-lab" onclick="goF('Laboral')">👷 Laboral <span class="nb" id="cnt-Laboral">0</span></div>
+    <div class="ni" id="ni-civ" onclick="goF('Civil')">🏠 Civil <span class="nb" id="cnt-Civil">0</span></div>
     <div class="ni" id="ni-fam" onclick="goF('Familia')">👥 Familia <span class="nb" id="cnt-Familia">0</span></div>
-    <div class="ni" id="ni-paz" onclick="goF('Juzgado de Paz')">🔨 Paz Letrado <span class="nb" id="cnt-Juzgado de Paz">0</span></div>
+    <div class="ni" id="ni-paz" onclick="goF('Juzgado de Paz')">🕊️ Paz Letrado <span class="nb" id="cnt-Juzgado de Paz">0</span></div>
     <div class="ng">Gestión</div>
-    <div class="ni" id="ni-vmp" onclick="goP('vencemañana')">🔔 Vence mañana <span class="nb r" id="cnt-vmp">0</span></div>
-    <div class="ni" id="ni-ext" onclick="goP('extrajudiciales')">📁 Extrajudiciales <span class="nb" id="cnt-ext">0</span></div>
-    <div class="ni" id="ni-tur" onclick="goP('turnero')">🗓 Turnos <span class="nb" id="cnt-tur">0</span></div>
+    <div id="ni-vmp" onclick="goP('vencemañana')" style="margin:4px 6px;border-radius:7px;cursor:pointer;overflow:hidden;border:1.5px solid transparent;transition:border .15s" onmouseenter="this.style.borderColor='#e67e22'" onmouseleave="this.style.borderColor='transparent'">
+      <div id="vmp-btn-inner" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);padding:7px 10px;display:flex;align-items:center;gap:7px">
+        <span style="font-size:18px">⚡</span>
+        <div style="flex:1">
+          <div style="font-size:11px;font-weight:700;color:#b84d00">Vencimientos</div>
+        </div>
+        <span class="nb r" id="cnt-vmp" style="background:#e24b4a;color:#fff;border-radius:10px;padding:1px 6px;font-size:11px;font-weight:700">0</span>
+      </div>
+    </div>
     <div class="ni" id="ni-aud" onclick="goP('audiencias')">📅 Audiencias</div>
-    <div class="ni" id="ni-gas" onclick="goP('gastos')">🧾 Gastos</div>
     <div class="ni" id="ni-nue" onclick="goP('nueva')">➕ Nueva causa</div>
+    <div class="ni" id="ni-her" onclick="goP('herramientas')" style="color:#2980b9">🔧 Herramientas</div>
     <div class="ni" id="ni-cfg" onclick="goP('config')">⚙ Config. / Online</div>
   </nav>
   <div class="prog">
@@ -431,8 +439,6 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
     <span class="sync-label" id="sync-label">local</span>
     <span id="presencia-indicator" style="font-size:11px;color:#aaa;margin-left:8px"></span>
     <div class="srch">🔍 <input id="si" placeholder="Buscar..." oninput="renderR()"></div>
-    <button class="btn" onclick="confirmReset()">↺ Nuevo lunes</button>
-    <button class="btn p" onclick="goP('nueva')">+ Nueva causa</button>
   </div>
 
   <!-- PANELS CON LAYOUT ESPECIAL PARA REGISTRO -->
@@ -440,32 +446,27 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 
     <!-- REGISTRO (tiene layout propio con panel derecho) -->
     <div style="flex:1;display:flex;flex-direction:column;overflow:hidden" id="panel-reg-wrap">
-      <!-- TABS -->
-      <div class="tabs" id="tabs-wrap">
-        <div class="tab on" id="tab-reg" onclick="swV('reg')">📋 Registro</div>
-        <div class="tab" id="tab-ale" onclick="swV('ale')">🔔 Alertas <span class="tbadge r" id="abadge">0</span></div>
-        <div class="tab" id="tab-ven" onclick="swV('ven')">📆 Vencimientos</div>
-        <div class="tab" id="tab-ram" onclick="swV('ram')">⭐ Ramiro <span class="tbadge y" id="rbadge">0</span></div>
-      </div>
+
       <div class="reg-layout">
         <!-- CONTENIDO PRINCIPAL -->
         <div class="ct" id="ct-reg">
           <div id="top-ban"></div>
+          <div class="filtros-wrap" id="filtros-wrap">
+            <span style="font-size:10px;color:#aaa;font-weight:700;margin-right:2px">VER:</span>
+            <div class="filtro-btn on" onclick="setFiltroEstado('');swV('reg')">Todas</div>
+            <div class="filtro-btn" onclick="setFiltroEstado('trabajar');swV('reg')">📋 Para trabajar</div>
+            <div class="filtro-btn" id="btn-ram-fil" onclick="swV('ram')" style="display:flex;align-items:center;gap:4px">⭐ Ramiro <span class="tbadge y" id="rbadge" style="position:static;margin-left:2px">0</span></div>
+          </div>
           <div class="view on" id="view-reg">
-        <div class="filtros-wrap" id="filtros-wrap">
-          <span style="font-size:10px;color:#aaa;font-weight:700;margin-right:2px">VER:</span>
-          <div class="filtro-btn on" onclick="setFiltroEstado('')">Todas</div>
-          <div class="filtro-btn" onclick="setFiltroEstado('trabajar')">📋 Para trabajar</div>
-          <div class="filtro-btn" onclick="setFiltroEstado('resolver')">⚫ A resolver</div>
-          <div class="filtro-btn" onclick="setFiltroEstado('urgente')">🔴 Urgentes</div>
-        </div>
-        <div id="reg-secs"></div>
-      </div>
+            <div id="reg-secs"></div>
+          </div>
           <div class="view" id="view-ale"><div id="ale-body"></div></div>
           <div class="view" id="view-ven"><div id="ven-body"></div></div>
-          <div class="view" id="view-ram"><div id="ram-body"></div></div>
+          <div class="view" id="view-ram">
+            <div id="ram-body"></div>
+          </div>
+          <div class="view" id="view-resolver"><div id="resolver-body"></div></div>
         </div>
-
       </div>
     </div>
 
@@ -618,6 +619,25 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
       <table class="gtbl"><thead><tr><th>Fecha</th><th>Proceso</th><th>Monto</th><th>Pagó</th><th>Observaciones</th><th></th></tr></thead><tbody id="g-body"></tbody></table>
     </div>
 
+    <div class="ct panel" id="panel-herramientas">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div onclick="goP('extrajudiciales')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
+          <span style="font-size:24px">📁</span>
+          <div><div style="font-size:13px;font-weight:700">Extrajudiciales</div><div style="font-size:11px;color:#aaa">Gestión de expedientes extrajudiciales</div></div>
+          <span class="nb" id="cnt-ext" style="margin-left:auto">0</span>
+        </div>
+        <div onclick="goP('turnero')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
+          <span style="font-size:24px">🗓</span>
+          <div><div style="font-size:13px;font-weight:700">Turnos</div><div style="font-size:11px;color:#aaa">Agenda de consultas y turnos</div></div>
+          <span class="nb" id="cnt-tur" style="margin-left:auto">0</span>
+        </div>
+        <div onclick="goP('gastos')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
+          <span style="font-size:24px">🧾</span>
+          <div><div style="font-size:13px;font-weight:700">Gastos</div><div style="font-size:11px;color:#aaa">Sellados y gastos del estudio</div></div>
+        </div>
+      </div>
+    </div>
+
     <div class="ct panel" id="panel-nueva">
       <div class="fg">
         <div class="fgg"><label class="fl">N° expediente</label><input class="fi" id="f-ex" placeholder="Ej: 1607/25"></div>
@@ -644,6 +664,14 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
     </div>
 
     <div class="ct panel" id="panel-config">
+      <!-- NUEVO LUNES -->
+      <div style="background:#f5f5f5;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:12px;font-weight:700">↺ Nuevo lunes</div>
+          <div style="font-size:11px;color:#aaa">Borra todos los verdes de la semana</div>
+        </div>
+        <button class="btn" onclick="confirmReset()" style="font-size:12px">Simular lunes</button>
+      </div>
       <!-- SELECTOR DE USUARIO -->
       <div style="background:#f0f4ff;border:1.5px solid #c5d0f0;border-radius:8px;padding:14px;margin-bottom:12px">
         <h3 style="font-size:13px;font-weight:700;color:#2a3a8a;margin-bottom:8px">👤 ¿Quién sos en este dispositivo?</h3>
@@ -1136,17 +1164,17 @@ function showRegLayout(v){
 }
 function showOtherPanel(id){
   document.getElementById('panel-reg-wrap').style.display='none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas'].forEach(p=>{
     document.getElementById('panel-'+p).classList.toggle('on',p===id);
   });
 }
 function goR(){filtroF=null;showRegLayout(true);niOn('reg');document.getElementById('ptitle').textContent='Registro de causas';renderBan();renderR();}
 function goF(f){filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vence mañana',turnero:'Turnos'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas'};
   document.getElementById('ptitle').textContent=t[p]||p;
   showOtherPanel(p);
-  niOn({extrajudiciales:'ext',audiencias:'aud',gastos:'gas',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'tur'}[p]||p);
+  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her'}[p]||p);
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
   if(p==='audiencias'){sincTodasAudiencias();renderCal();}
@@ -1154,19 +1182,25 @@ function goP(p){
   if(p==='vencemañana')renderVMP();
   if(p==='turnero')renderTurnos();
 }
-function swV(v){curView=v;['reg','ale','ven','ram'].forEach(x=>{document.getElementById('view-'+x).classList.toggle('on',x===v);document.getElementById('tab-'+x).classList.toggle('on',x===v);});if(v==='ale')renderAle();if(v==='ven')renderVen();if(v==='ram')renderRam();}
+function swV(v){curView=v;['reg','ale','ven','ram','resolver'].forEach(x=>{const ve=document.getElementById('view-'+x);if(ve)ve.classList.toggle('on',x===v);});const ramBtn=document.getElementById('btn-ram-fil');if(ramBtn)ramBtn.classList.toggle('on',v==='ram');if(v==='ale')renderAle();if(v==='ven')renderVen();if(v==='ram')renderRam();if(v==='resolver')renderResolver();}
 
 function updBadges(){
-  const n=causas.filter(c=>c.ven&&dLeft(c.ven)<=7&&dLeft(c.ven)>=0).length;
-  document.getElementById('abadge').textContent=n;
   const r=causas.filter(c=>c.ram&&!c.rdon).length+extraj.filter(e=>e.ram&&!e.rdon).length;
-  document.getElementById('rbadge').textContent=r;
+  const rbEl=document.getElementById('rbadge');if(rbEl)rbEl.textContent=r;
   document.getElementById('cnt-ext').textContent=extraj.filter(e=>e.est!=='cerrado').length;
   const cntTur=document.getElementById('cnt-tur');
   if(cntTur){const hoyTur=turnos.filter(t=>t.f===isoD(HOY)).length;cntTur.textContent=hoyTur;cntTur.style.display=hoyTur?'':'none';}
-  const vmp=causas.filter(c=>c.ven===manaISO()&&c.est!=='archivada').length;
+  const hoy5=isoD(HOY);
+  const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
+  const vmpProx=causas.filter(c=>c.ven&&c.ven>=hoy5&&c.ven<=en5&&c.est!=='archivada'&&c.pl);
+  const vmp=vmpProx.length;
   const vmpEl=document.getElementById('cnt-vmp');
   if(vmpEl){vmpEl.textContent=vmp;vmpEl.style.display=vmp?'':'none';}
+  // pulse si alguno vence hoy o mañana
+  const hayUrgente=vmpProx.some(c=>{const d=Math.round((new Date(c.ven+' 12:00')-new Date(hoy5+' 12:00'))/(1000*60*60*24));return d<=1;});
+  const btn=document.getElementById('vmp-btn-inner');
+  if(btn)btn.classList.toggle('vmp-urgente',hayUrgente);
+  renderBannerAlertas();
 }
 function updProgress(){
   const tot=causas.filter(c=>c.est!=='archivada').length;
@@ -1178,30 +1212,38 @@ function updProgress(){
   }
 
 // ═══════════════════════════════════════════════
-// PANEL LATERAL VENCIMIENTOS MAÑANA
+// PANEL LATERAL VENCIMIENTOS PRÓXIMOS
 // ═══════════════════════════════════════════════
 function renderVMP(){
-  const man=manaISO();
-  const vm=causas.filter(c=>c.ven===man&&c.est!=="archivada").sort((a,b)=>a.car>b.car?1:-1);
-  const lbl=document.getElementById("vmp-fecha-label");
-  if(lbl)lbl.textContent="Fecha: "+fmtS(man);
-  const el=document.getElementById("vmp-list");
+  const hoy=isoD(HOY);
+  const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
+  const vm=causas.filter(c=>c.ven&&c.ven>=hoy&&c.ven<=en5&&c.est!=='archivada'&&c.pl)
+    .sort((a,b)=>a.ven>b.ven?1:a.ven<b.ven?-1:0);
+  const el=document.getElementById('vmp-list');
   if(!el)return;
   if(!vm.length){
-    el.innerHTML='<div style="color:#888;text-align:center;padding:30px;font-size:13px">Sin vencimientos mañana ✓<br><small style="color:#bbb">No hay causas que venzan '+fmtS(man)+'</small></div>';
+    el.innerHTML='<div style="color:#888;text-align:center;padding:30px;font-size:13px">✓ Sin vencimientos en los próximos 5 días</div>';
     return;
   }
   el.innerHTML=vm.map(c=>{
+    const dias=Math.round((new Date(c.ven+' 12:00')-new Date(hoy+' 12:00'))/(1000*60*60*24));
+    const label=dias===0?'HOY':dias===1?'Mañana':`En ${dias} días`;
+    const color=dias===0?'#e24b4a':dias<=2?'#e67e22':'#b84d00';
+    const bg=dias===0?'#fff0f0':dias<=2?'#fff7f0':'#fffbe6';
+    const border=dias===0?'#ffb3b3':dias<=2?'#ffd09e':'#ffe066';
     const ti=c.tipo_aud&&tInfo(c.tipo_aud);
-    return '<div style="padding:10px 12px;border-radius:6px;border:1px solid var(--red-b);background:var(--red-l);margin-bottom:6px">'
-      +'<div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:3px">'+c.car+(c.pl?'<span class="pdot"></span>':'')+'</div>'
-      +'<div style="font-size:11px;color:#a00;font-weight:600">📅 '+fmtS(c.ven)+'</div>'
-      +(c.tv?'<div style="font-size:10px;color:#c44;margin-top:2px">'+c.tv+'</div>':'')
-      +(ti?'<div style="margin-top:3px"><span style="background:'+ti.col+';color:#fff;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700">'+ti.lbl+'</span></div>':'')
-      +'<div style="font-size:10px;color:#888;margin-top:3px">'+c.juz+' · Expte. '+c.ex+'</div>'
-      +(c.not?'<div style="font-size:11px;color:#555;margin-top:4px;background:#fff;padding:4px 7px;border-radius:4px;border-left:3px solid var(--red-b)">'+c.not+'</div>':'')
-      +'</div>';
-  }).join("");
+    return `<div style="padding:10px 12px;border-radius:6px;border:1px solid ${border};background:${bg};margin-bottom:6px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:10px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:.5px">${label}</span>
+        <span style="font-size:10px;color:#aaa">${c.ven.split('-').reverse().join('/')}</span>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:2px">${c.car}${c.pl?'<span class="pdot"></span>':''}</div>
+      ${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}
+      ${ti?`<div style="margin-top:3px"><span style="background:${ti.col};color:#fff;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700">${ti.lbl}</span></div>`:''}
+      <div style="font-size:10px;color:#aaa;margin-top:3px">${c.juz} · ${c.ex}</div>
+      ${c.not?`<div style="font-size:11px;color:#555;margin-top:4px;background:#fff8;padding:4px 7px;border-radius:4px;border-left:3px solid ${border}">${c.not}</div>`:''}
+    </div>`;
+  }).join('');
 }
 function renderVencPanel(){renderVMP();}
 
@@ -1722,7 +1764,6 @@ function renderBan(){
   let h='';
   if(ES_LUN)h+=`<div class="ban azul">🌅 <strong>¡Lunes!</strong> Semana nueva — verdes borrados.</div>`;
   else if(ES_VIE){const sin=causas.filter(c=>c.est!=='archivada'&&!movidas.has(c.id)).length;h+=`<div class="ban rojo">⚠️ <strong>Viernes — ${sin} causa${sin!==1?'s':''} sin mover.</strong></div>`;}
-  else h+=`<div class="ban gris">📅 Semana ${fmt2(LUN)} – ${fmt2(VIE)} · ✓ para mover · clic en texto para editar · clic en la fecha para calendario</div>`;
   document.getElementById('top-ban').innerHTML=h;
 }
 function renderR(){
@@ -1986,7 +2027,50 @@ function renderRam(){
   el.innerHTML=h;
 }
 
-// ═══ INIT ═══
+function renderResolver(){
+  const el=document.getElementById('resolver-body');
+  if(!el)return;
+  const lista=causas.filter(c=>c.tipo_aud==='resolver'||c.est==='resolver');
+  let h=`<div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;margin-bottom:8px">⚫ A resolver (${lista.length})</div>`;
+  if(!lista.length){h+='<div style="color:#aaa;text-align:center;padding:30px">No hay causas a resolver.</div>';}
+  else{lista.forEach(c=>{
+    h+=`<div class="r-card" style="border-left:3px solid #888"><div class="r-info"><div class="r-car" style="color:#555">${c.car}</div><div class="r-meta">${c.juz} · ${c.ex}</div>${c.not?`<div class="r-task" style="color:#888">${c.not}</div>`:''}</div></div>`;
+  });}
+  el.innerHTML=h;
+}
+
+let bannerAbierto=false;
+function toggleBannerAlertas(){
+  bannerAbierto=!bannerAbierto;
+  document.getElementById('banner-body').style.display=bannerAbierto?'block':'none';
+  document.getElementById('banner-chevron').textContent=bannerAbierto?'▲':'▼';
+}
+
+function renderBannerAlertas(){
+  const hoy=isoD(HOY);
+  const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
+  // Próximos 5 días (no vencidos)
+  const proximos=causas.filter(c=>c.ven&&c.ven>=hoy&&c.ven<=en5)
+    .sort((a,b)=>a.ven>b.ven?1:-1);
+  const banner=document.getElementById('banner-alertas');
+  const titulo=document.getElementById('banner-titulo');
+  const body=document.getElementById('banner-body');
+  if(!proximos.length){banner.style.display='none';return;}
+  banner.style.display='block';
+  titulo.textContent=`🔔 ${proximos.length} vencimiento${proximos.length!==1?'s':''} en los próximos 5 días`;
+  let h='';
+  proximos.forEach(c=>{
+    const dias=Math.round((new Date(c.ven)-HOY)/(1000*60*60*24));
+    const color=dias===0?'#e24b4a':dias<=2?'#e67e22':'#7a5c00';
+    const label=dias===0?'HOY':dias===1?'mañana':`en ${dias} días`;
+    h+=`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #ffe06644">
+      <span style="font-size:10px;font-weight:700;color:${color};min-width:60px">${label}</span>
+      <span style="font-size:11px;color:#555;flex:1">${c.car}</span>
+      <span style="font-size:10px;color:#aaa">${c.ven.split('-').reverse().join('/')}</span>
+    </div>`;
+  });
+  body.innerHTML=h;
+}
 const APP_VERSION = '2026-05-14-v4';
 if(localStorage.getItem('ga_version') !== APP_VERSION){
   Object.keys(localStorage).filter(k=>k.startsWith('ga_')||k.startsWith('ld')).forEach(k=>localStorage.removeItem(k));
