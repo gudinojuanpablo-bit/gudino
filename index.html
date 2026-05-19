@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v60</title>
+<title>Gudiño y Asociados v62</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1322,8 +1322,8 @@ function clearRam(id){
   refRow(id);updBadges();
   if(curView==='ram')renderRam();
 }
-function togRam(id){const c=causas.find(x=>x.id===id);if(!c)return;c.rdon=!c.rdon;sC();refRow(id);updBadges();if(curView==='ram')renderRam();}
-function togRamE(id){const e=extraj.find(x=>x.id===id);if(!e)return;e.rdon=!e.rdon;sE();renderExt();updBadges();if(curView==='ram')renderRam();}
+function togRam(id){const c=causas.find(x=>x.id===id);if(!c)return;c.ram='';c.rdon=false;sC();refRow(id);updBadges();if(curView==='ram')renderRam();}
+function togRamE(id){const e=extraj.find(x=>x.id===id);if(!e)return;e.ram='';e.rdon=false;sE();renderExt();updBadges();if(curView==='ram')renderRam();}
 function borrarRam(id,e){
   e.stopPropagation();
   if(!confirm('¿Borrar la tarea de Ramiro de esta causa?'))return;
@@ -1528,37 +1528,38 @@ function clearV(id,e){
   sC();refRow(id);closeCP();updBadges();}
 
 function sincTodasAudiencias(){
-  // Sync all causas that have a tipo_aud set — ensures calendar is always up to date
+  // Solo actualiza audiencias que ya tienen causaId — no crea nuevas
+  // Esto evita duplicados al reabrir el panel
   const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
   causas.forEach(c=>{
-    if(c.tipo_aud&&audTypes.includes(c.tipo_aud)&&c.ven){
-      audiencias=audiencias.filter(a=>a.causaId!==c.id);
-      const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
-      audiencias.push({id:c.id+'_sync',causaId:c.id,f:c.ven,h:c.aud_h||'',c:c.car,j:c.juz,o:c.aud_obs||'',t});
+    if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
+    const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
+    const existe=audiencias.find(a=>String(a.causaId)===String(c.id));
+    if(existe){
+      // Actualizar la existente sin crear una nueva
+      existe.f=c.ven;
+      existe.h=c.aud_h||'';
+      existe.c=c.car;
+      existe.j=c.juz;
+      existe.o=c.aud_obs||'';
+      existe.t=t;
     }
+    // Si no existe no la crea — se crea solo cuando el usuario carga la fecha desde la causa
   });
   sA();
 }
 function sincAudiencia(c){
-  // Sync all audiencia types including resolver
   const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
   if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
-  // Remove existing entry for this cause
-  audiencias=audiencias.filter(a=>a.causaId!==c.id);
-  // Add new entry
   const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
-  audiencias.push({
-    id:Date.now(),
-    causaId:c.id,
-    f:c.ven,
-    h:c.aud_h||'',
-    c:c.car,
-    j:c.juz,
-    o:c.aud_obs||'',
-    t:t
-  });
+  const existe=audiencias.find(a=>String(a.causaId)===String(c.id));
+  if(existe){
+    existe.f=c.ven; existe.h=c.aud_h||''; existe.c=c.car;
+    existe.j=c.juz; existe.o=c.aud_obs||''; existe.t=t;
+  } else {
+    audiencias.push({id:Date.now(),causaId:c.id,f:c.ven,h:c.aud_h||'',c:c.car,j:c.juz,o:c.aud_obs||'',t});
+  }
   sA();
-  // Re-render audiencias calendar if panel is visible
   const panelAud=document.getElementById('panel-audiencias');
   if(panelAud&&panelAud.classList.contains('on'))renderCal();
 }
