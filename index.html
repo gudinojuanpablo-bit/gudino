@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v84</title>
+<title>Gudiño y Asociados v85</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1387,10 +1387,11 @@ function rowHTML(c){
         }
         const tvTxt=c.tv?'Plazo para '+c.tv:'';
         if(c.tipo_venc==='info'){
-          const plazo=c.tv_plazo||c.tv||'';
-          return plazo?`Plazo para ${plazo} · vence ${fmtS(c.ven)}${tag}`:'';
+          const plazoRaw=(c.tv_plazo||c.tv||'').replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{27FF}\s]+/u,'').trim();
+          return plazoRaw?`Plazo para ${plazoRaw} · vence ${fmtS(c.ven)}${tag}`:'';
         }
-        const tvPrefijo=c.tv?(c.tv.toLowerCase().startsWith('plazo para')?c.tv:'Plazo para '+c.tv):'';
+        const tvClean=(c.tv||'').replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{27FF}\s]+/u,'').trim();
+        const tvPrefijo=tvClean?(tvClean.toLowerCase().startsWith('plazo para')?tvClean:'Plazo para '+tvClean):'';
         if(c.ven)return(mostrarReloj?'⏰ ':'')+( tvPrefijo?tvPrefijo+' · vence ':'vence ')+fmtS(c.ven)+tag;
         return '';
       })()}</div>
