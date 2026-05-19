@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v63</title>
+<title>Gudiño y Asociados v64</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1389,6 +1389,7 @@ function rowHTML(c){
         <span class="hl" onclick="editAudObs(${c.id},event)" title="Agregar comentario" style="font-size:14px;font-weight:900;color:#444;padding:0 3px">+</span>
       </div>
       <div class="cpop" id="cp-${c.id}" onclick="event.stopPropagation()">
+        <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${c.car}">${c.car}</div>
         <div class="cp-hdr"><div class="cp-nav" onclick="navCP(${c.id},-1,event)">‹</div><span class="cp-mes">—</span><div class="cp-nav" onclick="navCP(${c.id},1,event)">›</div></div>
         <div class="cp-grid" id="cpg-${c.id}"></div>
         <hr class="cp-sep">
