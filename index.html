@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v79</title>
+<title>Gudiño y Asociados v81</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -763,6 +763,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
     <input class="fi" type="text" id="plazo-dirigido" placeholder="Ej: OSSE, Sindicato, perito...">
   </div>
   <div style="margin-bottom:10px">
+    <div class="fl" style="margin-bottom:4px">Plazo para: <span style="color:#e24b4a">*</span></div>
+    <input class="fi" type="text" id="plazo-para" placeholder="que conteste demanda, que acepte cargo..." oninput="actualizarPreviaPlazo()">
+  </div>
+  <div style="margin-bottom:10px">
     <div class="fl" style="margin-bottom:6px">Tipo de diligenciamiento</div>
     <div class="plazo-tipo">
       <div class="plazo-opt" onclick="selPlazoTipo('oficio')" id="pto-oficio">
@@ -786,6 +790,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
   <div class="plazo-resultado" id="plazo-resultado">
     <strong>📅 Vence el: <span id="plazo-fecha-res">—</span></strong><br>
     <span id="plazo-detalle" style="font-size:10px;color:#3B6D11"></span><br>
+    <div id="plazo-previa" style="display:none;margin:6px 0;padding:5px 8px;background:#f0f4ff;border-radius:4px;font-size:10px;color:#444;border:1px solid #c5d0f0;line-height:1.5"></div>
     <button class="btn p" onclick="usarPlazo()" style="font-size:11px;margin-top:8px;width:100%">📎 Usar como "Para saber"</button>
   </div>
   <input type="hidden" id="plazo-causa-id">
@@ -1381,12 +1386,10 @@ function rowHTML(c){
         }
         const tvTxt=c.tv?'Plazo para '+c.tv:'';
         if(c.tipo_venc==='info'){
-          const accion=c.tv_accion||c.tv||'';
-          const plazo=c.tv_plazo?` · plazo para ${c.tv_plazo}`:'';
-          const fecha=c.ven?` · vence ${fmtS(c.ven)}`:'';
-          return accion?`📎 ${accion}${plazo}${fecha}${tag}`:'';
+          const plazo=c.tv_plazo||c.tv||'';
+          return plazo?`📎 Plazo para ${plazo} · vence ${fmtS(c.ven)}${tag}`:'';
         }
-        if(c.ven)return(esMio?'⏰ ':'📎 ')+(c.tv?'Plazo para '+c.tv+' · vence ':'vence ')+fmtS(c.ven)+tag;
+        if(c.ven)return(esMio?'⏰ ':'')+(c.tv?'Plazo para '+c.tv+' · vence ':'vence ')+fmtS(c.ven)+tag;
         return '';
       })()}</div>
       <div class="${(c.tipo_aud||(c.ven&&c.tv))?'ci-not-h':'ci-not'}" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))?'style="display:none"':''}>${c.not||'—'}</div>
@@ -1455,10 +1458,8 @@ function rowHTML(c){
         </div>
         <!-- CAMPOS PARA SABER -->
         <div id="cp-campo-info-${c.id}" style="display:none;margin-bottom:8px">
-          <div class="cp-lbl">Acción: <span style="color:#e24b4a">*</span></div>
-          <input class="fi" type="text" id="cp-accion-${c.id}" value="${c.tv_accion||''}" placeholder="Cédula a ASOCIART diligenciada el 05/05" style="font-size:11px;padding:4px 7px;margin-bottom:5px">
-          <div class="cp-lbl" style="margin-top:4px">Plazo para:</div>
-          <input class="fi" type="text" id="cp-plazo-${c.id}" value="${c.tv_plazo||''}" placeholder="que conteste demanda" style="font-size:11px;padding:4px 7px">
+          <div class="cp-lbl">Plazo para: <span style="color:#e24b4a">*</span></div>
+          <input class="fi" type="text" id="cp-plazo-${c.id}" value="${c.tv_plazo||c.tv||''}" placeholder="que OSSE conteste, que el perito acepte..." style="font-size:11px;padding:4px 7px">
         </div>
         <label class="cp-plazo"><input type="checkbox" id="cppl-${c.id}" style="width:13px;height:13px"> Tiene plazo activo</label>
         <div class="cp-btns"><button class="cp-save" onclick="saveCP(${c.id},event)">✓ Guardar</button><button class="cp-cl" onclick="clearV(${c.id},event)">Sin fecha</button></div>
@@ -1489,10 +1490,8 @@ function openCP(id,e){
   const hidVT=document.getElementById('cpvt-'+id);
   if(hidVT)hidVT.value=vt;
   // init info fields
-  const accionEl=document.getElementById('cp-accion-'+id);
-  if(accionEl)accionEl.value=c.tv_accion||'';
   const plazoEl=document.getElementById('cp-plazo-'+id);
-  if(plazoEl)plazoEl.value=c.tv_plazo||'';
+  if(plazoEl)plazoEl.value=c.tv_plazo||c.tv||'';
   selVT(id,vt,null);
   const horaEl=document.getElementById('cp-hora-'+id);
   if(horaEl)horaEl.value=c.aud_h||'';
@@ -1606,12 +1605,11 @@ function saveCP(id,e){
   const vt=vtEl?vtEl.value||'vencimiento':'vencimiento';
   c.tipo_venc=vt;
   if(vt==='info'){
-    const accion=document.getElementById('cp-accion-'+id).value.trim();
-    if(!accion){const inp=document.getElementById('cp-accion-'+id);if(inp){inp.style.borderColor='#e24b4a';inp.focus();}return;}
-    c.tv_accion=accion;
-    c.tv_plazo=document.getElementById('cp-plazo-'+id).value.trim();
-    // build tv for backward compat
-    c.tv=accion+(c.tv_plazo?' · plazo para '+c.tv_plazo:'');
+    const plazo=document.getElementById('cp-plazo-'+id).value.trim();
+    if(!plazo){const inp=document.getElementById('cp-plazo-'+id);if(inp){inp.style.borderColor='#e24b4a';inp.focus();}return;}
+    c.tv_plazo=plazo;
+    c.tv_accion='';
+    c.tv=plazo;
     c.pl=false;
   } else {
     const tvVal=document.getElementById('cptv-'+id).value.trim();
@@ -1712,6 +1710,7 @@ function abrirPlazo(causaId){
   document.getElementById('plazo-resultado').style.display='none';
   document.getElementById('plazo-causa-id').value=causaId||'';
   document.getElementById('plazo-dirigido').value='';
+  document.getElementById('plazo-para').value='';
   document.querySelectorAll('.plazo-d').forEach(el=>el.classList.remove('on'));
   document.getElementById('plazo-modal').classList.add('ab');
   document.getElementById('plazo-overlay').classList.add('ab');
@@ -1764,24 +1763,38 @@ function calcPlazo(e,tipo,dias){
   const dirTxt=dirigido?' a '+dirigido:'';
   document.getElementById('plazo-detalle').textContent=tipoLbl+dirTxt+' · diligenciado '+fmtS(inicio)+' · vence '+fmtS(resultado);
   document.getElementById('plazo-resultado').style.display='block';
+  actualizarPreviaPlazo();
 }
 function usarPlazo(){
   const fecha=document.getElementById('plazo-fecha-calc').value;
   const cid=parseInt(document.getElementById('plazo-causa-id').value);
+  const plazoParaTxt=document.getElementById('plazo-para').value.trim();
   if(!fecha)return;
   if(cid){
     const c=causas.find(x=>x.id===cid);
     if(c){
       c.ven=fecha;
-      // Siempre "para saber" — los plazos de oficio y cédula son de los otros
       c.tipo_venc='info';
-      // Copiar descripción del detalle
-      const det=document.getElementById('plazo-detalle');
-      if(det&&det.textContent)c.tv=det.textContent;
+      c.pl=false;
+      c.tv_plazo=plazoParaTxt;
+      c.tv=plazoParaTxt||document.getElementById('plazo-detalle').textContent;
       sC();refRow(cid);updBadges();renderVencPanel();
     }
   }
   cerrarPlazo();
+}
+function actualizarPreviaPlazo(){
+  const det=document.getElementById('plazo-detalle');
+  const para=document.getElementById('plazo-para').value.trim();
+  const fechaRes=document.getElementById('plazo-fecha-res').textContent;
+  const previa=document.getElementById('plazo-previa');
+  if(!previa)return;
+  if(!det||!fechaRes||fechaRes==='—'){previa.style.display='none';return;}
+  const accion=det.textContent||'';
+  let txt='📎 '+accion;
+  if(para)txt+=' · plazo para '+para;
+  previa.textContent=txt;
+  previa.style.display='block';
 }
 
 function renderSecs(cid,filas){
