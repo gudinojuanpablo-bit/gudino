@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v66</title>
+<title>Gudiño y Asociados v68</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1352,7 +1352,7 @@ function rowHTML(c){
   const vbc=vBtnCls(c),vbt=vBtnTxt(c);
   const vbFull=vbc.startsWith('vbtn ')?vbc:'vbtn '+vbc;
   return`<div class="cr ${cls}" id="cr-${c.id}">
-    <div class="chk-col" onclick="togMov(${c.id},event)"><div class="chkbox${on?' on':''}">${on?'✓':''}</div></div>
+    <div class="chk-col" data-mov="${c.id}"><div class="chkbox${on?' on':''}">${on?'✓':''}</div></div>
     <div class="ci">
       <div class="ci-car">${c.car}${c.pl?'<span class="pdot"></span>':''}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':c.ram&&c.rdon?'<span class="rtag done">⭐ ✓</span>':''}
         <span class="${exCls(c)}"> · ${c.ex}</span>
@@ -1596,6 +1596,15 @@ function edSt(id,e){if(e&&e.target&&e.target.closest('.chk-col'))return;if(openC
 function edEn(id){const el=document.getElementById('not-'+id);if(!el){activeEd=null;return;}el.contentEditable='false';const c=causas.find(x=>x.id===id);if(!c){activeEd=null;return;}const nuevo=el.innerText.trim();if(nuevo!==c.not){if(!historial[id])historial[id]=[];historial[id].unshift({d:todayISO(),t:c.not});if(historial[id].length>30)historial[id]=historial[id].slice(0,30);c.not=nuevo;sC();sH();}activeEd=null;}
 function edK(e,id){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();edEn(id);}if(e.key==='Escape'){const el=document.getElementById('not-'+id);if(el)el.contentEditable='false';activeEd=null;}}
 
+
+// ── CHECKBOX DELEGATION ──
+document.addEventListener('click',function(e){
+  const col=e.target.closest('.chk-col');
+  if(col&&col.dataset.mov){
+    e.stopPropagation();
+    togMov(parseInt(col.dataset.mov));
+  }
+},true); // capture phase — fires before any other handler
 
 // ── FILTRO ESTADO ──
 let filtroEstado = '';
@@ -2042,37 +2051,9 @@ function renderResolver(){
 }
 
 let bannerAbierto=false;
-function toggleBannerAlertas(){
-  bannerAbierto=!bannerAbierto;
-  document.getElementById('banner-body').style.display=bannerAbierto?'block':'none';
-  document.getElementById('banner-chevron').textContent=bannerAbierto?'▲':'▼';
-}
+function toggleBannerAlertas(){}
 
-function renderBannerAlertas(){
-  const hoy=isoD(HOY);
-  const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
-  // Próximos 5 días (no vencidos)
-  const proximos=causas.filter(c=>c.ven&&c.ven>=hoy&&c.ven<=en5)
-    .sort((a,b)=>a.ven>b.ven?1:-1);
-  const banner=document.getElementById('banner-alertas');
-  const titulo=document.getElementById('banner-titulo');
-  const body=document.getElementById('banner-body');
-  if(!proximos.length){banner.style.display='none';return;}
-  banner.style.display='block';
-  titulo.textContent=`🔔 ${proximos.length} vencimiento${proximos.length!==1?'s':''} en los próximos 5 días`;
-  let h='';
-  proximos.forEach(c=>{
-    const dias=Math.round((new Date(c.ven)-HOY)/(1000*60*60*24));
-    const color=dias===0?'#e24b4a':dias<=2?'#e67e22':'#7a5c00';
-    const label=dias===0?'HOY':dias===1?'mañana':`en ${dias} días`;
-    h+=`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #ffe06644">
-      <span style="font-size:10px;font-weight:700;color:${color};min-width:60px">${label}</span>
-      <span style="font-size:11px;color:#555;flex:1">${c.car}</span>
-      <span style="font-size:10px;color:#aaa">${c.ven.split('-').reverse().join('/')}</span>
-    </div>`;
-  });
-  body.innerHTML=h;
-}
+function renderBannerAlertas(){}
 const APP_VERSION = '2026-05-14-v4';
 if(localStorage.getItem('ga_version') !== APP_VERSION){
   Object.keys(localStorage).filter(k=>k.startsWith('ga_')||k.startsWith('ld')).forEach(k=>localStorage.removeItem(k));
