@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v70</title>
+<title>Gudiño y Asociados v72</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1358,7 +1358,6 @@ function rowHTML(c){
         <span class="${exCls(c)}"> · ${c.ex}</span>
       </div>
       <div class="ci-tv-tag">${(()=>{
-        // Audiencia agendada
         if(c.tipo_aud&&TIPOS[c.tipo_aud]){
           const t=TIPOS[c.tipo_aud];
           let info=c.tipo_aud==='resolver'?'A resolver':'Audiencia '+t.lbl;
@@ -1367,10 +1366,21 @@ function rowHTML(c){
           if(c.aud_mod)info+=' · '+c.aud_mod;
           return info;
         }
-        // Oficio/cedula (para saber)
-        if(c.tipo_venc==='info'&&c.tv)return c.tv;
-        // Vencimiento propio
-        if(c.tipo_venc==='vencimiento'&&c.ven)return '⏰ Vence '+fmtS(c.ven)+(c.tv?' · '+c.tv:'');
+        if(!c.ven)return'';
+        const d=dLeft(c.ven);
+        const esMio=c.tipo_venc==='vencimiento'||c.pl;
+        let tag='';
+        if(d<0){
+          tag=esMio
+            ?` <span style="color:#c0392b;font-size:10px;font-weight:600">✓ plazo vencido</span>`
+            :` <span style="color:#27ae60;font-size:10px;font-weight:600">✓ plazo vencido</span>`;
+        } else if(d===0){
+          tag=` <span style="color:#aaa;font-size:10px">· vence hoy</span>`;
+        } else {
+          tag=` <span style="color:#ccc;font-size:10px">· falta ${d}d</span>`;
+        }
+        if(c.tipo_venc==='info'&&c.tv)return c.tv+tag;
+        if(c.ven)return(esMio?'⏰ ':'📎 ')+(c.tv||'Vence')+' '+fmtS(c.ven)+tag;
         return '';
       })()}</div>
       <div class="${(c.tipo_aud||(c.ven&&c.tv))?'ci-not-h':'ci-not'}" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))?'style="display:none"':''}>${c.not||'—'}</div>
@@ -1432,7 +1442,10 @@ function rowHTML(c){
             </select>
           </div>
         </div>
-        <input type="hidden" id="cptv-${c.id}" value="${c.tv||''}">
+        <div style="margin-bottom:8px">
+          <div class="cp-lbl">¿Qué vence? <span style="color:#e24b4a">*</span></div>
+          <input class="fi" type="text" id="cptv-${c.id}" value="${c.tv||''}" placeholder="Ej: Plazo OSSE, Cédula, Pericia..." style="font-size:11px;padding:4px 7px">
+        </div>
         <label class="cp-plazo"><input type="checkbox" id="cppl-${c.id}" style="width:13px;height:13px"> Tiene plazo activo</label>
         <div class="cp-btns"><button class="cp-save" onclick="saveCP(${c.id},event)">✓ Guardar</button><button class="cp-cl" onclick="clearV(${c.id},event)">Sin fecha</button></div>
         <hr class="cp-sep">
@@ -1567,7 +1580,13 @@ function sincAudiencia(c){
 function saveCP(id,e){
   e.stopPropagation();
   const c=causas.find(x=>x.id===id);if(!c)return;
-  c.tv=document.getElementById('cptv-'+id).value.trim();
+  const tvVal=document.getElementById('cptv-'+id).value.trim();
+  if(!tvVal){
+    const inp=document.getElementById('cptv-'+id);
+    if(inp){inp.style.borderColor='#e24b4a';inp.focus();inp.placeholder='⚠ Obligatorio — ¿qué vence?';}
+    return;
+  }
+  c.tv=tvVal;
   c.pl=document.getElementById('cppl-'+id).checked;
   const vtEl=document.getElementById('cpvt-'+id);
   let vt=vtEl?vtEl.value||'':'';
@@ -1577,14 +1596,13 @@ function saveCP(id,e){
     vt=esParaSaber?'info':'vencimiento';
   }
   c.tipo_venc=vt;
-  // Guardar hora y modalidad
   const horaEl=document.getElementById('cp-hora-'+id);
   if(horaEl)c.aud_h=horaEl.value||'';
   const modEl=document.getElementById('cp-mod-'+id);
   if(modEl)c.aud_mod=modEl.value||'';
-  // Sincronizar con calendario de audiencias si tiene tipo_aud
   sincAudiencia(c);
-  sC();refRow(id);closeCP();updBadges();renderVencPanel();}
+  sC();refRow(id);closeCP();updBadges();renderVencPanel();
+}
 function refRow(id){
   const c=causas.find(x=>x.id===id);if(!c)return;
   const row=document.getElementById('cr-'+id);if(!row)return;
