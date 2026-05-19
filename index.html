@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v91</title>
+<title>Gudiño y Asociados v92</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1465,7 +1465,7 @@ function rowHTML(c){
               <select id="cp-dias-${c.id}" style="flex:1;font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)">
                 ${[3,5,10,15,20,30].map(d=>`<option value="${d}">${d} días hábiles</option>`).join('')}
               </select>
-              <button onclick="aplicarContador(${c.id},parseInt(document.getElementById('cp-dias-${c.id}').value),event)" style="font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer">→</button>
+              <button onclick="aplicarContador(${c.id},null,event)" style="font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer">→</button>
             </div>
           </div>
         </div>
@@ -1811,6 +1811,10 @@ function toggleContador(id,e){
 function aplicarContador(id,dias,e){
   e.stopPropagation();
   const desde=document.getElementById('cp-desde-'+id).value||isoD(HOY);
+  if(dias===null){
+    const sel=document.getElementById('cp-dias-'+id);
+    dias=sel?parseInt(sel.value)||20:20;
+  }
   const resultado=sumarDiasHabiles(desde,dias);
   if(!calM_map[id])calM_map[id]={y:HOY.getFullYear(),m:HOY.getMonth()};
   const[ry,rm]=resultado.split('-').map(Number);
