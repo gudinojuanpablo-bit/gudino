@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v88</title>
+<title>Gudiño y Asociados v89</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1462,7 +1462,7 @@ function rowHTML(c){
             <input type="date" id="cp-desde-${c.id}" value="${isoD(HOY)}" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:100%;margin-bottom:6px">
             <div class="cp-lbl" style="margin-bottom:4px">Días hábiles:</div>
             <div style="display:flex;gap:4px;flex-wrap:wrap">
-              ${[3,5,10,20,30].map(d=>`<div onclick="aplicarContador(${c.id},${d},event)" style="padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);font-size:11px;cursor:pointer;font-weight:600">${d}d</div>`).join('')}
+              ${[3,5,10,15,20,30].map(d=>`<div onclick="aplicarContador(${c.id},${d},event)" style="padding:3px 8px;border-radius:4px;border:1px solid var(--border);background:var(--bg);font-size:11px;cursor:pointer;font-weight:600">${d}d</div>`).join('')}
             </div>
           </div>
         </div>
