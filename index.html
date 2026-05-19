@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v76</title>
+<title>Gudiño y Asociados v78</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1380,7 +1380,12 @@ function rowHTML(c){
           tag=` <span style="color:#ccc;font-size:10px">· falta ${d}d</span>`;
         }
         const tvTxt=c.tv?'Plazo para '+c.tv:'';
-        if(c.tipo_venc==='info'&&c.tv)return tvTxt+' · vence '+fmtS(c.ven)+tag;
+        if(c.tipo_venc==='info'){
+          const accion=c.tv_accion||c.tv||'';
+          const plazo=c.tv_plazo?` · plazo para ${c.tv_plazo}`:'';
+          const fecha=c.ven?` · vence ${fmtS(c.ven)}`:'';
+          return accion?`📎 ${accion}${plazo}${fecha}${tag}`:'';
+        }
         if(c.ven)return(esMio?'⏰ ':'📎 ')+(c.tv?tvTxt+' · vence ':'vence ')+fmtS(c.ven)+tag;
         return '';
       })()}</div>
@@ -1443,9 +1448,17 @@ function rowHTML(c){
             </select>
           </div>
         </div>
-        <div style="margin-bottom:8px">
+        <!-- CAMPO VENCIMIENTO -->
+        <div id="cp-campo-ven-${c.id}" style="margin-bottom:8px">
           <div class="cp-lbl">Plazo para: <span style="color:#e24b4a">*</span></div>
-          <input class="fi" type="text" id="cptv-${c.id}" value="${c.tv||''}" placeholder="Ej: que el perito acepte el cargo..." style="font-size:11px;padding:4px 7px">
+          <input class="fi" type="text" id="cptv-${c.id}" value="${c.tv||''}" placeholder="que nos paguen, que conteste..." style="font-size:11px;padding:4px 7px">
+        </div>
+        <!-- CAMPOS PARA SABER -->
+        <div id="cp-campo-info-${c.id}" style="display:none;margin-bottom:8px">
+          <div class="cp-lbl">Acción: <span style="color:#e24b4a">*</span></div>
+          <input class="fi" type="text" id="cp-accion-${c.id}" value="${c.tv_accion||''}" placeholder="Cédula a ASOCIART diligenciada el 05/05" style="font-size:11px;padding:4px 7px;margin-bottom:5px">
+          <div class="cp-lbl" style="margin-top:4px">Plazo para:</div>
+          <input class="fi" type="text" id="cp-plazo-${c.id}" value="${c.tv_plazo||''}" placeholder="que conteste demanda" style="font-size:11px;padding:4px 7px">
         </div>
         <label class="cp-plazo"><input type="checkbox" id="cppl-${c.id}" style="width:13px;height:13px"> Tiene plazo activo</label>
         <div class="cp-btns"><button class="cp-save" onclick="saveCP(${c.id},event)">✓ Guardar</button><button class="cp-cl" onclick="clearV(${c.id},event)">Sin fecha</button></div>
@@ -1472,12 +1485,15 @@ function openCP(id,e){
   document.getElementById('cppl-'+id).checked=c.pl||false;
   const cpSel=document.getElementById('cpt-sel-'+id);
   if(cpSel)cpSel.value=c.tipo_aud||'';
-  // init tipo_venc selector
   const vt=c.tipo_venc||'vencimiento';
   const hidVT=document.getElementById('cpvt-'+id);
   if(hidVT)hidVT.value=vt;
+  // init info fields
+  const accionEl=document.getElementById('cp-accion-'+id);
+  if(accionEl)accionEl.value=c.tv_accion||'';
+  const plazoEl=document.getElementById('cp-plazo-'+id);
+  if(plazoEl)plazoEl.value=c.tv_plazo||'';
   selVT(id,vt,null);
-  // init hora y modalidad
   const horaEl=document.getElementById('cp-hora-'+id);
   if(horaEl)horaEl.value=c.aud_h||'';
   const modEl=document.getElementById('cp-mod-'+id);
@@ -1493,6 +1509,11 @@ function selVT(id,t,e){
   const elI=document.getElementById('cpvt-i-'+id);
   if(elP){elP.style.opacity=t==='vencimiento'?'1':'0.4';elP.style.outline=t==='vencimiento'?'2px solid #a00':'none';}
   if(elI){elI.style.opacity=t==='info'?'1':'0.4';elI.style.outline=t==='info'?'2px solid #888':'none';}
+  // show/hide fields
+  const campoVen=document.getElementById('cp-campo-ven-'+id);
+  const campoInfo=document.getElementById('cp-campo-info-'+id);
+  if(campoVen)campoVen.style.display=t==='vencimiento'?'block':'none';
+  if(campoInfo)campoInfo.style.display=t==='info'?'block':'none';
 }
 function closeCP(){if(openCID===null)return;const p=document.getElementById('cp-'+openCID);if(p)p.classList.remove('ab');openCID=null;}
 function navCP(id,dir,e){e.stopPropagation();if(!calM_map[id])calM_map[id]={y:HOY.getFullYear(),m:HOY.getMonth()};calM_map[id].m+=dir;if(calM_map[id].m>11){calM_map[id].m=0;calM_map[id].y++;}if(calM_map[id].m<0){calM_map[id].m=11;calM_map[id].y--;}renderCP(id);}
@@ -1581,22 +1602,24 @@ function sincAudiencia(c){
 function saveCP(id,e){
   e.stopPropagation();
   const c=causas.find(x=>x.id===id);if(!c)return;
-  const tvVal=document.getElementById('cptv-'+id).value.trim();
-  if(!tvVal){
-    const inp=document.getElementById('cptv-'+id);
-    if(inp){inp.style.borderColor='#e24b4a';inp.focus();inp.placeholder='⚠ Obligatorio — ¿qué vence?';}
-    return;
-  }
-  c.tv=tvVal;
-  c.pl=document.getElementById('cppl-'+id).checked;
   const vtEl=document.getElementById('cpvt-'+id);
-  let vt=vtEl?vtEl.value||'':'';
-  if(!vt){
-    const tvLow=c.tv.toLowerCase();
-    const esParaSaber=tvLow.includes('oficio')||tvLow.includes('cédula')||tvLow.includes('cedula')||tvLow.includes('pericia')||tvLow.includes('firme')||tvLow.includes('pago');
-    vt=esParaSaber?'info':'vencimiento';
-  }
+  const vt=vtEl?vtEl.value||'vencimiento':'vencimiento';
   c.tipo_venc=vt;
+  if(vt==='info'){
+    const accion=document.getElementById('cp-accion-'+id).value.trim();
+    if(!accion){const inp=document.getElementById('cp-accion-'+id);if(inp){inp.style.borderColor='#e24b4a';inp.focus();}return;}
+    c.tv_accion=accion;
+    c.tv_plazo=document.getElementById('cp-plazo-'+id).value.trim();
+    // build tv for backward compat
+    c.tv=accion+(c.tv_plazo?' · plazo para '+c.tv_plazo:'');
+    c.pl=false;
+  } else {
+    const tvVal=document.getElementById('cptv-'+id).value.trim();
+    if(!tvVal){const inp=document.getElementById('cptv-'+id);if(inp){inp.style.borderColor='#e24b4a';inp.focus();inp.placeholder='⚠ Obligatorio';}return;}
+    c.tv=tvVal;
+    c.tv_accion='';c.tv_plazo='';
+    c.pl=document.getElementById('cppl-'+id).checked;
+  }
   const horaEl=document.getElementById('cp-hora-'+id);
   if(horaEl)c.aud_h=horaEl.value||'';
   const modEl=document.getElementById('cp-mod-'+id);
