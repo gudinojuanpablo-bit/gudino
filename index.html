@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v68</title>
+<title>Gudiño y Asociados v70</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1591,7 +1591,24 @@ function refRow(id){
   const t=document.createElement('div');t.innerHTML=rowHTML(c);row.replaceWith(t.firstChild);
 }
 
-function togMov(id,e){if(e)e.stopPropagation();if(movidas.has(id))movidas.delete(id);else movidas.add(id);sM();updProgress();refRow(id);}
+function togMov(id){
+  id=parseInt(id);
+  if(movidas.has(id))movidas.delete(id);else movidas.add(id);
+  sM();
+  updProgress();
+  const row=document.getElementById('cr-'+id);
+  if(!row)return;
+  const on=movidas.has(id);
+  // update row background class
+  const c=causas.find(x=>x.id===id)||{};
+  row.className='cr '+(on?'mov':rowCls(c));
+  // update chkbox
+  const box=row.querySelector('.chkbox');
+  if(box){box.className='chkbox'+(on?' on':'');box.textContent=on?'✓':'';}
+  // update chk-col background via forcing CSS recalc
+  const col=row.querySelector('.chk-col');
+  if(col){col.style.background='';col.style.borderColor='';}
+}
 function edSt(id,e){if(e&&e.target&&e.target.closest('.chk-col'))return;if(openCID!==null){closeCP();return;}if(activeEd===id)return;if(activeEd!==null)edEn(activeEd);activeEd=id;const el=document.getElementById('not-'+id);if(el){el.contentEditable='true';el.focus();}}
 function edEn(id){const el=document.getElementById('not-'+id);if(!el){activeEd=null;return;}el.contentEditable='false';const c=causas.find(x=>x.id===id);if(!c){activeEd=null;return;}const nuevo=el.innerText.trim();if(nuevo!==c.not){if(!historial[id])historial[id]=[];historial[id].unshift({d:todayISO(),t:c.not});if(historial[id].length>30)historial[id]=historial[id].slice(0,30);c.not=nuevo;sC();sH();}activeEd=null;}
 function edK(e,id){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();edEn(id);}if(e.key==='Escape'){const el=document.getElementById('not-'+id);if(el)el.contentEditable='false';activeEd=null;}}
@@ -1599,12 +1616,13 @@ function edK(e,id){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();edEn(id);
 
 // ── CHECKBOX DELEGATION ──
 document.addEventListener('click',function(e){
-  const col=e.target.closest('.chk-col');
-  if(col&&col.dataset.mov){
+  const col=e.target.closest('[data-mov]');
+  if(col){
     e.stopPropagation();
-    togMov(parseInt(col.dataset.mov));
+    e.preventDefault();
+    togMov(col.dataset.mov);
   }
-},true); // capture phase — fires before any other handler
+},true);
 
 // ── FILTRO ESTADO ──
 let filtroEstado = '';
