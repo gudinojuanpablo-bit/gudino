@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v75</title>
+<title>Gudiño y Asociados v76</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1379,8 +1379,9 @@ function rowHTML(c){
         } else {
           tag=` <span style="color:#ccc;font-size:10px">· falta ${d}d</span>`;
         }
-        if(c.tipo_venc==='info'&&c.tv)return c.tv+' · vence '+fmtS(c.ven)+tag;
-        if(c.ven)return(esMio?'⏰ ':'📎 ')+(c.tv?c.tv+' · vence ':'vence ')+fmtS(c.ven)+tag;
+        const tvTxt=c.tv?'Plazo para '+c.tv:'';
+        if(c.tipo_venc==='info'&&c.tv)return tvTxt+' · vence '+fmtS(c.ven)+tag;
+        if(c.ven)return(esMio?'⏰ ':'📎 ')+(c.tv?tvTxt+' · vence ':'vence ')+fmtS(c.ven)+tag;
         return '';
       })()}</div>
       <div class="${(c.tipo_aud||(c.ven&&c.tv))?'ci-not-h':'ci-not'}" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))?'style="display:none"':''}>${c.not||'—'}</div>
