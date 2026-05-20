@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v92</title>
+<title>Gudiño y Asociados v93</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -809,7 +809,7 @@ const LUN=lunesDe(HOY),VIE=new Date(LUN);VIE.setDate(LUN.getDate()+4);
 const SK=LUN.toISOString().split('T')[0];
 function fmt2(d){return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});}
 function fmtS(s){return s?s.split('-').reverse().join('/'):'—';}
-function dLeft(s){return s?Math.round((new Date(s)-HOY)/86400000):9999;}
+function dLeft(s){if(!s)return 9999;const[y,m,d]=s.split('-').map(Number);const ven=new Date(y,m-1,d);const hoy=new Date(HOY.getFullYear(),HOY.getMonth(),HOY.getDate());return Math.round((ven-hoy)/86400000);}
 function todayISO(){return HOY.toISOString().split('T')[0];}
 function manaISO(){const d=new Date(HOY);d.setDate(d.getDate()+1);return d.toISOString().split('T')[0];}
 function pesos(n){return'$'+Math.round(n).toLocaleString('es-AR');}
