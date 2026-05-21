@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v93</title>
+<title>Gudiño y Asociados v95</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -385,6 +385,8 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 /* ── SYNC STATUS ── */
 .sync-dot{width:8px;height:8px;border-radius:50%;background:#ddd;display:inline-block;margin-right:4px;transition:background .3s}
 @keyframes vmp-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(1.04)}}
+@keyframes vence-hoy-pulse{0%,100%{opacity:1;color:#e24b4a}50%{opacity:.4;color:#ff6b6b}}
+.cr.mov .vence-hoy-tag{animation:none;color:#aaa !important;text-decoration:line-through}
 .vmp-urgente{animation:vmp-pulse 1.2s ease-in-out infinite}
 .sync-dot.ok{background:#3B6D11}
 .sync-dot.saving{background:#FFB800;animation:pulse .8s infinite}
@@ -1202,7 +1204,10 @@ function updBadges(){
   const vmpEl=document.getElementById('cnt-vmp');
   if(vmpEl){vmpEl.textContent=vmp;vmpEl.style.display=vmp?'':'none';}
   // pulse si alguno vence hoy o mañana
-  const hayUrgente=vmpProx.some(c=>{const d=Math.round((new Date(c.ven+' 12:00')-new Date(hoy5+' 12:00'))/(1000*60*60*24));return d<=1;});
+  const hayUrgente=vmpProx.some(c=>{
+    const d=Math.round((new Date(c.ven+' 12:00')-new Date(hoy5+' 12:00'))/(1000*60*60*24));
+    return d<=1 && !movidas.has(c.id);
+  });
   const btn=document.getElementById('vmp-btn-inner');
   if(btn)btn.classList.toggle('vmp-urgente',hayUrgente);
   renderBannerAlertas();
@@ -1381,7 +1386,11 @@ function rowHTML(c){
             ?` <span style="color:#c0392b;font-size:10px;font-weight:600">✓ plazo vencido</span>`
             :` <span style="color:#27ae60;font-size:10px;font-weight:600">✓ plazo vencido</span>`;
         } else if(d===0){
-          tag=` <span style="color:#aaa;font-size:10px">· vence hoy</span>`;
+          // Todos titilan hoy
+          tag=` <span class="vence-hoy-tag" style="color:#e24b4a;font-size:10px;font-weight:600;animation:vence-hoy-pulse 1.5s ease-in-out infinite">· vence hoy</span>`;
+        } else if(d===1&&esMio){
+          // Solo los míos titilan mañana
+          tag=` <span class="vence-hoy-tag" style="color:#e67e22;font-size:10px;font-weight:600;animation:vence-hoy-pulse 1.5s ease-in-out infinite">· vence mañana</span>`;
         } else {
           tag=` <span style="color:#ccc;font-size:10px">· falta ${d}d</span>`;
         }
