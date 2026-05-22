@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v99</title>
+<title>Gudiño y Asociados v100</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1595,23 +1595,17 @@ function clearV(id,e){
   sC();refRow(id);closeCP();updBadges();}
 
 function sincTodasAudiencias(){
-  // Solo actualiza audiencias que ya tienen causaId — no crea nuevas
-  // Esto evita duplicados al reabrir el panel
   const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
   causas.forEach(c=>{
     if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
     const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
     const existe=audiencias.find(a=>String(a.causaId)===String(c.id));
     if(existe){
-      // Actualizar la existente sin crear una nueva
-      existe.f=c.ven;
-      existe.h=c.aud_h||'';
-      existe.c=c.car;
-      existe.j=c.juz;
-      existe.o=c.aud_obs||'';
-      existe.t=t;
+      existe.f=c.ven;existe.h=c.aud_h||'';existe.c=c.car;existe.j=c.juz;existe.o=c.aud_obs||'';existe.t=t;
+    } else {
+      // Crear si no existe
+      audiencias.push({id:Date.now()+Math.random(),causaId:c.id,f:c.ven,h:c.aud_h||'',c:c.car,j:c.juz,o:c.aud_obs||'',t});
     }
-    // Si no existe no la crea — se crea solo cuando el usuario carga la fecha desde la causa
   });
   sA();
 }
