@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v100</title>
+<title>Gudiño y Asociados v101</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -489,6 +489,8 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
           <div class="ext-f" onclick="setEF('Potencial demanda')">⚖ Potencial</div>
           <div class="ext-f" onclick="setEF('Carta documento')">📩 Carta doc.</div>
           <div class="ext-f" onclick="setEF('Consulta')">💬 Consulta</div>
+          <div class="ext-f" onclick="setEF('Mediación Familiar')">👨‍👩‍👧 Med. Familiar</div>
+          <div class="ext-f" onclick="setEF('Mediación Laboral')">🤝 Med. Laboral</div>
           <div class="ext-f" onclick="setEF('Otro')">📎 Otro</div>
         </div>
         <button class="btn p" onclick="abrirEF(null)" style="font-size:11px">+ Nuevo</button>
@@ -497,7 +499,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
         <div style="font-size:12px;font-weight:700;margin-bottom:10px" id="ef-label">Nuevo extrajudicial</div>
         <div class="fg">
           <div class="fgg"><label class="fl">Título / Nombre</label><input class="fi" id="ef-tit" placeholder="Ej: García Juan — accidente ART"></div>
-          <div class="fgg"><label class="fl">Tipo</label><select class="fi" id="ef-tipo"><option>Nuevo cliente</option><option>Potencial demanda</option><option>Carta documento</option><option>Consulta</option><option>Otro</option></select></div>
+          <div class="fgg"><label class="fl">Tipo</label><select class="fi" id="ef-tipo"><option>Nuevo cliente</option><option>Potencial demanda</option><option>Carta documento</option><option>Consulta</option><option>Mediación Familiar</option><option>Mediación Laboral</option><option>Otro</option></select></div>
           <div class="fgg"><label class="fl">Estado</label><select class="fi" id="ef-est"><option value="nuevo">Nuevo</option><option value="gestion">En gestión</option><option value="espera">En espera</option><option value="cerrado">Cerrado</option></select></div>
           <div class="fgg"><label class="fl">⭐ Tarea para Ramiro</label><input class="fi" id="ef-ram" placeholder="Opcional"></div>
           <div class="fgg full"><label class="fl">Notas</label><textarea class="fi" rows="3" id="ef-not" style="resize:vertical" placeholder="Descripción, contacto, próximo paso..."></textarea></div>
@@ -828,7 +830,7 @@ const TIPOS={
 };
 function tInfo(t){return TIPOS[t]||TIPOS.otro;}
 
-const EXT_ICO={'Nuevo cliente':'👤','Potencial demanda':'⚖','Carta documento':'📩','Consulta':'💬','Otro':'📎'};
+const EXT_ICO={'Nuevo cliente':'👤','Potencial demanda':'⚖','Carta documento':'📩','Consulta':'💬','Mediación Familiar':'👨‍👩‍👧','Mediación Laboral':'🤝','Otro':'📎'};
 const EXT_EST={nuevo:{lbl:'Nuevo',cls:'ep-nuevo'},gestion:{lbl:'En gestión',cls:'ep-gestion'},espera:{lbl:'En espera',cls:'ep-espera'},cerrado:{lbl:'Cerrado',cls:'ep-cerrado'}};
 
 // ═══════════════════════════════════════════════
