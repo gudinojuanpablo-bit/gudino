@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v105</title>
+<title>Gudiño y Asociados v108</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -701,7 +701,8 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 
       <div class="cfg-blk">
         <h3>✉ Notificaciones por email</h3>
-        <div class="cfg-row"><span>Tu correo</span><div style="display:flex;gap:5px"><input class="fi" type="email" id="cfg-email" placeholder="tucorreo@mail.com" style="width:195px"><button class="btn p" onclick="saveMC()" style="font-size:11px;padding:4px 10px">Guardar</button></div></div>
+        <div class="cfg-row"><span>Tu correo (Juan Pablo)</span><div style="display:flex;gap:5px"><input class="fi" type="email" id="cfg-email" placeholder="tucorreo@mail.com" style="width:195px"><button class="btn p" onclick="saveMC()" style="font-size:11px;padding:4px 10px">Guardar</button></div></div>
+        <div class="cfg-row"><span>Correo de Ramiro</span><div style="display:flex;gap:5px"><input class="fi" type="email" id="cfg-email-ram" placeholder="ramiro@mail.com" style="width:195px"></div></div>
         <div class="cfg-row"><span>1 mail por causa que vence mañana</span><button class="tog" id="t-man" onclick="this.classList.toggle('off')"></button></div>
         <div class="cfg-row"><span>Alerta si vence hoy</span><button class="tog" id="t-hoy" onclick="this.classList.toggle('off')"></button></div>
         <div class="cfg-row"><span>Resumen viernes: sin mover</span><button class="tog" id="t-vie" onclick="this.classList.toggle('off')"></button></div>
@@ -999,12 +1000,14 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],gastos,audiencias,extraj,feriados};}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],gastos,audiencias,extraj,feriados,mailCfg,tareasRam};}
 function applyPayload(d){
   if(!d)return;
   if(d.causas)causas=d.causas;if(d.movidas)movidas=new Set(d.movidas);
   if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;
   if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;
+  if(d.mailCfg)mailCfg=d.mailCfg;
+  if(d.tareasRam)tareasRam=d.tareasRam;
   svl('ga_c',causas);svl('ga_m_'+SK,[...movidas]);svl('ga_g',gastos);
   svl('ga_a',audiencias);svl('ga_e',extraj);svl('ga_f',feriados);
 }
@@ -1229,12 +1232,22 @@ function saveRam(id){
   if(!inp)return;
   const c=causas.find(x=>x.id===id);
   if(!c)return;
+  const tareaAnterior=c.ram;
   c.ram=inp.value.trim();
   c.rdon=false;
   sC();
   document.querySelectorAll('.ram-editor').forEach(el=>el.remove());
   refRow(id);updBadges();
   if(curView==='ram')renderRam();
+  // Notificar a Ramiro si hay tarea nueva
+  if(c.ram&&c.ram!==tareaAnterior&&mailCfg.emailRam){
+    emailjs.send(EJS_SVC,EJS_TPL,{
+      cliente:'⭐ Tarea asignada — '+c.car,
+      hora:'—',
+      motivo:c.ram,
+      fecha:isoD(HOY).split('-').reverse().join('/')
+    }).catch(e=>console.warn('EmailJS Ramiro:',e));
+  }
 }
 function clearRam(id){
   const c=causas.find(x=>x.id===id);
@@ -1600,7 +1613,39 @@ document.addEventListener('click',function(e){
   }
 },true);
 
-// ── FILTRO ESTADO ──
+// ── MAIL LUNES Y VIERNES PARA RAMIRO ──
+function chequearMailRamiro(){
+  const ahora=new Date();
+  const dia=ahora.getDay(); // 1=lun, 5=vie
+  const hora=ahora.getHours();
+  const min=ahora.getMinutes();
+  if((dia===1||dia===5)&&hora===8&&min<30){
+    const key='ga_ram_mail_'+isoD(ahora);
+    if(localStorage.getItem(key))return; // ya se mandó hoy
+    const pendCausas=causas.filter(c=>c.ram&&!c.rdon);
+    const pendExt=extraj.filter(e=>e.ram&&!e.rdon);
+    const pendGen=tareasRam.filter(t=>!t.done);
+    if(!pendCausas.length&&!pendExt.length&&!pendGen.length)return;
+    let resumen='TAREAS PENDIENTES PARA RAMIRO:\n\n';
+    if(pendGen.length){resumen+='📋 TAREAS GENERALES:\n';pendGen.forEach(t=>resumen+='• '+t.txt+'\n');resumen+='\n';}
+    if(pendCausas.length||pendExt.length){resumen+='⭐ ENCARGOS EN CAUSAS:\n';[...pendCausas,...pendExt].forEach(c=>resumen+='• '+(c.car||c.tit)+': '+c.ram+'\n');}
+    const destinos=[];
+    if(mailCfg.emailRam)destinos.push(mailCfg.emailRam);
+    if(mailCfg.email)destinos.push(mailCfg.email);
+    if(!destinos.length||!EJS_SVC||!EJS_TPL)return;
+    destinos.forEach(dest=>{
+      emailjs.send(EJS_SVC,EJS_TPL,{
+        cliente:'⭐ Tareas de Ramiro — '+(dia===1?'Lunes':'Viernes'),
+        hora:'08:00',
+        motivo:resumen,
+        fecha:isoD(ahora).split('-').reverse().join('/')
+      }).catch(e=>console.warn('EmailJS Ramiro semanal:',e));
+    });
+    localStorage.setItem(key,'1');
+  }
+}
+setInterval(chequearMailRamiro,10*60*1000); // cada 10 minutos
+setTimeout(chequearMailRamiro,5000);
 let filtroEstado = '';
 function setFiltroEstado(f){
   filtroEstado=f;
@@ -2021,9 +2066,20 @@ function delG(id){if(!confirm('¿Eliminar?'))return;gastos=gastos.filter(g=>g.id
 
 function renderCfg(){
   if(mailCfg.email)document.getElementById('cfg-email').value=mailCfg.email;
+  if(mailCfg.emailRam){const er=document.getElementById('cfg-email-ram');if(er)er.value=mailCfg.emailRam;}
   document.getElementById('fer-list').innerHTML=feriados.map((f,i)=>`<div class="cfg-row"><span>${fmtS(f.f)} — ${f.n}</span><button class="ib" onclick="delFer(${i})">🗑</button></div>`).join('');
 }
-function saveMC(){const em=document.getElementById('cfg-email').value.trim();if(!em){alert('Ingresá un email.');return;}mailCfg.email=em;mailCfg.man=!document.getElementById('t-man').classList.contains('off');mailCfg.hoy=!document.getElementById('t-hoy').classList.contains('off');mailCfg.vie=!document.getElementById('t-vie').classList.contains('off');svl('ga_mc',mailCfg);const ok=document.getElementById('cfg-ok');ok.style.display='block';setTimeout(()=>ok.style.display='none',2000);}
+function saveMC(){
+  const em=document.getElementById('cfg-email').value.trim();
+  if(!em){alert('Ingresá un email.');return;}
+  mailCfg.email=em;
+  mailCfg.emailRam=document.getElementById('cfg-email-ram').value.trim();
+  mailCfg.man=!document.getElementById('t-man').classList.contains('off');
+  mailCfg.hoy=!document.getElementById('t-hoy').classList.contains('off');
+  mailCfg.vie=!document.getElementById('t-vie').classList.contains('off');
+  svl('ga_mc',mailCfg);fbSave();
+  const ok=document.getElementById('cfg-ok');ok.style.display='block';setTimeout(()=>ok.style.display='none',2000);
+}
 function addFer(){const d=document.getElementById('fer-d').value,n=document.getElementById('fer-n').value.trim();if(!d||!n)return;feriados.push({f:d,n});sF();renderCfg();}
 function delFer(i){feriados.splice(i,1);sF();renderCfg();}
 function exportJSON(){const b=new Blob([JSON.stringify({causas,extrajudiciales:extraj,audiencias,gastos},null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='gudino_datos.json';a.click();}
@@ -2047,28 +2103,50 @@ function renderRam(){
   const el=document.getElementById('ram-body');
   const pend=causas.filter(c=>c.ram&&!c.rdon);
   const epend=extraj.filter(e=>e.ram&&!e.rdon);
-  const done=causas.filter(c=>c.ram&&c.rdon);
-  const edone=extraj.filter(e=>e.ram&&e.rdon);
   let h='';
+
+  // TAREAS GENERALES
+  h+=`<div class="a-sec" style="margin-bottom:10px">
+    <h3 style="display:flex;align-items:center;justify-content:space-between">
+      📋 Tareas generales
+      <span style="font-size:10px;color:#aaa;font-weight:400">${tareasRam.filter(t=>!t.done).length} pendientes</span>
+    </h3>
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <input class="fi" id="tram-inp" placeholder="Ej: Retirar oficios, comprar sellado..." style="flex:1;font-size:11px" onkeydown="if(event.key==='Enter')addTareaRam()">
+      <button class="btn p" onclick="addTareaRam()" style="font-size:11px;padding:4px 10px">+ Agregar</button>
+    </div>
+    <div id="tram-list">${tareasRam.map((t,i)=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
+        <input type="checkbox" ${t.done?'checked':''} onchange="toggleTareaRam(${i})" style="width:14px;height:14px;cursor:pointer">
+        <span style="flex:1;font-size:12px;${t.done?'text-decoration:line-through;color:#bbb':''}">${t.txt}</span>
+        <button class="ib" onclick="delTareaRam(${i})" style="opacity:.4">🗑</button>
+      </div>`).join('')}
+    </div>
+  </div>`;
+
+  // TAREAS EN CAUSAS
   if(pend.length||epend.length){
-    h+=`<div class="a-sec"><h3>⭐ Pendientes para Ramiro (${pend.length+epend.length})</h3>`;
+    h+=`<div class="a-sec"><h3>⭐ Encargos en causas (${pend.length+epend.length})</h3>`;
     [...pend,...epend].forEach(c=>{
       const isE=!!c.tit;
       h+=`<div class="r-card"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${isE?c.tit:c.car}</div><div class="r-task">${c.ram}</div><div class="r-meta">${isE?'Extrajudicial · '+c.tipo:c.juz+' · '+c.ex}</div></div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="${isE?'togRamE':'togRam'}(${c.id})">✓ Cumplida</button><button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="${isE?'borrarRamE':'borrarRam'}(${c.id},event)">🗑</button></div></div>`;
     });
     h+='</div>';
   }
-  if(done.length||edone.length){
-    h+=`<div class="a-sec"><h3 style="color:#bbb">✓ Cumplidas — clic en 🗑 para borrar definitivamente</h3>`;
-    [...done,...edone].forEach(c=>{
-      const isE=!!c.tit;
-      h+=`<div class="r-card done"><div style="font-size:18px;opacity:.4">⭐</div><div class="r-info"><div class="r-car">${isE?c.tit:c.car}</div><div class="r-task">${c.ram}</div></div><div class="r-btns"><button class="btn" style="font-size:11px" onclick="${isE?'togRamE':'togRam'}(${c.id})">Reabrir</button><button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="${isE?'borrarRamE':'borrarRam'}(${c.id},event)">🗑 Borrar</button></div></div>`;
-    });
-    h+='</div>';
-  }
-  if(!pend.length&&!epend.length&&!done.length&&!edone.length)h='<div style="color:#aaa;text-align:center;padding:30px">Sin tareas para Ramiro en este momento.</div>';
+  if(!pend.length&&!epend.length&&!tareasRam.length)h='<div style="color:#aaa;text-align:center;padding:30px">Sin tareas para Ramiro.</div>';
   el.innerHTML=h;
 }
+
+let tareasRam=JSON.parse(localStorage.getItem('ga_tram')||'[]');
+function saveTareasRam(){localStorage.setItem('ga_tram',JSON.stringify(tareasRam));fbSave();}
+function addTareaRam(){
+  const inp=document.getElementById('tram-inp');
+  if(!inp||!inp.value.trim())return;
+  tareasRam.push({txt:inp.value.trim(),done:false,ts:Date.now()});
+  inp.value='';saveTareasRam();renderRam();
+}
+function toggleTareaRam(i){tareasRam[i].done=!tareasRam[i].done;saveTareasRam();renderRam();}
+function delTareaRam(i){tareasRam.splice(i,1);saveTareasRam();renderRam();}
 
 function renderResolver(){
   const el=document.getElementById('resolver-body');
