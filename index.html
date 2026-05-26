@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v103</title>
+<title>Gudiño y Asociados v104</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1004,15 +1004,12 @@ function vBtnTxt(c){
 
 
 // ═══════════════════════════════════════════════
-// SYNC — JSONBin.io
+// SYNC — Firebase Realtime Database
 // ═══════════════════════════════════════════════
-let JSONBIN_ID  = localStorage.getItem('ga_jbid')||'';
-let JSONBIN_KEY = localStorage.getItem('ga_jbkey')||'';
-let pollTimer   = null;
-let lastSaveTS  = 0;   // timestamp del ultimo guardado LOCAL
-let lastRemoteTS = 0;  // timestamp del ultimo dato remoto aplicado
-let isSaving    = false;
-let saveQueue   = false; // hay un cambio pendiente de subir?
+const FB_URL='https://gudino-asociados-default-rtdb.firebaseio.com/datos.json';
+let JSONBIN_ID='x';let JSONBIN_KEY='x'; // legacy — no used
+let pollTimer=null,lastSaveTS=0,lastRemoteTS=0,isSaving=false,saveQueue=false;
+let pendingOfflineSync=localStorage.getItem('ga_pending_sync')==='1';
 
 function setSyncStatus(s){
   const dot=document.getElementById('sync-dot');
@@ -1020,185 +1017,85 @@ function setSyncStatus(s){
   if(!dot||!lbl)return;
   dot.className='sync-dot '+s;
   const offline=pendingOfflineSync||localStorage.getItem('ga_pending_sync');
-  const labels={
-    ok:'sincronizado',
-    saving:'guardando...',
-    err: offline?'guardado local':'error',
-    local:'local (sin sync)'
-  };
+  const labels={ok:'sincronizado',saving:'guardando...',err:offline?'guardado local':'error',local:'local (sin sync)'};
   lbl.textContent=labels[s]||s;
-  // Banner offline
   let banner=document.getElementById('offline-banner');
   if(!banner){
-    banner=document.createElement('div');
-    banner.id='offline-banner';
+    banner=document.createElement('div');banner.id='offline-banner';
     banner.style.cssText='display:none;background:#fffbe6;border-bottom:1px solid #ffe066;padding:4px 12px;font-size:10px;color:#7a5c00;text-align:center;position:sticky;top:0;z-index:9999';
-    banner.textContent='⚠ Sin conexión con el servidor — los cambios se guardan localmente y se sincronizarán cuando vuelva internet';
-    const main=document.getElementById('main-body');
-    if(main)main.prepend(banner);
+    banner.textContent='⚠ Sin conexión — los cambios se guardan localmente y se sincronizarán cuando vuelva internet';
+    const main=document.getElementById('main-body');if(main)main.prepend(banner);
   }
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){
-  return{v:Date.now(),causas,movidas:[...movidas],gastos,audiencias,extraj,feriados};
-}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],gastos,audiencias,extraj,feriados};}
 function applyPayload(d){
   if(!d)return;
-  if(d.causas)causas=d.causas;
-  if(d.movidas)movidas=new Set(d.movidas);
-  if(d.gastos)gastos=d.gastos;
-  if(d.audiencias)audiencias=d.audiencias;
-  if(d.extraj)extraj=d.extraj;
-  if(d.feriados)feriados=d.feriados;
+  if(d.causas)causas=d.causas;if(d.movidas)movidas=new Set(d.movidas);
+  if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;
+  if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;
   svl('ga_c',causas);svl('ga_m_'+SK,[...movidas]);svl('ga_g',gastos);
   svl('ga_a',audiencias);svl('ga_e',extraj);svl('ga_f',feriados);
 }
 
-// GUARDAR en JSONBin — siempre que el usuario hace algo
-let pendingOfflineSync=localStorage.getItem('ga_pending_sync')==='1';
-
 async function fbSave(){
-  if(!JSONBIN_ID||!JSONBIN_KEY){setSyncStatus('local');return;}
   if(isSaving){saveQueue=true;return;}
-  isSaving=true;
-  saveQueue=false;
-  lastSaveTS=Date.now();
-  setSyncStatus('saving');
+  isSaving=true;saveQueue=false;lastSaveTS=Date.now();setSyncStatus('saving');
   try{
     const payload=getPayload();
-    const r=await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Bin-Versioning':'false'},
-      body:JSON.stringify(payload)
-    });
-    if(r.ok){
-      setSyncStatus('ok');
-      lastRemoteTS=payload.v;
-      pendingOfflineSync=false;
-      localStorage.removeItem('ga_pending_sync');
-    } else {
-      setSyncStatus('err');
-      pendingOfflineSync=true;
-      localStorage.setItem('ga_pending_sync','1');
-    }
-  }catch(e){
-    setSyncStatus('err');
-    pendingOfflineSync=true;
-    localStorage.setItem('ga_pending_sync','1');
-  }
-  isSaving=false;
-  if(saveQueue)fbSave();
+    const r=await fetch(FB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(r.ok){setSyncStatus('ok');lastRemoteTS=payload.v;pendingOfflineSync=false;localStorage.removeItem('ga_pending_sync');}
+    else{setSyncStatus('err');pendingOfflineSync=true;localStorage.setItem('ga_pending_sync','1');}
+  }catch(e){setSyncStatus('err');pendingOfflineSync=true;localStorage.setItem('ga_pending_sync','1');}
+  isSaving=false;if(saveQueue)fbSave();
 }
 
-// Reintentar cuando vuelve la conexión
-window.addEventListener('online',()=>{
-  if(pendingOfflineSync||localStorage.getItem('ga_pending_sync')){
-    setSyncStatus('saving');
-    setTimeout(fbSave,2000);
-  }
-});
-
-// Chequear cada 2 minutos si hay pendiente
-setInterval(()=>{
-  if((pendingOfflineSync||localStorage.getItem('ga_pending_sync'))&&navigator.onLine&&JSONBIN_ID&&JSONBIN_KEY){
-    fbSave();
-  }
-},120000);
-
-// POLLING — solo baja cambios de OTROS usuarios (Ramiro)
 async function pollSync(){
-  if(!JSONBIN_ID||!JSONBIN_KEY)return;
-  if(isSaving)return; // no interrumpir un guardado
-  const ahorita=Date.now();
-  if(ahorita-lastSaveTS<8000)return; // si hace menos de 8s que guardé, no pisar
+  if(isSaving)return;if(Date.now()-lastSaveTS<8000)return;
   try{
-    const r=await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{
-      headers:{'X-Master-Key':JSONBIN_KEY}
-    });
-    if(r.ok){
-      const data=await r.json();
-      const remote=data.record;
-      // Solo aplicar si el remote tiene timestamp MAS NUEVO que lo ultimo que subimos
-      if(remote&&remote.causas&&remote.causas.length>0){
-        const remoteV=remote.v||0;
-        if(remoteV>lastRemoteTS){
-          lastRemoteTS=remoteV;
-          applyPayload(remote);
-          updProgress();renderBan();renderR();
-          setSyncStatus('ok');
-        }
-      }
-    }
-  }catch(e){}
+    const r=await fetch(FB_URL);if(!r.ok)return;
+    const remote=await r.json();if(!remote||!remote.v)return;
+    if(remote.v>lastRemoteTS){lastRemoteTS=remote.v;applyPayload(remote);updProgress();renderBan();renderR();updBadges();}
+    if(pendingOfflineSync)fbSave();else setSyncStatus('ok');
+  }catch(e){setSyncStatus('err');}
 }
 
-function startSync(){
-  if(pollTimer)clearInterval(pollTimer);
-  if(!JSONBIN_ID||!JSONBIN_KEY)return;
-  pollTimer=setInterval(pollSync,10000); // cada 10 segundos
-}
+function startSync(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(pollSync,10000);}
+
+window.addEventListener('online',()=>{if(pendingOfflineSync||localStorage.getItem('ga_pending_sync')){setSyncStatus('saving');setTimeout(fbSave,2000);}});
+setInterval(()=>{if((pendingOfflineSync||localStorage.getItem('ga_pending_sync'))&&navigator.onLine)fbSave();},120000);
 
 async function conectarJSONBin(){
-  const id=document.getElementById('jb-id').value.trim();
-  const key=document.getElementById('jb-key').value.trim();
-  if(!id||!key){alert('Completá el ID del bin y la API Key.');return;}
-  JSONBIN_ID=id;JSONBIN_KEY=key;
-  localStorage.setItem('ga_jbid',id);localStorage.setItem('ga_jbkey',key);
   setSyncStatus('saving');
   try{
-    const r=await fetch('https://api.jsonbin.io/v3/b/'+id+'/latest',{headers:{'X-Master-Key':key}});
+    const r=await fetch(FB_URL);
     if(r.ok){
       const data=await r.json();
-      if(data.record&&data.record.causas&&data.record.causas.length>0){
-        applyPayload(data.record);
-        lastRemoteTS=data.record.v||0;
-        updProgress();renderBan();renderR();
-      } else {
-        await fbSave();
-      }
-      startSync();
-      setSyncStatus('ok');
+      if(data&&data.causas&&data.causas.length>0){applyPayload(data);lastRemoteTS=data.v||0;updProgress();renderBan();renderR();updBadges();}
+      else{await fbSave();}
+      startSync();setSyncStatus('ok');
       const ok=document.getElementById('jb-ok');
       if(ok){ok.style.display='block';setTimeout(()=>ok.style.display='none',4000);}
-    } else {
-      setSyncStatus('err');
-      alert('Error de conexión. Verificá el ID y la API Key.');
-    }
+    }else{setSyncStatus('err');alert('Error conectando. Intentá de nuevo.');}
   }catch(e){setSyncStatus('err');alert('No se pudo conectar: '+e.message);}
 }
 
-function desconectarSync(){
-  if(pollTimer)clearInterval(pollTimer);
-  JSONBIN_ID='';JSONBIN_KEY='';
-  localStorage.removeItem('ga_jbid');localStorage.removeItem('ga_jbkey');
-  setSyncStatus('local');
-  alert('Desconectado. Trabajando en modo local.');
-}
+function desconectarSync(){if(pollTimer)clearInterval(pollTimer);setSyncStatus('local');}
 
-// Auto-reconectar
-(function(){
-  if(JSONBIN_ID&&JSONBIN_KEY){
-    setTimeout(async()=>{
-      try{
-        const r=await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{headers:{'X-Master-Key':JSONBIN_KEY}});
-        if(r.ok){
-          const data=await r.json();
-          const remote=data.record;
-          if(remote&&remote.causas&&remote.causas.length>0){
-            applyPayload(remote);
-            lastRemoteTS=remote.v||0;
-            setSyncStatus('ok');
-          } else {
-            await fbSave();
-          }
-          startSync();
-        }
-      }catch(e){setSyncStatus('err');}
-      updProgress();renderBan();renderR();
-    },1000);
-  }
-})();
+// Auto-conectar al cargar
+setTimeout(async()=>{
+  try{
+    const r=await fetch(FB_URL);
+    if(r.ok){
+      const data=await r.json();
+      if(data&&data.causas&&data.causas.length>0){applyPayload(data);lastRemoteTS=data.v||0;setSyncStatus('ok');}
+      else{await fbSave();}
+      startSync();
+    }else setSyncStatus('err');
+  }catch(e){setSyncStatus('err');}
+  updProgress();renderBan();renderR();updBadges();
+},1000);
 
 // ═══════════════════════════════════════════════
 // STATE (localStorage como fallback, Firebase como principal cuando está conectado)
