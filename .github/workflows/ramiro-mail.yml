@@ -1,0 +1,45 @@
+name: Mail Ramiro
+on:
+  schedule:
+    - cron: '0 11 * * 1'
+    - cron: '0 11 * * 5'
+  workflow_dispatch:
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar tareas a Ramiro
+        run: |
+          curl -s https://gudino-asociados-default-rtdb.firebaseio.com/datos.json > /tmp/datos.json
+          node -e "
+          const fs = require('fs');
+          const https = require('https');
+          const data = JSON.parse(fs.readFileSync('/tmp/datos.json'));
+          const pendCausas = (data.causas||[]).filter(c=>c.ram&&!c.rdon);
+          const pendExt = (data.extraj||[]).filter(e=>e.ram&&!e.rdon);
+          const pendGen = (data.tareasRam||[]).filter(t=>!t.done);
+          if(!pendCausas.length&&!pendExt.length&&!pendGen.length){console.log('Sin tareas pendientes');process.exit(0);}
+          let msg='TAREAS PENDIENTES PARA RAMIRO:\n\n';
+          if(pendGen.length){msg+='TAREAS GENERALES:\n';pendGen.forEach(t=>msg+='- '+t.txt+'\n');msg+='\n';}
+          if(pendCausas.length||pendExt.length){msg+='ENCARGOS EN CAUSAS:\n';[...pendCausas,...pendExt].forEach(c=>msg+='- '+(c.car||c.tit)+': '+c.ram+'\n');}
+          const hoy=new Date().toLocaleDateString('es-AR');
+          const dia=new Date().getDay();
+          const titulo='Tareas de Ramiro - '+(dia===1?'Lunes':'Viernes')+' '+hoy;
+          const mailCfg=data.mailCfg||{};
+          const destinos=[mailCfg.emailRam,mailCfg.email].filter(Boolean);
+          if(!destinos.length){console.log('Sin emails configurados');process.exit(0);}
+          let enviados=0;
+          destinos.forEach(dest=>{
+            const body=JSON.stringify({
+              service_id:'${{ secrets.EJS_SVC }}',
+              template_id:'${{ secrets.EJS_TPL }}',
+              user_id:'${{ secrets.EJS_KEY }}',
+              template_params:{cliente:titulo,hora:'08:00',motivo:msg,fecha:hoy}
+            });
+            const opts={hostname:'api.emailjs.com',path:'/api/v1.0/email/send',method:'POST',headers:{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body)}};
+            const req=https.request(opts,r=>{let d='';r.on('data',c=>d+=c);r.on('end',()=>{console.log('Enviado a',dest,':',d);enviados++;if(enviados===destinos.length)process.exit(0);});});
+            req.on('error',e=>{console.error('Error:',e.message);});
+            req.write(body);req.end();
+          });
+          "
