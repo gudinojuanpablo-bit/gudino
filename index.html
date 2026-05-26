@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v104</title>
+<title>Gudiño y Asociados v105</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -687,46 +687,16 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
         <div id="usuario-actual" style="font-size:11px;color:#666;margin-top:8px;text-align:center"></div>
       </div>
       <div style="background:#EAF3DE;border:1.5px solid #C0DD97;border-radius:8px;padding:14px;margin-bottom:12px">
-        <h3 style="font-size:13px;font-weight:700;color:#27500A;margin-bottom:8px">🌐 Sincronización online — GRATIS PARA SIEMPRE</h3>
-        <p style="font-size:11px;color:#3B6D11;line-height:1.7;margin-bottom:10px">Usa <strong>JSONBin.io</strong> — gratuito, sin tarjeta, sin vencimiento. Vos y Ramiro ven los cambios del otro en menos de 10 segundos desde cualquier dispositivo.</p>
-
-        <div style="background:#fff;border-radius:6px;padding:12px;margin-bottom:10px;border:1px solid #C0DD97">
-          <div style="font-size:11px;font-weight:700;color:#27500A;margin-bottom:8px">📋 PASO A PASO (una sola vez, 3 minutos):</div>
-          <ol style="font-size:11px;color:#3B6D11;line-height:2;padding-left:18px">
-            <li>Entrá a <strong>jsonbin.io</strong> → "Sign Up" con Google (gratis, sin tarjeta)</li>
-            <li>Clic en <strong>"+ Create Bin"</strong> → escribí <code>{}</code> → "Create"</li>
-            <li>Copiá el <strong>BIN ID</strong> que aparece arriba (empieza con números y letras)</li>
-            <li>Clic en tu perfil → <strong>"API Keys"</strong> → "Create Key" → copiá la key</li>
-            <li>Pegá ambos acá abajo y hacé clic en <strong>"Conectar"</strong></li>
-            <li>Mandále el link de esta app a Ramiro (publicada en Netlify) y que pegue las mismas credenciales</li>
-          </ol>
+        <h3 style="font-size:13px;font-weight:700;color:#27500A;margin-bottom:6px">🌐 Sincronización online — Firebase</h3>
+        <p style="font-size:11px;color:#3B6D11;line-height:1.7;margin-bottom:10px">Los datos se sincronizan automáticamente entre vos y Ramiro. Sin límites, sin configuración.</p>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span class="sync-dot" id="sync-dot2"></span>
+          <span style="font-size:11px;color:#3B6D11" id="sync-label2">verificando...</span>
         </div>
-
-        <div class="fg" style="margin-bottom:8px">
-          <div class="fgg full">
-            <label class="fl">BIN ID (lo encontrás en la URL del bin, ej: 68248abc...)</label>
-            <input class="fi" id="jb-id" placeholder="Pegá aquí el Bin ID">
-          </div>
-          <div class="fgg full">
-            <label class="fl">API Key (de tu perfil → API Keys)</label>
-            <input class="fi" id="jb-key" placeholder="Pegá aquí la Master Key ($2b$10$...)" type="password">
-          </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn p" onclick="conectarJSONBin()" style="font-size:11px">🔄 Reconectar</button>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn p" onclick="conectarJSONBin()">🔌 Conectar y sincronizar</button>
-          <button class="btn" onclick="desconectarSync()">Desconectar (modo local)</button>
-        </div>
-        <div class="ok" id="jb-ok" style="margin-top:8px;background:#EAF3DE;border-color:#C0DD97;color:#27500A">✓ Conectado. Los datos se sincronizan cada 8 segundos entre vos y Ramiro.</div>
-
-        <div style="margin-top:10px;background:#fff;border-radius:6px;padding:10px;border:1px solid #C0DD97">
-          <div style="font-size:11px;font-weight:700;color:#27500A;margin-bottom:6px">🌍 Para que sea online (publicar la app):</div>
-          <ol style="font-size:11px;color:#3B6D11;line-height:2;padding-left:18px">
-            <li>Entrá a <strong>netlify.com</strong> → Sign up con Google (gratis)</li>
-            <li>Arrastrá el archivo <code>Gudino_y_Asociados.html</code> a la pantalla</li>
-            <li>Te da un link tipo <code>https://gudino.netlify.app</code></li>
-            <li>Mandále ese link a Ramiro — ya pueden usarlo desde cualquier lugar</li>
-          </ol>
-        </div>
+        <div class="ok" id="jb-ok" style="margin-top:8px;background:#EAF3DE;border-color:#C0DD97;color:#27500A">✓ Conectado y sincronizando.</div>
       </div>
 
       <div class="cfg-blk">
