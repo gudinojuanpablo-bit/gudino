@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v101</title>
+<title>Gudiño y Asociados v102</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1019,7 +1019,13 @@ function setSyncStatus(s){
   const lbl=document.getElementById('sync-label');
   if(!dot||!lbl)return;
   dot.className='sync-dot '+s;
-  const labels={ok:'sincronizado',saving:'guardando...',err:'error',local:'local (sin sync)'};
+  const offline=pendingOfflineSync||localStorage.getItem('ga_pending_sync');
+  const labels={
+    ok:'sincronizado',
+    saving:'guardando...',
+    err: offline?'guardado local — sin conexión':'error',
+    local:'local (sin sync)'
+  };
   lbl.textContent=labels[s]||s;
 }
 
@@ -1039,9 +1045,11 @@ function applyPayload(d){
 }
 
 // GUARDAR en JSONBin — siempre que el usuario hace algo
+let pendingOfflineSync=localStorage.getItem('ga_pending_sync')==='1';
+
 async function fbSave(){
   if(!JSONBIN_ID||!JSONBIN_KEY){setSyncStatus('local');return;}
-  if(isSaving){saveQueue=true;return;} // si está guardando, encolar
+  if(isSaving){saveQueue=true;return;}
   isSaving=true;
   saveQueue=false;
   lastSaveTS=Date.now();
@@ -1055,12 +1063,37 @@ async function fbSave(){
     });
     if(r.ok){
       setSyncStatus('ok');
-      lastRemoteTS=payload.v; // lo que subimos es lo ultimo remoto
-    } else setSyncStatus('err');
-  }catch(e){setSyncStatus('err');}
+      lastRemoteTS=payload.v;
+      pendingOfflineSync=false;
+      localStorage.removeItem('ga_pending_sync');
+    } else {
+      setSyncStatus('err');
+      pendingOfflineSync=true;
+      localStorage.setItem('ga_pending_sync','1');
+    }
+  }catch(e){
+    setSyncStatus('err');
+    pendingOfflineSync=true;
+    localStorage.setItem('ga_pending_sync','1');
+  }
   isSaving=false;
-  if(saveQueue)fbSave(); // procesar cola
+  if(saveQueue)fbSave();
 }
+
+// Reintentar cuando vuelve la conexión
+window.addEventListener('online',()=>{
+  if(pendingOfflineSync||localStorage.getItem('ga_pending_sync')){
+    setSyncStatus('saving');
+    setTimeout(fbSave,2000);
+  }
+});
+
+// Chequear cada 2 minutos si hay pendiente
+setInterval(()=>{
+  if((pendingOfflineSync||localStorage.getItem('ga_pending_sync'))&&navigator.onLine&&JSONBIN_ID&&JSONBIN_KEY){
+    fbSave();
+  }
+},120000);
 
 // POLLING — solo baja cambios de OTROS usuarios (Ramiro)
 async function pollSync(){
