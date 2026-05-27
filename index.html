@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v114</title>
+<title>Gudiño y Asociados v115</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -2397,38 +2397,6 @@ function borrarTurno(){
   renderTurnos();
 }
 async function iniciarApp(){
-  if(JSONBIN_ID&&JSONBIN_KEY){
-    setSyncStatus('saving');
-    try{
-      const r=await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`,{headers:{'X-Master-Key':JSONBIN_KEY}});
-      if(r.ok){
-        const data=await r.json();
-        const remote=data.record;
-        if(remote&&remote.causas&&remote.causas.length>0){
-          // Load causas, movidas, gastos, extraj, feriados from remote
-          // but ALWAYS use clean audiencias from A0
-          causas=remote.causas;
-          if(remote.movidas)movidas=new Set(remote.movidas);
-          if(remote.gastos)gastos=remote.gastos;
-          if(remote.extraj)extraj=remote.extraj;
-          if(remote.feriados)feriados=remote.feriados;
-          // Force clean audiencias
-          audiencias=A0.map(a=>({...a}));
-          svl('ga_c',causas);svl('ga_m_'+SK,[...movidas]);svl('ga_g',gastos);svl('ga_e',extraj);svl('ga_f',feriados);svl('ga_a',audiencias);
-          setSyncStatus('ok');
-          // Push clean audiencias back to bin
-          await fbSave();
-        } else {
-          audiencias=A0.map(a=>({...a}));
-          await fbSave();
-        }
-      }
-    }catch(e){setSyncStatus('err');}
-    startSync();
-  } else {
-    audiencias=A0.map(a=>({...a}));
-    svl('ga_a',audiencias);
-  }
   updProgress();renderBan();renderR();
 }
 // ═══════════════════════════════════════
@@ -2457,36 +2425,27 @@ function renderUsuarioActual(){
 }
 
 async function latido(){
-  if(!miUsuario || !JSONBIN_ID || !JSONBIN_KEY) return;
+  if(!miUsuario) return;
   try {
     const ts = Date.now();
-    // guardamos en un bin separado de presencia usando el mismo key
-    // usamos localStorage como puente compartido via JSONBin main bin
-    const data = await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{
-      headers:{'X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY}
-    }).then(r=>r.json());
-    const actual = data.record || {};
-    actual._presencia = actual._presencia || {};
-    actual._presencia[miUsuario] = ts;
-    await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID,{
+    await fetch('https://gudino-asociados-default-rtdb.firebaseio.com/presencia/'+miUsuario+'.json',{
       method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY},
-      body:JSON.stringify(actual)
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(ts)
     });
   } catch(e){}
 }
 
 async function chequearPresencia(){
-  if(!JSONBIN_ID || !JSONBIN_KEY) return;
   try {
-    const data = await fetch('https://api.jsonbin.io/v3/b/'+JSONBIN_ID+'/latest',{
-      headers:{'X-Master-Key':JSONBIN_KEY,'X-Access-Key':JSONBIN_KEY}
-    }).then(r=>r.json());
-    const presencia = (data.record||{})._presencia || {};
+    const r = await fetch('https://gudino-asociados-default-rtdb.firebaseio.com/presencia.json');
+    if(!r.ok)return;
+    const presencia = await r.json();
+    if(!presencia)return;
     const ahora = Date.now();
     const otro = miUsuario === 'Ramiro' ? 'Juan Pablo' : 'Ramiro';
     const otroTs = presencia[otro] || 0;
-    const online = (ahora - otroTs) < 90000; // 90 segundos = online
+    const online = (ahora - otroTs) < 90000;
     const el = document.getElementById('presencia-indicator');
     if(el) el.innerHTML = online
       ? `<span style="color:#3B6D11">🟢 ${otro} conectado</span>`
