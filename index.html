@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v137</title>
+<title>Gudiño y Asociados v138</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -2430,6 +2430,15 @@ function cerrarCalcPlazo(){
   document.getElementById('calc-overlay').style.display='none';
   calcCausaId=null;
 }
+function calcSelHoy(btn){
+  document.querySelectorAll('.calc-d').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const desde=document.getElementById('calc-desde').value||todayISO();
+  calcFechaResult=desde;
+  document.getElementById('calc-fecha-txt').textContent=fmtS(calcFechaResult);
+  document.getElementById('calc-resultado').style.display='block';
+  document.getElementById('calc-para').focus();
+}
 function calcSelDias(dias,btn){
   calcDiasSelected=dias;
   document.querySelectorAll('.calc-d').forEach(b=>b.classList.remove('on'));
@@ -2572,6 +2581,7 @@ iniciarApp();
   <div style="margin-bottom:12px">
     <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">Cantidad de días hábiles:</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap" id="calc-dias-btns">
+      <button onclick="calcSelHoy(this)" class="calc-d" style="background:#e8f5e9;border-color:#81c784;color:#2e7d32;font-weight:700">Hoy</button>
       <button onclick="calcSelDias(3,this)" class="calc-d">3</button>
       <button onclick="calcSelDias(5,this)" class="calc-d">5</button>
       <button onclick="calcSelDias(10,this)" class="calc-d">10</button>
@@ -2587,8 +2597,8 @@ iniciarApp();
     <input type="text" id="calc-para" placeholder="que paguen, que contesten, que acepten cargo..." style="width:100%;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);box-sizing:border-box;margin-bottom:10px" oninput="calcActualizarPara()">
     <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">¿Cómo registrar?</div>
     <div style="display:flex;gap:6px">
-      <button onclick="calcGuardar('vencimiento')" style="flex:1;padding:7px 4px;border-radius:6px;border:2px solid var(--red-b);background:var(--red-l);color:#a00;font-size:11px;font-weight:700;cursor:pointer">⏰ Vencimiento<br><span style="font-size:9px;font-weight:400">para mí</span></button>
-      <button onclick="calcGuardar('info')" style="flex:1;padding:7px 4px;border-radius:6px;border:2px solid #ccc;background:#f2f1ef;color:#666;font-size:11px;font-weight:700;cursor:pointer">📎 Para saber<br><span style="font-size:9px;font-weight:400">seguimiento</span></button>
+      <button onclick="calcGuardar('vencimiento')" style="width:100%;padding:9px;border-radius:6px;border:2px solid var(--red-b);background:var(--red-l);color:#a00;font-size:12px;font-weight:700;cursor:pointer">⏰ Guardar en Vencimientos</button>
+      <button onclick="calcGuardar('info')" style="width:100%;padding:7px;border-radius:6px;border:1px solid #ccc;background:#f2f1ef;color:#666;font-size:11px;cursor:pointer;margin-top:5px">📎 Solo para saber</button>
     </div>
   </div>
 </div>
