@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v115</title>
+<title>Gudiño y Asociados v116</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1394,15 +1394,10 @@ function rowHTML(c){
             </div>
           </div>
         </div>
-        <!-- CAMPO VENCIMIENTO -->
-        <div id="cp-campo-ven-${c.id}" style="margin-bottom:8px">
+        <!-- CAMPO PLAZO (único para vencimiento y para saber) -->
+        <div id="cp-campo-plazo-${c.id}" style="margin-bottom:8px">
           <div class="cp-lbl">Plazo para: <span style="color:#e24b4a">*</span></div>
-          <input class="fi" type="text" id="cptv-${c.id}" value="${c.tv||''}" placeholder="que nos paguen, que conteste..." style="font-size:11px;padding:4px 7px">
-        </div>
-        <!-- CAMPOS PARA SABER -->
-        <div id="cp-campo-info-${c.id}" style="display:none;margin-bottom:8px">
-          <div class="cp-lbl">Plazo para: <span style="color:#e24b4a">*</span></div>
-          <input class="fi" type="text" id="cp-plazo-${c.id}" value="${c.tv_plazo||c.tv||''}" placeholder="que OSSE conteste, que el perito acepte..." style="font-size:11px;padding:4px 7px">
+          <input class="fi" type="text" id="cp-plazo-${c.id}" value="${c.tv_plazo||c.tv||''}" placeholder="que nos paguen, que conteste..." style="font-size:11px;padding:4px 7px">
         </div>
         <label class="cp-plazo"><input type="checkbox" id="cppl-${c.id}" style="width:13px;height:13px"> Tiene plazo activo</label>
         <div class="cp-btns"><button class="cp-save" onclick="saveCP(${c.id},event)">✓ Guardar</button><button class="cp-cl" onclick="clearV(${c.id},event)">Sin fecha</button></div>
@@ -1571,18 +1566,18 @@ function saveCP(id,e){
   const c=causas.find(x=>x.id===id);if(!c)return;
   const vtEl=document.getElementById('cpvt-'+id);
   const vt=vtEl?vtEl.value||'vencimiento':'vencimiento';
-  c.tipo_venc=vt;
-  if(vt==='info'){
-    const plazo=document.getElementById('cp-plazo-'+id).value.trim();
-    if(!plazo){const inp=document.getElementById('cp-plazo-'+id);if(inp){inp.style.borderColor='#e24b4a';inp.focus();}return;}
-    c.tv_plazo=plazo;c.tv_accion='';c.tv=plazo;c.pl=false;
-  } else {
-    // vencimiento — solo obligatorio si no hay tipo_aud
-    const tvVal=document.getElementById('cptv-'+id).value.trim();
-    if(!tvVal&&!c.tipo_aud){const inp=document.getElementById('cptv-'+id);if(inp){inp.style.borderColor='#e24b4a';inp.focus();inp.placeholder='⚠ Obligatorio';}return;}
-    c.tv=tvVal;c.tv_accion='';c.tv_plazo='';
-    c.pl=document.getElementById('cppl-'+id).checked;
+  const plazoEl=document.getElementById('cp-plazo-'+id);
+  const plazoVal=plazoEl?plazoEl.value.trim():'';
+  // Solo obligatorio si no hay tipo_aud
+  if(!plazoVal&&!c.tipo_aud){
+    if(plazoEl){plazoEl.style.borderColor='#e24b4a';plazoEl.focus();}
+    return;
   }
+  c.tipo_venc=vt;
+  c.tv=plazoVal;
+  c.tv_plazo=vt==='info'?plazoVal:'';
+  c.tv_accion='';
+  c.pl=vt==='vencimiento'?document.getElementById('cppl-'+id).checked:false;
   const horaEl=document.getElementById('cp-hora-'+id);
   if(horaEl)c.aud_h=horaEl.value||'';
   const modEl=document.getElementById('cp-mod-'+id);
