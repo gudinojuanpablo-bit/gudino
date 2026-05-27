@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v113</title>
+<title>Gudiño y Asociados v114</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1470,9 +1470,19 @@ function selCPT(id,t){
   c.tipo_aud=t;
   const sel=document.getElementById('cpt-sel-'+id);
   if(sel)sel.value=t||'';
-  // hide/show plazo para field based on audiencia
   const campoVen=document.getElementById('cp-campo-ven-'+id);
-  if(campoVen)campoVen.style.display=t?'none':'block';
+  const campoInfo=document.getElementById('cp-campo-info-'+id);
+  if(t){
+    // Audiencia — ocultar campos de plazo
+    if(campoVen)campoVen.style.display='none';
+    if(campoInfo)campoInfo.style.display='none';
+  } else {
+    // Sin audiencia — mostrar según tipo actual
+    const hidVT=document.getElementById('cpvt-'+id);
+    const vt=hidVT?hidVT.value:'vencimiento';
+    if(campoVen)campoVen.style.display=vt==='info'?'none':'block';
+    if(campoInfo)campoInfo.style.display=vt==='info'?'block':'none';
+  }
   renderCP(id);
 }
 function renderCP(id){
@@ -1788,6 +1798,10 @@ function aplicarContador(id,dias,e){
   calM_map[id]={y:ry,m:rm-1};
   const c=causas.find(x=>x.id===id);if(!c)return;
   c.ven=resultado;
+  // Auto-seleccionar Para saber
+  const hidVT=document.getElementById('cpvt-'+id);
+  if(hidVT)hidVT.value='info';
+  selVT(id,'info',null);
   renderCP(id);
   // close contador
   const cont=document.getElementById('cp-contador-'+id);
