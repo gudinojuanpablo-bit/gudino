@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v118</title>
+<title>Gudiño y Asociados v127</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -918,6 +918,7 @@ let extraj=JSON.parse(localStorage.getItem('ga_e')||'null')||EXT0;
 let feriados=JSON.parse(localStorage.getItem('ga_f')||'null')||F0;
 let mailCfg=JSON.parse(localStorage.getItem('ga_mc')||'{}');
 let filtroF=null,curView='reg',openCID=null,calM_map={},activeEd=null;
+let pendingVen={}; // fecha seleccionada en calendario antes de guardar, por id de causa
 let audMes={y:HOY.getFullYear(),m:HOY.getMonth()};
 let extFiltro='';
 
@@ -1003,7 +1004,16 @@ function setSyncStatus(s){
 function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],gastos,audiencias,extraj,feriados,mailCfg,tareasRam};}
 function applyPayload(d){
   if(!d)return;
-  if(d.causas)causas=d.causas;if(d.movidas)movidas=new Set(d.movidas);
+  if(d.causas){
+    causas=d.causas;
+    // Restaurar fechas pendientes que el usuario seleccionó pero aún no guardó
+    Object.keys(pendingVen).forEach(sid=>{
+      const pid=parseInt(sid);
+      const c=causas.find(x=>x.id===pid);
+      if(c)c.ven=pendingVen[sid];
+    });
+  }
+  if(d.movidas)movidas=new Set(d.movidas);
   if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;
   if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;
   if(d.mailCfg)mailCfg=d.mailCfg;
@@ -1025,7 +1035,9 @@ async function fbSave(){
 }
 
 async function pollSync(){
-  if(isSaving)return;if(Date.now()-lastSaveTS<8000)return;
+  if(isSaving)return;
+  if(openCID!==null)return; // No pisar datos mientras hay un popup abierto
+  if(Date.now()-lastSaveTS<8000)return;
   try{
     const r=await fetch(FB_URL);if(!r.ok)return;
     const remote=await r.json();if(!remote||!remote.v)return;
@@ -1313,7 +1325,8 @@ function rowHTML(c){
         const tvTxt=c.tv?'Plazo para '+c.tv:'';
         if(c.tipo_venc==='info'){
           const plazoRaw=(c.tv_plazo||c.tv||'').replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{27FF}\s]+/u,'').trim();
-          return plazoRaw?`Plazo para ${plazoRaw} · vence ${fmtS(c.ven)}${tag}`:'';
+          if(plazoRaw)return`Plazo para ${plazoRaw} · vence ${fmtS(c.ven)}${tag}`;
+          return c.ven?`📎 Para saber · vence ${fmtS(c.ven)}${tag}`:'';
         }
         const tvClean=(c.tv||'').replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{27FF}\s]+/u,'').trim();
         const tvPrefijo=tvClean?(tvClean.toLowerCase().startsWith('plazo para')?tvClean:'Plazo para '+tvClean):'';
@@ -1335,161 +1348,92 @@ function rowHTML(c){
         <span class="hl" onclick="abrirPlazo(${c.id})" title="Calcular plazo">⏱</span>
         <span class="hl" onclick="editAudObs(${c.id},event)" title="Agregar comentario" style="font-size:14px;font-weight:900;color:#444;padding:0 3px">+</span>
       </div>
-      <div class="cpop" id="cp-${c.id}" onclick="event.stopPropagation()">
-        <div style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${c.car}">${c.car}</div>
-        <div class="cp-hdr"><div class="cp-nav" onclick="navCP(${c.id},-1,event)">‹</div><span class="cp-mes">—</span><div class="cp-nav" onclick="navCP(${c.id},1,event)">›</div></div>
-        <div class="cp-grid" id="cpg-${c.id}"></div>
-        <hr class="cp-sep">
-        <div class="cp-sec-lbl">Tipo de audiencia</div>
-        <select class="fi" id="cpt-sel-${c.id}" onchange="selCPT(${c.id},this.value)" style="margin-bottom:5px;font-size:11px;padding:4px 7px">
-          <option value="">— Sin tipo —</option>
-          <option value="mediac">🩷 Mediación / Conciliación</option>
-          <option value="inicial">🔵 Inicial</option>
-          <option value="final">🟡 Final</option>
-          <option value="recursiva">🟠 Vista recursiva</option>
-          <option value="resolver">⚫ A resolver</option>
-        </select>
-        <hr class="cp-sep">
-        <div class="cp-lbl" style="margin-bottom:5px">Tipo de fecha</div>
-        <div style="display:flex;gap:5px;margin-bottom:8px">
-          <div id="cpvt-p-${c.id}" onclick="selVT(${c.id},'vencimiento',event)"
-            style="flex:1;padding:3px 6px;border-radius:4px;border:2px solid var(--red-b);background:var(--red-l);color:#a00;font-size:10px;font-weight:700;cursor:pointer;text-align:center;transition:opacity .15s">
-            ⏰ Vencimiento
-          </div>
-          <div id="cpvt-i-${c.id}" onclick="selVT(${c.id},'info',event)"
-            style="flex:1;padding:3px 6px;border-radius:4px;border:2px solid #ccc;background:#f2f1ef;color:#888;font-size:10px;cursor:pointer;text-align:center;transition:opacity .15s">
-            📎 Para saber
-          </div>
-        </div>
-        <input type="hidden" id="cpvt-${c.id}">
-        <div class="cp-row2">
-          <div>
-            <div class="cp-lbl">Hora</div>
-            <select class="fi" id="cp-hora-${c.id}" style="font-size:11px;padding:3px 5px">
-              <option value="">— Sin hora —</option>
-              ${['07:30','08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30','12:00','12:30','13:00','13:30'].map(h=>`<option value="${h}">${h}</option>`).join('')}
-            </select>
-          </div>
-          <div>
-            <div class="cp-lbl">Modalidad</div>
-            <select class="fi" id="cp-mod-${c.id}" style="font-size:11px;padding:3px 5px">
-              <option value="">— —</option>
-              <option value="Presencial">Presencial</option>
-              <option value="Virtual">Virtual</option>
-            </select>
-          </div>
-        </div>
-        <!-- CONTADOR RÁPIDO -->
-        <div style="margin-bottom:8px">
-          <button onclick="toggleContador(${c.id},event)" style="font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;width:100%;text-align:left">📅 Contador de plazo ▾</button>
-          <div id="cp-contador-${c.id}" style="display:none;margin-top:6px;padding:8px;background:var(--bg2);border-radius:5px;border:1px solid var(--border)">
-            <div class="cp-lbl" style="margin-bottom:4px">Desde:</div>
-            <input type="date" id="cp-desde-${c.id}" value="${isoD(HOY)}" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:100%;margin-bottom:6px">
-            <div class="cp-lbl" style="margin-bottom:4px">Días hábiles:</div>
-            <div style="display:flex;gap:4px">
-              <select id="cp-dias-${c.id}" style="flex:1;font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)">
-                ${[3,5,10,15,20,30].map(d=>`<option value="${d}">${d} días hábiles</option>`).join('')}
-              </select>
-              <button onclick="aplicarContador(${c.id},null,event)" style="font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer">→</button>
-            </div>
-          </div>
-        </div>
-        <!-- CAMPO PLAZO (único para vencimiento y para saber) -->
-        <div id="cp-campo-plazo-${c.id}" style="margin-bottom:8px">
-          <div class="cp-lbl">Plazo para: <span style="color:#e24b4a">*</span></div>
-          <input class="fi" type="text" id="cp-plazo-${c.id}" value="${c.tv_plazo||c.tv||''}" placeholder="que nos paguen, que conteste..." style="font-size:11px;padding:4px 7px">
-        </div>
-        <label class="cp-plazo"><input type="checkbox" id="cppl-${c.id}" style="width:13px;height:13px"> Tiene plazo activo</label>
-        <div class="cp-btns"><button class="cp-save" onclick="saveCP(${c.id},event)">✓ Guardar</button><button class="cp-cl" onclick="clearV(${c.id},event)">Sin fecha</button></div>
-        <hr class="cp-sep">
-        <div style="display:flex;gap:5px">
-          <button class="cp-cl" onclick="showHist(${c.id},event)" style="flex:1;font-size:10px">🕐 Historial</button>
-          <button class="cp-cl" onclick="limpiarCausa(${c.id},event)" style="flex:1;font-size:10px;color:#888">🧹 Limpiar</button>
-          <button class="cp-cl" id="btn-borrar-${c.id}" onclick="confirmarBorrar(${c.id},this)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0;font-weight:700">✕ Borrar</button>
-        </div>
-      </div>
     </div>
   </div>`;
 }
 
 function openCP(id,e){
   e.stopPropagation();
+  id=parseInt(id);
   if(openCID===id){closeCP();return;}
   if(openCID!==null)closeCP();
   openCID=id;
   const c=causas.find(x=>x.id===id);
-  if(!calM_map[id]){const b=c.ven?new Date(c.ven):new Date(HOY);calM_map[id]={y:b.getFullYear(),m:b.getMonth()};}
-  const pop=document.getElementById('cp-'+id);if(!pop)return;
-  const plazoInitEl=document.getElementById('cp-plazo-'+id);
-  if(plazoInitEl)plazoInitEl.value=c.tv_plazo||c.tv||'';
-  document.getElementById('cppl-'+id).checked=c.pl||false;
-  const cpSel=document.getElementById('cpt-sel-'+id);
-  if(cpSel)cpSel.value=c.tipo_aud||'';
-  const vt=c.tipo_venc||'vencimiento';
-  const hidVT=document.getElementById('cpvt-'+id);
-  if(hidVT)hidVT.value=vt;
-  selVT(id,vt,null);
-  const horaEl=document.getElementById('cp-hora-'+id);
-  if(horaEl)horaEl.value=c.aud_h||'';
-  const modEl=document.getElementById('cp-mod-'+id);
-  if(modEl)modEl.value=c.aud_mod||'';
-  renderCP(id);
+  if(!c)return;
+  // Siempre reinicializar el mes al abrir
+  const venRef=pendingVen[id]||c.ven||'';
+  const b=venRef?new Date(venRef+'T12:00:00'):new Date(HOY);
+  calM_map[id]={y:b.getFullYear(),m:b.getMonth()};
+  const pop=document.getElementById('global-cpop');
+  if(!pop)return;
+  // Llenar campos con datos de la causa
+  document.getElementById('gcp-car').textContent=c.car;
+  document.getElementById('gcp-car').title=c.car;
+  document.getElementById('gcp-plazo').value=c.tv_plazo||c.tv||'';
+  document.getElementById('gcp-pl').checked=c.pl||false;
+  document.getElementById('gcp-aud').value=c.tipo_aud||'';
+  document.getElementById('gcp-hora').value=c.aud_h||'';
+  document.getElementById('gcp-mod').value=c.aud_mod||'';
+  document.getElementById('gcp-desde').value=isoD(HOY);
+  document.getElementById('gcp-contador').style.display='none';
+  gcpSelVT(c.tipo_venc||'vencimiento');
+  gcpRenderGrid();
+  pop.style.display='block';
   pop.style.top='55px';
   pop.style.right='10px';
-  pop.classList.add('ab');
-  // Contraer el área de causas para que no quede tapada
   const ctReg=document.getElementById('ct-reg');
   if(ctReg)ctReg.style.marginRight='265px';
 }
-function selVT(id,t,e){
-  if(e)e.stopPropagation();
-  const hid=document.getElementById('cpvt-'+id);
-  if(hid)hid.value=t;
-  const elP=document.getElementById('cpvt-p-'+id);
-  const elI=document.getElementById('cpvt-i-'+id);
+function gcpSelVT(t){
+  const elP=document.getElementById('gcp-vt-p');
+  const elI=document.getElementById('gcp-vt-i');
   if(elP){elP.style.opacity=t==='vencimiento'?'1':'0.4';elP.style.outline=t==='vencimiento'?'2px solid #a00':'none';}
   if(elI){elI.style.opacity=t==='info'?'1':'0.4';elI.style.outline=t==='info'?'2px solid #888':'none';}
-  // show/hide fields
-  const campoVen=document.getElementById('cp-campo-ven-'+id);
-  const campoInfo=document.getElementById('cp-campo-info-'+id);
-  if(campoVen)campoVen.style.display=t==='vencimiento'?'block':'none';
-  if(campoInfo)campoInfo.style.display=t==='info'?'block':'none';
+  if(!openCID)return;
+  // Store vt on the global popup element as data attribute
+  document.getElementById('global-cpop').dataset.vt=t;
 }
-function closeCP(){if(openCID===null)return;const p=document.getElementById('cp-'+openCID);if(p)p.classList.remove('ab');openCID=null;const ctReg=document.getElementById('ct-reg');if(ctReg)ctReg.style.marginRight='';}
-function navCP(id,dir,e){e.stopPropagation();if(!calM_map[id])calM_map[id]={y:HOY.getFullYear(),m:HOY.getMonth()};calM_map[id].m+=dir;if(calM_map[id].m>11){calM_map[id].m=0;calM_map[id].y++;}if(calM_map[id].m<0){calM_map[id].m=11;calM_map[id].y--;}renderCP(id);}
-function selCPT(id,t){
-  const c=causas.find(x=>x.id===id);if(!c)return;
+function gcpGetVT(){return document.getElementById('global-cpop').dataset.vt||'vencimiento';}
+function gcpSelAud(t){
+  if(!openCID)return;
+  const c=causas.find(x=>x.id===openCID);if(!c)return;
   c.tipo_aud=t;
-  const sel=document.getElementById('cpt-sel-'+id);
-  if(sel)sel.value=t||'';
-  const campoVen=document.getElementById('cp-campo-ven-'+id);
-  const campoInfo=document.getElementById('cp-campo-info-'+id);
-  if(t){
-    // Audiencia — ocultar campos de plazo
-    if(campoVen)campoVen.style.display='none';
-    if(campoInfo)campoInfo.style.display='none';
-  } else {
-    // Sin audiencia — mostrar según tipo actual
-    const hidVT=document.getElementById('cpvt-'+id);
-    const vt=hidVT?hidVT.value:'vencimiento';
-    if(campoVen)campoVen.style.display=vt==='info'?'none':'block';
-    if(campoInfo)campoInfo.style.display=vt==='info'?'block':'none';
-  }
-  renderCP(id);
+  gcpRenderGrid();
 }
-function renderCP(id){
-  const pop=document.getElementById('cp-'+id);if(!pop)return;
-  const{y,m}=calM_map[id];const c=causas.find(x=>x.id===id);
+function closeCP(){
+  if(openCID===null)return;
+  delete pendingVen[openCID];
+  openCID=null;
+  const pop=document.getElementById('global-cpop');
+  if(pop)pop.style.display='none';
+  const ctReg=document.getElementById('ct-reg');
+  if(ctReg)ctReg.style.marginRight='';
+}
+function navGCP(dir,e){
+  if(e)e.stopPropagation();
+  if(!openCID)return;
+  if(!calM_map[openCID])calM_map[openCID]={y:HOY.getFullYear(),m:HOY.getMonth()};
+  calM_map[openCID].m+=dir;
+  if(calM_map[openCID].m>11){calM_map[openCID].m=0;calM_map[openCID].y++;}
+  if(calM_map[openCID].m<0){calM_map[openCID].m=11;calM_map[openCID].y--;}
+  gcpRenderGrid();
+}
+function gcpRenderGrid(){
+  if(!openCID)return;
+  const id=openCID;
+  const{y,m}=calM_map[id];
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  const venActual=pendingVen[id]!==undefined?pendingVen[id]:c.ven||'';
   const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-  pop.querySelector('.cp-mes').textContent=meses[m]+' '+y;
-  const dias=['Lu','Ma','Mi','Ju','Vi','Sá','Do'];
+  document.getElementById('gcp-mes').textContent=meses[m]+' '+y;
+  const dias=['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
   const fi=new Date(y,m,1).getDay(),off=(fi===0)?6:fi-1,tot=new Date(y,m+1,0).getDate(),ts=todayISO();
   let h=dias.map(d=>`<div class="cp-dh">${d}</div>`).join('');
   for(let i=0;i<off;i++)h+=`<div class="cp-d emp"></div>`;
   for(let d=1;d<=tot;d++){
     const iso=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const dow=new Date(y,m,d).getDay();
-    const isSel=iso===(c.ven||''),isT=iso===ts,isP=iso<ts,isM=dow===2;
+    const isSel=iso===venActual,isT=iso===ts,isP=iso<ts,isM=dow===2;
     const colCls=isSel&&c.tipo_aud?tInfo(c.tipo_aud).cpCls:'';
     let cl='cp-d';
     if(isSel&&!colCls)cl+=' sel';
@@ -1497,49 +1441,59 @@ function renderCP(id){
     if(isT&&!isSel)cl+=' tod';
     if(isP&&!isSel)cl+=' pas';
     if(isM&&!isSel&&!isP)cl+=' mar';
-    h+=`<div class="${cl}" onclick="selDia(${id},'${iso}',event)" title="${isM?'Martes — vencimiento típico':''}${esFer(iso)?' ⚠ Feriado':''}">${d}${esFer(iso)?'⚠':''}</div>`;
+    h+=`<div class="${cl}" onclick="event.stopPropagation();gcpSelDia('${iso}')" title="${isM?'Martes — vencimiento tipico':''}${esFer(iso)?' Feriado':''}">${d}${esFer(iso)?'*':''}</div>`;
   }
-  document.getElementById('cpg-'+id).innerHTML=h;
+  document.getElementById('gcp-grid').innerHTML=h;
 }
-function selDia(id,iso,e){
-  e.stopPropagation();
-  const c=causas.find(x=>x.id===id);if(!c)return;
+function gcpSelDia(iso){
+  console.log('[SELDIA] iso:',iso,'openCID:',openCID,'typeof openCID:',typeof openCID);
+  if(!openCID)return;
+  const id=openCID;
+  const c=causas.find(x=>x.id===id);
+  console.log('[SELDIA] causa encontrada:',!!c,'id:',id);
+  if(!c)return;
+  pendingVen[id]=iso;
   c.ven=iso;
+  console.log('[SELDIA] pendingVen despues:',JSON.stringify(pendingVen));
   const btn=document.getElementById('vbtn-'+id);
   if(btn){const nb=vBtnCls(c);btn.className=(nb.startsWith('vbtn ')?nb:'vbtn '+nb);btn.innerHTML=vBtnTxt(c);}
-  renderCP(id);
+  gcpRenderGrid();
 }
-function clearV(id,e){
-  e.stopPropagation();
-  const c=causas.find(x=>x.id===id);if(!c)return;
-  c.ven='';c.tv='';c.pl=false;c.tipo_aud='';c.tipo_venc='vencimiento';
-  sC();refRow(id);closeCP();updBadges();}
-
+function gcpAplicarContador(){
+  if(!openCID)return;
+  const id=openCID;
+  const desde=document.getElementById('gcp-desde').value||isoD(HOY);
+  const dias=parseInt(document.getElementById('gcp-dias').value)||20;
+  const resultado=sumarDiasHabiles(desde,dias);
+  console.log('[CONTADOR] desde:',desde,'dias:',dias,'resultado:',resultado,'openCID:',id);
+  if(!calM_map[id])calM_map[id]={y:HOY.getFullYear(),m:HOY.getMonth()};
+  const[ry,rm]=resultado.split('-').map(Number);
+  calM_map[id]={y:ry,m:rm-1};
+  const c=causas.find(x=>x.id===parseInt(id));
+  console.log('[CONTADOR] causa encontrada:',!!c,'id buscado:',parseInt(id),'tipos ids:',[...causas.slice(0,3).map(x=>x.id+' type:'+typeof x.id)]);
+  if(!c)return;
+  pendingVen[id]=resultado;
+  c.ven=resultado;
+  gcpSelVT('info');
+  const pl=document.getElementById('gcp-plazo');
+  if(pl&&!pl.value.trim())pl.value='plazo';
+  gcpRenderGrid();
+  const btn=document.getElementById('vbtn-'+id);
+  if(btn){const nb=vBtnCls(c);btn.className=(nb.startsWith('vbtn ')?nb:'vbtn '+nb);btn.innerHTML=vBtnTxt(c);}
+  document.getElementById('gcp-contador').style.display='none';
+}
 function sincTodasAudiencias(){
   const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
-  
-  // Primero limpiar duplicados por causaId — quedar solo con una por causa
   const porCausa={};
-  audiencias.forEach(a=>{
-    if(a.causaId){
-      const key=String(a.causaId);
-      if(!porCausa[key])porCausa[key]=a;
-    }
-  });
-  // Reconstruir lista: audiencias sin causaId + una por causaId
+  audiencias.forEach(a=>{if(a.causaId){const k=String(a.causaId);if(!porCausa[k])porCausa[k]=a;}});
   const sinCausa=audiencias.filter(a=>!a.causaId);
   audiencias=[...sinCausa,...Object.values(porCausa)];
-
-  // Ahora sincronizar causas con tipo_aud
   causas.forEach(c=>{
     if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
     const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
     const existe=audiencias.find(a=>String(a.causaId)===String(c.id));
-    if(existe){
-      existe.f=c.ven;existe.h=c.aud_h||'';existe.c=c.car;existe.j=c.juz;existe.o=c.aud_obs||'';existe.t=t;
-    } else {
-      audiencias.push({id:Date.now()+Math.random(),causaId:c.id,f:c.ven,h:c.aud_h||'',c:c.car,j:c.juz,o:c.aud_obs||'',t});
-    }
+    if(existe){existe.f=c.ven;existe.h=c.aud_h||'';existe.c=c.car;existe.j=c.juz;existe.o=c.aud_obs||'';existe.t=t;}
+    else{audiencias.push({id:Date.now()+Math.random(),causaId:c.id,f:c.ven,h:c.aud_h||'',c:c.car,j:c.juz,o:c.aud_obs||'',t});}
   });
   sA();
 }
@@ -1548,49 +1502,73 @@ function sincAudiencia(c){
   if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
   const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
   const existe=audiencias.find(a=>String(a.causaId)===String(c.id));
-  if(existe){
-    existe.f=c.ven; existe.h=c.aud_h||''; existe.c=c.car;
-    existe.j=c.juz; existe.o=c.aud_obs||''; existe.t=t;
-  } else {
-    audiencias.push({id:Date.now(),causaId:c.id,f:c.ven,h:c.aud_h||'',c:c.car,j:c.juz,o:c.aud_obs||'',t});
-  }
+  if(existe){existe.f=c.ven;existe.h=c.aud_h||'';existe.c=c.car;existe.j=c.juz;existe.o=c.aud_obs||'';existe.t=t;}
+  else{audiencias.push({id:Date.now(),causaId:c.id,f:c.ven,h:c.aud_h||'',c:c.car,j:c.juz,o:c.aud_obs||'',t});}
   sA();
   const panelAud=document.getElementById('panel-audiencias');
   if(panelAud&&panelAud.classList.contains('on'))renderCal();
 }
-function saveCP(id,e){
-  e.stopPropagation();
+function gcpGuardar(){
+  if(!openCID)return;
+  const id=openCID;
   const c=causas.find(x=>x.id===id);if(!c)return;
-  // Leer todos los valores ANTES de cualquier cambio al DOM
-  const vtEl=document.getElementById('cpvt-'+id);
-  const vt=vtEl?vtEl.value||'vencimiento':'vencimiento';
-  const plazoEl=document.getElementById('cp-plazo-'+id);
-  const plazoVal=plazoEl?plazoEl.value.trim():'';
-  const plEl=document.getElementById('cppl-'+id);
-  const plChecked=plEl?plEl.checked:false;
-  const horaEl=document.getElementById('cp-hora-'+id);
-  const horaVal=horaEl?horaEl.value||'':'';
-  const modEl=document.getElementById('cp-mod-'+id);
-  const modVal=modEl?modEl.value||'':'';
-  const audEl=document.getElementById('cpt-sel-'+id);
-  const audVal=audEl?audEl.value||'':c.tipo_aud||'';
-  console.log('saveCP',id,'vt:',vt,'plazo:',plazoVal,'ven:',c.ven,'aud:',audVal);
-  // Solo obligatorio si no hay tipo_aud ni ven
-  if(!plazoVal&&!audVal&&!c.ven){
-    if(plazoEl){plazoEl.style.borderColor='#e24b4a';plazoEl.focus();}
+  const vt=gcpGetVT();
+  const plazoVal=document.getElementById('gcp-plazo').value.trim();
+  console.log('[GUARDAR] id:',id,'typeof id:',typeof id,'vt:',vt,'plazo:',plazoVal,'pendingVen[id]:',pendingVen[id],'c.ven:',c.ven);
+  const plChecked=document.getElementById('gcp-pl').checked;
+  const horaVal=document.getElementById('gcp-hora').value||'';
+  const modVal=document.getElementById('gcp-mod').value||'';
+  const audVal=document.getElementById('gcp-aud').value||'';
+  // La fecha viene de pendingVen (más confiable) o de c.ven
+  const venFinal=pendingVen[id]!==undefined?pendingVen[id]:c.ven||'';
+  if(!plazoVal&&!audVal&&!venFinal){
+    const pl=document.getElementById('gcp-plazo');
+    if(pl){pl.style.borderColor='#e24b4a';pl.focus();}
     return;
   }
+  c.ven=venFinal;
   c.tipo_venc=vt;
-  c.tv=plazoVal;
-  c.tv_plazo=vt==='info'?plazoVal:'';
+  c.tv=plazoVal||(vt==='info'?c.tv:'');
+  c.tv_plazo=vt==='info'?(plazoVal||c.tv_plazo||''):'';
   c.tv_accion='';
   c.pl=vt==='vencimiento'?plChecked:false;
   c.aud_h=horaVal;
   c.aud_mod=modVal;
   c.tipo_aud=audVal;
+  delete pendingVen[id];
   sincAudiencia(c);
-  sC();refRow(id);closeCP();updBadges();renderVencPanel();
+  sC();
+  closeCP();
+  refRow(id);
+  updBadges();
+  renderVencPanel();
 }
+function gcpLimpiarFecha(){
+  if(!openCID)return;
+  clearV(openCID,{stopPropagation:()=>{}});
+}
+function gcpLimpiarCausa(){
+  if(!openCID)return;
+  limpiarCausa(openCID,{stopPropagation:()=>{}});
+}
+function gcpHistorial(){
+  if(!openCID)return;
+  showHist(openCID,{stopPropagation:()=>{}});
+}
+function gcpConfirmarBorrar(btn){
+  if(!openCID)return;
+  confirmarBorrar(openCID,btn);
+}
+// Mantener funciones legacy para compatibilidad (toggleContador, etc)
+function selVT(id,t,e){}
+function navCP(id,dir,e){if(e)e.stopPropagation();navGCP(dir,e);}
+function renderCP(id){gcpRenderGrid();}
+function selCPT(id,t){gcpSelAud(t);}
+function selDia(id,iso,e){if(e)e.stopPropagation();gcpSelDia(iso);}
+function toggleContador(id,e){if(e)e.stopPropagation();var c=document.getElementById('gcp-contador');if(c)c.style.display=c.style.display==='none'?'block':'none';}
+function aplicarContador(id,dias,e){if(e)e.stopPropagation();gcpAplicarContador();}
+function saveCP(id,e){if(e)e.stopPropagation();gcpGuardar();}
+
 function refRow(id){
   const c=causas.find(x=>x.id===id);if(!c)return;
   const row=document.getElementById('cr-'+id);if(!row)return;
@@ -1781,33 +1759,7 @@ function usarPlazo(){
   }
   cerrarPlazo();
 }
-function toggleContador(id,e){
-  e.stopPropagation();
-  const el=document.getElementById('cp-contador-'+id);
-  if(el)el.style.display=el.style.display==='none'?'block':'none';
-}
-function aplicarContador(id,dias,e){
-  e.stopPropagation();
-  const desde=document.getElementById('cp-desde-'+id).value||isoD(HOY);
-  if(dias===null){
-    const sel=document.getElementById('cp-dias-'+id);
-    dias=sel?parseInt(sel.value)||20:20;
-  }
-  const resultado=sumarDiasHabiles(desde,dias);
-  if(!calM_map[id])calM_map[id]={y:HOY.getFullYear(),m:HOY.getMonth()};
-  const[ry,rm]=resultado.split('-').map(Number);
-  calM_map[id]={y:ry,m:rm-1};
-  const c=causas.find(x=>x.id===id);if(!c)return;
-  c.ven=resultado;
-  // Auto-seleccionar Para saber
-  const hidVT=document.getElementById('cpvt-'+id);
-  if(hidVT)hidVT.value='info';
-  selVT(id,'info',null);
-  renderCP(id);
-  // close contador
-  const cont=document.getElementById('cp-contador-'+id);
-  if(cont)cont.style.display='none';
-}
+
 function actualizarPreviaPlazo(){
   const det=document.getElementById('plazo-detalle');
   const para=document.getElementById('plazo-para').value.trim();
@@ -2118,7 +2070,12 @@ function copyTxt(){
   navigator.clipboard.writeText(t).then(()=>alert('¡Copiado! Pegalo en Word con Ctrl+V.'));
 }
 function confirmReset(){if(!confirm('¿Simular lunes? Se borran todos los verdes.'))return;movidas=new Set();sM();updProgress();renderBan();renderR();}
-document.addEventListener('click',()=>{if(openCID!==null)closeCP();});
+document.addEventListener('click',function(e){
+  if(openCID===null)return;
+  const pop=document.getElementById('global-cpop');
+  if(pop&&pop.contains(e.target))return; // click dentro del popup — no cerrar
+  closeCP();
+});
 
 function renderRam(){
   const el=document.getElementById('ram-body');
@@ -2462,5 +2419,91 @@ setTimeout(renderUsuarioActual, 500);
 
 iniciarApp();
 </script>
+
+<!-- POPUP CALENDARIO GLOBAL — único elemento, nunca se destruye por renderR/refRow -->
+<div class="cpop" id="global-cpop" onclick="event.stopPropagation()" style="display:none">
+  <div id="gcp-car" style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+  <div class="cp-hdr">
+    <div class="cp-nav" onclick="navGCP(-1,event)">&#8249;</div>
+    <span class="cp-mes" id="gcp-mes">—</span>
+    <div class="cp-nav" onclick="navGCP(1,event)">&#8250;</div>
+  </div>
+  <div class="cp-grid" id="gcp-grid"></div>
+  <hr class="cp-sep">
+  <div class="cp-sec-lbl">Tipo de audiencia</div>
+  <select class="fi" id="gcp-aud" onchange="gcpSelAud(this.value)" style="margin-bottom:5px;font-size:11px;padding:4px 7px">
+    <option value="">— Sin tipo —</option>
+    <option value="mediac">Mediacion / Conciliacion</option>
+    <option value="inicial">Inicial</option>
+    <option value="final">Final</option>
+    <option value="recursiva">Vista recursiva</option>
+    <option value="resolver">A resolver</option>
+  </select>
+  <hr class="cp-sep">
+  <div class="cp-lbl" style="margin-bottom:5px">Tipo de fecha</div>
+  <div style="display:flex;gap:5px;margin-bottom:8px">
+    <div id="gcp-vt-p" onclick="gcpSelVT('vencimiento')"
+      style="flex:1;padding:3px 6px;border-radius:4px;border:2px solid var(--red-b);background:var(--red-l);color:#a00;font-size:10px;font-weight:700;cursor:pointer;text-align:center;transition:opacity .15s">
+      Vencimiento
+    </div>
+    <div id="gcp-vt-i" onclick="gcpSelVT('info')"
+      style="flex:1;padding:3px 6px;border-radius:4px;border:2px solid #ccc;background:#f2f1ef;color:#888;font-size:10px;cursor:pointer;text-align:center;transition:opacity .15s">
+      Para saber
+    </div>
+  </div>
+  <div class="cp-row2">
+    <div>
+      <div class="cp-lbl">Hora</div>
+      <select class="fi" id="gcp-hora" style="font-size:11px;padding:3px 5px">
+        <option value="">— Sin hora —</option>
+        <option>07:30</option><option>08:00</option><option>08:30</option>
+        <option>09:00</option><option>09:30</option><option>10:00</option>
+        <option>10:30</option><option>11:00</option><option>11:30</option>
+        <option>12:00</option><option>12:30</option><option>13:00</option><option>13:30</option>
+      </select>
+    </div>
+    <div>
+      <div class="cp-lbl">Modalidad</div>
+      <select class="fi" id="gcp-mod" style="font-size:11px;padding:3px 5px">
+        <option value="">— —</option>
+        <option>Presencial</option><option>Virtual</option>
+      </select>
+    </div>
+  </div>
+  <div style="margin-bottom:8px">
+    <button onclick="event.stopPropagation();var c=document.getElementById('gcp-contador');c.style.display=c.style.display==='none'?'block':'none'" style="font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;width:100%;text-align:left">Contador de plazo</button>
+    <div id="gcp-contador" style="display:none;margin-top:6px;padding:8px;background:var(--bg2);border-radius:5px;border:1px solid var(--border)">
+      <div class="cp-lbl" style="margin-bottom:4px">Desde:</div>
+      <input type="date" id="gcp-desde" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:100%;margin-bottom:6px">
+      <div class="cp-lbl" style="margin-bottom:4px">Dias habiles:</div>
+      <div style="display:flex;gap:4px">
+        <select id="gcp-dias" style="flex:1;font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)">
+          <option value="3">3 dias habiles</option>
+          <option value="5">5 dias habiles</option>
+          <option value="10">10 dias habiles</option>
+          <option value="15">15 dias habiles</option>
+          <option value="20" selected>20 dias habiles</option>
+          <option value="30">30 dias habiles</option>
+        </select>
+        <button onclick="event.stopPropagation();gcpAplicarContador()" style="font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer">Calcular</button>
+      </div>
+    </div>
+  </div>
+  <div style="margin-bottom:8px">
+    <div class="cp-lbl">Plazo para:</div>
+    <input class="fi" type="text" id="gcp-plazo" placeholder="que nos paguen, que conteste..." style="font-size:11px;padding:4px 7px">
+  </div>
+  <label class="cp-plazo"><input type="checkbox" id="gcp-pl" style="width:13px;height:13px"> Tiene plazo activo</label>
+  <div class="cp-btns">
+    <button class="cp-save" onclick="event.stopPropagation();gcpGuardar()">Guardar</button>
+    <button class="cp-cl" onclick="event.stopPropagation();gcpLimpiarFecha()">Sin fecha</button>
+  </div>
+  <hr class="cp-sep">
+  <div style="display:flex;gap:5px">
+    <button class="cp-cl" onclick="event.stopPropagation();gcpHistorial()" style="flex:1;font-size:10px">Historial</button>
+    <button class="cp-cl" onclick="event.stopPropagation();gcpLimpiarCausa()" style="flex:1;font-size:10px;color:#888">Limpiar</button>
+    <button class="cp-cl" id="gcp-btn-borrar" onclick="event.stopPropagation();gcpConfirmarBorrar(this)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0;font-weight:700">Borrar</button>
+  </div>
+</div>
 </body>
 </html>
