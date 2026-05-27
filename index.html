@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v117</title>
+<title>Gudiño y Asociados v118</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1561,12 +1561,22 @@ function sincAudiencia(c){
 function saveCP(id,e){
   e.stopPropagation();
   const c=causas.find(x=>x.id===id);if(!c)return;
+  // Leer todos los valores ANTES de cualquier cambio al DOM
   const vtEl=document.getElementById('cpvt-'+id);
   const vt=vtEl?vtEl.value||'vencimiento':'vencimiento';
   const plazoEl=document.getElementById('cp-plazo-'+id);
   const plazoVal=plazoEl?plazoEl.value.trim():'';
-  // Solo obligatorio si no hay tipo_aud
-  if(!plazoVal&&!c.tipo_aud){
+  const plEl=document.getElementById('cppl-'+id);
+  const plChecked=plEl?plEl.checked:false;
+  const horaEl=document.getElementById('cp-hora-'+id);
+  const horaVal=horaEl?horaEl.value||'':'';
+  const modEl=document.getElementById('cp-mod-'+id);
+  const modVal=modEl?modEl.value||'':'';
+  const audEl=document.getElementById('cpt-sel-'+id);
+  const audVal=audEl?audEl.value||'':c.tipo_aud||'';
+  console.log('saveCP',id,'vt:',vt,'plazo:',plazoVal,'ven:',c.ven,'aud:',audVal);
+  // Solo obligatorio si no hay tipo_aud ni ven
+  if(!plazoVal&&!audVal&&!c.ven){
     if(plazoEl){plazoEl.style.borderColor='#e24b4a';plazoEl.focus();}
     return;
   }
@@ -1574,11 +1584,10 @@ function saveCP(id,e){
   c.tv=plazoVal;
   c.tv_plazo=vt==='info'?plazoVal:'';
   c.tv_accion='';
-  c.pl=vt==='vencimiento'?document.getElementById('cppl-'+id).checked:false;
-  const horaEl=document.getElementById('cp-hora-'+id);
-  if(horaEl)c.aud_h=horaEl.value||'';
-  const modEl=document.getElementById('cp-mod-'+id);
-  if(modEl)c.aud_mod=modEl.value||'';
+  c.pl=vt==='vencimiento'?plChecked:false;
+  c.aud_h=horaVal;
+  c.aud_mod=modVal;
+  c.tipo_aud=audVal;
   sincAudiencia(c);
   sC();refRow(id);closeCP();updBadges();renderVencPanel();
 }
