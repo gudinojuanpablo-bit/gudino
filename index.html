@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v145</title>
+<title>Gudiño y Asociados v146</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1167,12 +1167,13 @@ function renderVMP(){
   const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
   const el=document.getElementById('vmp-list');
   if(!el)return;
-  // Solo vencimientos propios (tipo_venc='vencimiento' y pl=true)
-  const todos=causas.filter(c=>c.ven&&c.est!=='archivada'&&c.pl)
-    .sort((a,b)=>a.ven>b.ven?1:a.ven<b.ven?-1:0);
-  const proximos5=todos.filter(c=>c.ven>=hoy&&c.ven<=en5);
-  const resto=todos.filter(c=>c.ven>en5);
-  const vencidos=todos.filter(c=>c.ven<hoy);
+  // Separar vencimientos propios de recordatorios
+  const esRec=c=>c.tipo_aud==='recordatorio';
+  const plazos=causas.filter(c=>c.ven&&c.est!=='archivada'&&c.pl&&!esRec(c)).sort((a,b)=>a.ven>b.ven?1:a.ven<b.ven?-1:0);
+  const recs=causas.filter(c=>c.ven&&c.est!=='archivada'&&c.pl&&esRec(c)).sort((a,b)=>a.ven>b.ven?1:a.ven<b.ven?-1:0);
+  const proximos5=plazos.filter(c=>c.ven>=hoy&&c.ven<=en5);
+  const resto=plazos.filter(c=>c.ven>en5);
+  const vencidos=plazos.filter(c=>c.ven<hoy);
   function tarjeta(c,border,bg,color,label){
     return `<div style="padding:10px 12px;border-radius:6px;border:1px solid ${border};background:${bg};margin-bottom:6px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
@@ -1185,11 +1186,7 @@ function renderVMP(){
     </div>`;
   }
   let html='';
-  // Vencidos
-  vencidos.forEach(c=>{
-    html+=tarjeta(c,'#ffb3b3','#fff0f0','#c0392b','✓ Venció '+fmtS(c.ven));
-  });
-  // Próximos 5 días
+  vencidos.forEach(c=>{ html+=tarjeta(c,'#ffb3b3','#fff0f0','#c0392b','✓ Venció '+fmtS(c.ven)); });
   proximos5.forEach(c=>{
     const d=Math.round((new Date(c.ven+' 12:00')-new Date(hoy+' 12:00'))/(1000*60*60*24));
     const label=d===0?'HOY':d===1?'Mañana':'En '+d+' días';
@@ -1201,20 +1198,26 @@ function renderVMP(){
   if(!vencidos.length&&!proximos5.length){
     html+='<div style="color:#888;text-align:center;padding:20px;font-size:12px">✓ Sin vencimientos urgentes</div>';
   }
-  // Próximos vencimientos (después de 5 días)
   if(resto.length){
     html+=`<div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;border-top:1px solid var(--border);padding-top:12px">Próximos vencimientos</div>`;
     resto.forEach(c=>{
       const d=dLeft(c.ven);
       html+=`<div style="padding:8px 10px;border-radius:5px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text)">${c.car}</div>
-          ${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}
-        </div>
-        <div style="text-align:right;flex-shrink:0;margin-left:8px">
-          <div style="font-size:11px;font-weight:700;color:var(--text2)">${fmtS(c.ven)}</div>
-          <div style="font-size:10px;color:#aaa">en ${d}d</div>
-        </div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--text)">${c.car}</div>${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}</div>
+        <div style="text-align:right;flex-shrink:0;margin-left:8px"><div style="font-size:11px;font-weight:700;color:var(--text2)">${fmtS(c.ven)}</div><div style="font-size:10px;color:#aaa">en ${d}d</div></div>
+      </div>`;
+    });
+  }
+  // Sección Recordatorios — separada
+  if(recs.length){
+    html+=`<div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;border-top:1px solid var(--border);padding-top:12px">Recordatorios</div>`;
+    recs.forEach(c=>{
+      const d=dLeft(c.ven);
+      const dLabel=d<0?'vencido':d===0?'hoy':'en '+d+'d';
+      const dColor=d<=0?'#e24b4a':'#aaa';
+      html+=`<div style="padding:8px 10px;border-radius:5px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:11px;font-weight:700;color:var(--text)">${c.car}</div>${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}</div>
+        <div style="text-align:right;flex-shrink:0;margin-left:8px"><div style="font-size:11px;font-weight:700;color:var(--text2)">${fmtS(c.ven)}</div><div style="font-size:10px;color:${dColor}">${dLabel}</div></div>
       </div>`;
     });
   }
