@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v127</title>
+<title>Gudiño y Asociados v136</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -119,6 +119,8 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .cr.urg .chk-col{background:var(--red-l);border-color:var(--red-b)}
 .cr.v7 .chk-col{background:var(--amber-l);border-color:var(--amber-b)}
 .cr.nor .chk-col{background:var(--bg2)}
+.cr.vpl{background:#fff8f8;border-color:#f5c0c0}
+.cr.vpl .chk-col{background:#fff0f0;border-color:#f5c0c0}
 .chkbox{width:14px;height:14px;border-radius:3px;border:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;pointer-events:none}
 .chkbox.on{background:var(--green);border-color:var(--green)}
 .ci{padding:5px 9px;min-width:0}
@@ -393,6 +395,9 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .sync-dot.err{background:#e24b4a}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .sync-label{font-size:10px;color:#888}
+.calc-d{padding:5px 10px;border-radius:5px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.calc-d.on{border-color:var(--blue);background:var(--blue);color:#fff}
+.calc-d:hover{border-color:var(--blue);color:var(--blue)}
 </style>
 </head>
 <body>
@@ -726,11 +731,11 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 <div class="plazo-modal-overlay" id="plazo-overlay" onclick="cerrarPlazo()"></div>
 <div class="plazo-modal" id="plazo-modal">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-    <h3 style="margin:0">📅 Calcular plazo en días hábiles</h3>
+    <h3 style="margin:0">📄 Oficios y cédulas</h3>
     <span onclick="cerrarPlazo()" style="cursor:pointer;color:#aaa;font-size:16px">✕</span>
   </div>
   <div style="margin-bottom:10px">
-    <div class="fl" style="margin-bottom:4px">Fecha de inicio (ej: hoy)</div>
+    <div class="fl" style="margin-bottom:4px">Fecha de diligenciamiento</div>
     <input class="fi" type="date" id="plazo-inicio">
   </div>
   <div style="margin-bottom:10px">
@@ -918,6 +923,7 @@ let extraj=JSON.parse(localStorage.getItem('ga_e')||'null')||EXT0;
 let feriados=JSON.parse(localStorage.getItem('ga_f')||'null')||F0;
 let mailCfg=JSON.parse(localStorage.getItem('ga_mc')||'{}');
 let filtroF=null,curView='reg',openCID=null,calM_map={},activeEd=null;
+let _gcpClickInterno=false; // flag para evitar que el document listener cierre el popup
 let pendingVen={}; // fecha seleccionada en calendario antes de guardar, por id de causa
 let audMes={y:HOY.getFullYear(),m:HOY.getMonth()};
 let extFiltro='';
@@ -950,9 +956,12 @@ function rowCls(c){
   if(c.tipo_aud==='final')return'aud-final';
   if(c.tipo_aud==='recursiva')return'aud-recursiva';
   if(c.tipo_venc==='info')return'nor';
+  if(!c.ven)return'nor';
   const d=dLeft(c.ven);
   if(c.est==='urgente'||d<=1)return'urg';
   if(d<=7)return'v7';
+  // vencimiento propio aunque sea lejano: borde suave
+  if(c.tipo_venc==='vencimiento'&&c.pl)return'vpl';
   return'nor';
 }
 function exCls(c){if(movidas.has(c.id))return'ci-ex';const d=dLeft(c.ven);return(d>=0&&d<=2)?'ci-ex crit':'ci-ex';}
@@ -1155,33 +1164,60 @@ function updProgress(){
 function renderVMP(){
   const hoy=isoD(HOY);
   const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
-  const vm=causas.filter(c=>c.ven&&c.ven>=hoy&&c.ven<=en5&&c.est!=='archivada'&&c.pl)
-    .sort((a,b)=>a.ven>b.ven?1:a.ven<b.ven?-1:0);
   const el=document.getElementById('vmp-list');
   if(!el)return;
-  if(!vm.length){
-    el.innerHTML='<div style="color:#888;text-align:center;padding:30px;font-size:13px">✓ Sin vencimientos en los próximos 5 días</div>';
-    return;
-  }
-  el.innerHTML=vm.map(c=>{
-    const dias=Math.round((new Date(c.ven+' 12:00')-new Date(hoy+' 12:00'))/(1000*60*60*24));
-    const label=dias===0?'HOY':dias===1?'Mañana':`En ${dias} días`;
-    const color=dias===0?'#e24b4a':dias<=2?'#e67e22':'#b84d00';
-    const bg=dias===0?'#fff0f0':dias<=2?'#fff7f0':'#fffbe6';
-    const border=dias===0?'#ffb3b3':dias<=2?'#ffd09e':'#ffe066';
-    const ti=c.tipo_aud&&tInfo(c.tipo_aud);
+  // Solo vencimientos propios (tipo_venc='vencimiento' y pl=true)
+  const todos=causas.filter(c=>c.ven&&c.est!=='archivada'&&c.pl&&c.tipo_venc==='vencimiento')
+    .sort((a,b)=>a.ven>b.ven?1:a.ven<b.ven?-1:0);
+  const proximos5=todos.filter(c=>c.ven>=hoy&&c.ven<=en5);
+  const resto=todos.filter(c=>c.ven>en5);
+  const vencidos=todos.filter(c=>c.ven<hoy);
+  function tarjeta(c,border,bg,color,label){
     return `<div style="padding:10px 12px;border-radius:6px;border:1px solid ${border};background:${bg};margin-bottom:6px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
         <span style="font-size:10px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:.5px">${label}</span>
-        <span style="font-size:10px;color:#aaa">${c.ven.split('-').reverse().join('/')}</span>
+        <span style="font-size:10px;color:#aaa">${fmtS(c.ven)}</span>
       </div>
-      <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:2px">${c.car}${c.pl?'<span class="pdot"></span>':''}</div>
+      <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:2px">${c.car}</div>
       ${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}
-      ${ti?`<div style="margin-top:3px"><span style="background:${ti.col};color:#fff;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700">${ti.lbl}</span></div>`:''}
       <div style="font-size:10px;color:#aaa;margin-top:3px">${c.juz} · ${c.ex}</div>
-      ${c.not?`<div style="font-size:11px;color:#555;margin-top:4px;background:#fff8;padding:4px 7px;border-radius:4px;border-left:3px solid ${border}">${c.not}</div>`:''}
     </div>`;
-  }).join('');
+  }
+  let html='';
+  // Vencidos
+  vencidos.forEach(c=>{
+    html+=tarjeta(c,'#ffb3b3','#fff0f0','#c0392b','✓ Venció '+fmtS(c.ven));
+  });
+  // Próximos 5 días
+  proximos5.forEach(c=>{
+    const d=Math.round((new Date(c.ven+' 12:00')-new Date(hoy+' 12:00'))/(1000*60*60*24));
+    const label=d===0?'HOY':d===1?'Mañana':'En '+d+' días';
+    const color=d===0?'#e24b4a':d<=2?'#e67e22':'#b84d00';
+    const bg=d===0?'#fff0f0':d<=2?'#fff7f0':'#fffbe6';
+    const border=d===0?'#ffb3b3':d<=2?'#ffd09e':'#ffe066';
+    html+=tarjeta(c,border,bg,color,label);
+  });
+  if(!vencidos.length&&!proximos5.length){
+    html+='<div style="color:#888;text-align:center;padding:20px;font-size:12px">✓ Sin vencimientos urgentes</div>';
+  }
+  // Próximos vencimientos (después de 5 días)
+  if(resto.length){
+    html+=`<div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;border-top:1px solid var(--border);padding-top:12px">Próximos vencimientos</div>`;
+    resto.forEach(c=>{
+      const d=dLeft(c.ven);
+      html+=`<div style="padding:8px 10px;border-radius:5px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text)">${c.car}</div>
+          ${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:8px">
+          <div style="font-size:11px;font-weight:700;color:var(--text2)">${fmtS(c.ven)}</div>
+          <div style="font-size:10px;color:#aaa">en ${d}d</div>
+        </div>
+      </div>`;
+    });
+  }
+  el.innerHTML=html;
 }
 function renderVencPanel(){renderVMP();}
 
@@ -1333,7 +1369,7 @@ function rowHTML(c){
         if(c.ven)return(mostrarReloj?'⏰ ':'')+( tvPrefijo?tvPrefijo+' · vence ':'vence ')+fmtS(c.ven)+tag;
         return '';
       })()}</div>
-      <div class="${(c.tipo_aud||(c.ven&&c.tv))?'ci-not-h':'ci-not'}" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))?'style="display:none"':''}>${c.not||'—'}</div>
+      <div class="ci-not" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))&&!c.not?'style="display:none"':''}>${c.not||''}</div>
       ${c.aud_obs?`<div class="ci-aud-obs-show" onclick="editAudObs(${c.id},event)">${c.aud_obs}</div>`:''}
       ${rNotaHTML(c,false)}
     </div>
@@ -1345,8 +1381,9 @@ function rowHTML(c){
 
       <div style="display:flex;gap:2px;align-items:center">
         <span class="hl" onclick="editRam(${c.id},event)" title="Tarea Ramiro">⭐</span>
-        <span class="hl" onclick="abrirPlazo(${c.id})" title="Calcular plazo">⏱</span>
-        <span class="hl" onclick="editAudObs(${c.id},event)" title="Agregar comentario" style="font-size:14px;font-weight:900;color:#444;padding:0 3px">+</span>
+        <span class="hl" onclick="abrirPlazo(${c.id})" title="Calcular plazo (oficios/cédulas)">⏱</span>
+        <span class="hl" onclick="abrirCalcPlazo(${c.id},event)" title="Calculadora de plazos" style="font-size:13px">🧮</span>
+        <span class="hl" onclick="agregarNota(${c.id},event)" title="Agregar comentario" style="font-size:14px;font-weight:900;color:#444;padding:0 3px">+</span>
       </div>
     </div>
   </div>`;
@@ -1369,13 +1406,11 @@ function openCP(id,e){
   // Llenar campos con datos de la causa
   document.getElementById('gcp-car').textContent=c.car;
   document.getElementById('gcp-car').title=c.car;
-  document.getElementById('gcp-plazo').value=c.tv_plazo||c.tv||'';
-  document.getElementById('gcp-pl').checked=c.pl||false;
   document.getElementById('gcp-aud').value=c.tipo_aud||'';
   document.getElementById('gcp-hora').value=c.aud_h||'';
   document.getElementById('gcp-mod').value=c.aud_mod||'';
-  document.getElementById('gcp-desde').value=isoD(HOY);
-  document.getElementById('gcp-contador').style.display='none';
+  const bbrr=document.getElementById('gcp-btn-borrar');if(bbrr){bbrr.dataset.confirm='';bbrr.textContent='✕ Borrar';bbrr.style.background='';bbrr.style.color='#c00';}
+
   gcpSelVT(c.tipo_venc||'vencimiento');
   gcpRenderGrid();
   pop.style.display='block';
@@ -1384,16 +1419,8 @@ function openCP(id,e){
   const ctReg=document.getElementById('ct-reg');
   if(ctReg)ctReg.style.marginRight='265px';
 }
-function gcpSelVT(t){
-  const elP=document.getElementById('gcp-vt-p');
-  const elI=document.getElementById('gcp-vt-i');
-  if(elP){elP.style.opacity=t==='vencimiento'?'1':'0.4';elP.style.outline=t==='vencimiento'?'2px solid #a00':'none';}
-  if(elI){elI.style.opacity=t==='info'?'1':'0.4';elI.style.outline=t==='info'?'2px solid #888':'none';}
-  if(!openCID)return;
-  // Store vt on the global popup element as data attribute
-  document.getElementById('global-cpop').dataset.vt=t;
-}
-function gcpGetVT(){return document.getElementById('global-cpop').dataset.vt||'vencimiento';}
+function gcpSelVT(t){}
+function gcpGetVT(){return 'info';}
 function gcpSelAud(t){
   if(!openCID)return;
   const c=causas.find(x=>x.id===openCID);if(!c)return;
@@ -1459,29 +1486,7 @@ function gcpSelDia(iso){
   if(btn){const nb=vBtnCls(c);btn.className=(nb.startsWith('vbtn ')?nb:'vbtn '+nb);btn.innerHTML=vBtnTxt(c);}
   gcpRenderGrid();
 }
-function gcpAplicarContador(){
-  if(!openCID)return;
-  const id=openCID;
-  const desde=document.getElementById('gcp-desde').value||isoD(HOY);
-  const dias=parseInt(document.getElementById('gcp-dias').value)||20;
-  const resultado=sumarDiasHabiles(desde,dias);
-  console.log('[CONTADOR] desde:',desde,'dias:',dias,'resultado:',resultado,'openCID:',id);
-  if(!calM_map[id])calM_map[id]={y:HOY.getFullYear(),m:HOY.getMonth()};
-  const[ry,rm]=resultado.split('-').map(Number);
-  calM_map[id]={y:ry,m:rm-1};
-  const c=causas.find(x=>x.id===parseInt(id));
-  console.log('[CONTADOR] causa encontrada:',!!c,'id buscado:',parseInt(id),'tipos ids:',[...causas.slice(0,3).map(x=>x.id+' type:'+typeof x.id)]);
-  if(!c)return;
-  pendingVen[id]=resultado;
-  c.ven=resultado;
-  gcpSelVT('info');
-  const pl=document.getElementById('gcp-plazo');
-  if(pl&&!pl.value.trim())pl.value='plazo';
-  gcpRenderGrid();
-  const btn=document.getElementById('vbtn-'+id);
-  if(btn){const nb=vBtnCls(c);btn.className=(nb.startsWith('vbtn ')?nb:'vbtn '+nb);btn.innerHTML=vBtnTxt(c);}
-  document.getElementById('gcp-contador').style.display='none';
-}
+function gcpAplicarContador(){}
 function sincTodasAudiencias(){
   const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
   const porCausa={};
@@ -1512,36 +1517,19 @@ function gcpGuardar(){
   if(!openCID)return;
   const id=openCID;
   const c=causas.find(x=>x.id===id);if(!c)return;
-  const vt=gcpGetVT();
-  const plazoVal=document.getElementById('gcp-plazo').value.trim();
-  console.log('[GUARDAR] id:',id,'typeof id:',typeof id,'vt:',vt,'plazo:',plazoVal,'pendingVen[id]:',pendingVen[id],'c.ven:',c.ven);
-  const plChecked=document.getElementById('gcp-pl').checked;
   const horaVal=document.getElementById('gcp-hora').value||'';
   const modVal=document.getElementById('gcp-mod').value||'';
   const audVal=document.getElementById('gcp-aud').value||'';
-  // La fecha viene de pendingVen (más confiable) o de c.ven
   const venFinal=pendingVen[id]!==undefined?pendingVen[id]:c.ven||'';
-  if(!plazoVal&&!audVal&&!venFinal){
-    const pl=document.getElementById('gcp-plazo');
-    if(pl){pl.style.borderColor='#e24b4a';pl.focus();}
-    return;
-  }
+  if(!audVal&&!venFinal)return;
   c.ven=venFinal;
-  c.tipo_venc=vt;
-  c.tv=plazoVal||(vt==='info'?c.tv:'');
-  c.tv_plazo=vt==='info'?(plazoVal||c.tv_plazo||''):'';
-  c.tv_accion='';
-  c.pl=vt==='vencimiento'?plChecked:false;
   c.aud_h=horaVal;
   c.aud_mod=modVal;
   c.tipo_aud=audVal;
+  if(audVal){c.tipo_venc='info';c.pl=false;}
   delete pendingVen[id];
   sincAudiencia(c);
-  sC();
-  closeCP();
-  refRow(id);
-  updBadges();
-  renderVencPanel();
+  sC();closeCP();refRow(id);updBadges();renderVencPanel();
 }
 function gcpLimpiarFecha(){
   if(!openCID)return;
@@ -2072,8 +2060,7 @@ function copyTxt(){
 function confirmReset(){if(!confirm('¿Simular lunes? Se borran todos los verdes.'))return;movidas=new Set();sM();updProgress();renderBan();renderR();}
 document.addEventListener('click',function(e){
   if(openCID===null)return;
-  const pop=document.getElementById('global-cpop');
-  if(pop&&pop.contains(e.target))return; // click dentro del popup — no cerrar
+  if(_gcpClickInterno){_gcpClickInterno=false;return;} // click fue dentro del popup
   closeCP();
 });
 
@@ -2417,11 +2404,109 @@ setInterval(chequearPresencia, 30000);
 setTimeout(chequearPresencia, 6000);
 setTimeout(renderUsuarioActual, 500);
 
+
+// ═══════════════════════════════════════════════
+// CALCULADORA DE PLAZOS
+// ═══════════════════════════════════════════════
+let calcCausaId=null, calcFechaResult='', calcDiasSelected=0;
+
+function abrirCalcPlazo(id,e){
+  if(e)e.stopPropagation();
+  calcCausaId=parseInt(id);
+  calcFechaResult='';
+  calcDiasSelected=0;
+  document.getElementById('calc-desde').value=todayISO();
+  document.getElementById('calc-resultado').style.display='none';
+  document.getElementById('calc-para').value='';
+  document.querySelectorAll('.calc-d').forEach(b=>{b.classList.remove('on');});
+  document.getElementById('calc-modal').style.display='block';
+  document.getElementById('calc-overlay').style.display='block';
+}
+function cerrarCalcPlazo(){
+  document.getElementById('calc-modal').style.display='none';
+  document.getElementById('calc-overlay').style.display='none';
+  calcCausaId=null;
+}
+function calcSelDias(dias,btn){
+  calcDiasSelected=dias;
+  document.querySelectorAll('.calc-d').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const desde=document.getElementById('calc-desde').value||todayISO();
+  calcFechaResult=sumarDiasHabiles(desde,dias);
+  document.getElementById('calc-fecha-txt').textContent=fmtS(calcFechaResult);
+  document.getElementById('calc-resultado').style.display='block';
+  document.getElementById('calc-para').focus();
+}
+function calcActualizarPara(){
+  // Solo actualiza la vista en tiempo real si ya hay fecha
+  if(!calcFechaResult)return;
+  document.getElementById('calc-fecha-txt').textContent=fmtS(calcFechaResult);
+}
+function calcGuardar(tipo){
+  if(!calcCausaId||!calcFechaResult)return;
+  const c=causas.find(x=>x.id===calcCausaId);if(!c)return;
+  const para=document.getElementById('calc-para').value.trim();
+  c.ven=calcFechaResult;
+  c.tipo_venc=tipo;
+  c.tv=para||'plazo';
+  c.tv_plazo=para||'plazo';
+  c.tv_accion='';
+  c.pl=(tipo==='vencimiento');
+  c.tipo_aud='';
+  c.aud_h='';
+  c.aud_mod='';
+  sC();
+  refRow(calcCausaId);
+  updBadges();
+  renderVencPanel();
+  cerrarCalcPlazo();
+}
+
+
+// ── AGREGAR NOTA RÁPIDA ──
+function agregarNota(id,e){
+  if(e)e.stopPropagation();
+  id=parseInt(id);
+  const row=document.getElementById('cr-'+id);if(!row)return;
+  const existing=row.querySelector('.nota-input-wrap');
+  if(existing){existing.remove();return;}
+  const c=causas.find(x=>x.id===id);
+  if(!c)return;
+  const wrap=document.createElement('div');
+  wrap.className='nota-input-wrap';
+  wrap.style.cssText='display:flex;gap:4px;padding:4px 8px 6px 8px;align-items:center';
+  const inp=document.createElement('input');
+  inp.type='text';
+  inp.placeholder='Nueva nota...';
+  inp.style.cssText='flex:1;font-size:11px;padding:4px 7px;border:1px solid #ccc;border-radius:5px;outline:none';
+  const btn=document.createElement('button');
+  btn.textContent='Agregar';
+  btn.style.cssText='font-size:10px;padding:3px 8px;border-radius:4px;border:none;background:#2980b9;color:#fff;cursor:pointer;white-space:nowrap';
+  wrap.appendChild(inp);
+  wrap.appendChild(btn);
+  const ci=row.querySelector('.ci');if(!ci)return;
+  ci.appendChild(wrap);
+  inp.focus();
+  function guardarNota(){
+    const txt=inp.value.trim();
+    if(!txt){wrap.remove();return;}
+    c.not=(c.not&&c.not.trim())?c.not+'\n'+txt:txt;
+    sC();
+    refRow(id);
+  }
+  btn.addEventListener('click',function(e2){e2.stopPropagation();guardarNota();});
+  inp.addEventListener('keydown',function(e2){
+    if(e2.key==='Enter'){e2.preventDefault();guardarNota();}
+    if(e2.key==='Escape'){wrap.remove();}
+  });
+  inp.addEventListener('click',function(e2){e2.stopPropagation();});
+  wrap.addEventListener('click',function(e2){e2.stopPropagation();});
+}
 iniciarApp();
 </script>
 
-<!-- POPUP CALENDARIO GLOBAL — único elemento, nunca se destruye por renderR/refRow -->
-<div class="cpop" id="global-cpop" onclick="event.stopPropagation()" style="display:none">
+<!-- POPUP CALENDARIO GLOBAL — solo audiencias + limpiar/borrar -->
+<div class="cpop" id="global-cpop" onclick="_gcpClickInterno=true" style="display:none">
   <div id="gcp-car" style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
   <div class="cp-hdr">
     <div class="cp-nav" onclick="navGCP(-1,event)">&#8249;</div>
@@ -2431,26 +2516,14 @@ iniciarApp();
   <div class="cp-grid" id="gcp-grid"></div>
   <hr class="cp-sep">
   <div class="cp-sec-lbl">Tipo de audiencia</div>
-  <select class="fi" id="gcp-aud" onchange="gcpSelAud(this.value)" style="margin-bottom:5px;font-size:11px;padding:4px 7px">
+  <select class="fi" id="gcp-aud" onchange="gcpSelAud(this.value)" style="margin-bottom:8px;font-size:11px;padding:4px 7px">
     <option value="">— Sin tipo —</option>
-    <option value="mediac">Mediacion / Conciliacion</option>
-    <option value="inicial">Inicial</option>
-    <option value="final">Final</option>
-    <option value="recursiva">Vista recursiva</option>
-    <option value="resolver">A resolver</option>
+    <option value="mediac">🩷 Mediación / Conciliación</option>
+    <option value="inicial">🔵 Inicial</option>
+    <option value="final">🟡 Final</option>
+    <option value="recursiva">🟠 Vista recursiva</option>
+    <option value="resolver">⚫ A resolver</option>
   </select>
-  <hr class="cp-sep">
-  <div class="cp-lbl" style="margin-bottom:5px">Tipo de fecha</div>
-  <div style="display:flex;gap:5px;margin-bottom:8px">
-    <div id="gcp-vt-p" onclick="gcpSelVT('vencimiento')"
-      style="flex:1;padding:3px 6px;border-radius:4px;border:2px solid var(--red-b);background:var(--red-l);color:#a00;font-size:10px;font-weight:700;cursor:pointer;text-align:center;transition:opacity .15s">
-      Vencimiento
-    </div>
-    <div id="gcp-vt-i" onclick="gcpSelVT('info')"
-      style="flex:1;padding:3px 6px;border-radius:4px;border:2px solid #ccc;background:#f2f1ef;color:#888;font-size:10px;cursor:pointer;text-align:center;transition:opacity .15s">
-      Para saber
-    </div>
-  </div>
   <div class="cp-row2">
     <div>
       <div class="cp-lbl">Hora</div>
@@ -2470,39 +2543,50 @@ iniciarApp();
       </select>
     </div>
   </div>
-  <div style="margin-bottom:8px">
-    <button onclick="event.stopPropagation();var c=document.getElementById('gcp-contador');c.style.display=c.style.display==='none'?'block':'none'" style="font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;width:100%;text-align:left">Contador de plazo</button>
-    <div id="gcp-contador" style="display:none;margin-top:6px;padding:8px;background:var(--bg2);border-radius:5px;border:1px solid var(--border)">
-      <div class="cp-lbl" style="margin-bottom:4px">Desde:</div>
-      <input type="date" id="gcp-desde" style="font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:100%;margin-bottom:6px">
-      <div class="cp-lbl" style="margin-bottom:4px">Dias habiles:</div>
-      <div style="display:flex;gap:4px">
-        <select id="gcp-dias" style="flex:1;font-size:11px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)">
-          <option value="3">3 dias habiles</option>
-          <option value="5">5 dias habiles</option>
-          <option value="10">10 dias habiles</option>
-          <option value="15">15 dias habiles</option>
-          <option value="20" selected>20 dias habiles</option>
-          <option value="30">30 dias habiles</option>
-        </select>
-        <button onclick="event.stopPropagation();gcpAplicarContador()" style="font-size:10px;padding:3px 10px;border-radius:4px;border:1px solid var(--blue);background:var(--blue);color:#fff;cursor:pointer">Calcular</button>
-      </div>
-    </div>
-  </div>
-  <div style="margin-bottom:8px">
-    <div class="cp-lbl">Plazo para:</div>
-    <input class="fi" type="text" id="gcp-plazo" placeholder="que nos paguen, que conteste..." style="font-size:11px;padding:4px 7px">
-  </div>
-  <label class="cp-plazo"><input type="checkbox" id="gcp-pl" style="width:13px;height:13px"> Tiene plazo activo</label>
   <div class="cp-btns">
-    <button class="cp-save" onclick="event.stopPropagation();gcpGuardar()">Guardar</button>
+    <button class="cp-save" onclick="event.stopPropagation();gcpGuardar()">✓ Guardar</button>
     <button class="cp-cl" onclick="event.stopPropagation();gcpLimpiarFecha()">Sin fecha</button>
   </div>
   <hr class="cp-sep">
   <div style="display:flex;gap:5px">
-    <button class="cp-cl" onclick="event.stopPropagation();gcpHistorial()" style="flex:1;font-size:10px">Historial</button>
-    <button class="cp-cl" onclick="event.stopPropagation();gcpLimpiarCausa()" style="flex:1;font-size:10px;color:#888">Limpiar</button>
-    <button class="cp-cl" id="gcp-btn-borrar" onclick="event.stopPropagation();gcpConfirmarBorrar(this)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0;font-weight:700">Borrar</button>
+    <button class="cp-cl" onclick="event.stopPropagation();gcpHistorial()" style="flex:1;font-size:10px">🕐 Historial</button>
+    <button class="cp-cl" onclick="event.stopPropagation();gcpLimpiarCausa()" style="flex:1;font-size:10px;color:#888">🧹 Limpiar</button>
+    <button class="cp-cl" id="gcp-btn-borrar" onclick="event.stopPropagation();gcpConfirmarBorrar(this)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0;font-weight:700">✕ Borrar</button>
+  </div>
+</div>
+
+<!-- CALCULADORA DE PLAZOS — modal simple con días hábiles -->
+<div style="position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:99997;display:none" id="calc-overlay" onclick="cerrarCalcPlazo()"></div>
+<div id="calc-modal" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99998;background:var(--bg);border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.28);padding:18px;width:310px;display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <div style="font-size:14px;font-weight:700;color:var(--text)">🧮 Calculadora de plazos</div>
+    <span onclick="cerrarCalcPlazo()" style="cursor:pointer;color:#aaa;font-size:18px;line-height:1">✕</span>
+  </div>
+  <div style="margin-bottom:10px">
+    <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Desde:</div>
+    <input type="date" id="calc-desde" style="width:100%;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);box-sizing:border-box">
+  </div>
+  <div style="margin-bottom:12px">
+    <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">Cantidad de días hábiles:</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap" id="calc-dias-btns">
+      <button onclick="calcSelDias(3,this)" class="calc-d">3</button>
+      <button onclick="calcSelDias(5,this)" class="calc-d">5</button>
+      <button onclick="calcSelDias(10,this)" class="calc-d">10</button>
+      <button onclick="calcSelDias(15,this)" class="calc-d">15</button>
+      <button onclick="calcSelDias(20,this)" class="calc-d">20</button>
+      <button onclick="calcSelDias(30,this)" class="calc-d">30</button>
+    </div>
+  </div>
+  <div id="calc-resultado" style="display:none;background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:12px;border:1px solid var(--border)">
+    <div style="font-size:11px;color:var(--text2);margin-bottom:2px">Vence el:</div>
+    <div id="calc-fecha-txt" style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:8px"></div>
+    <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px">Plazo para:</div>
+    <input type="text" id="calc-para" placeholder="que paguen, que contesten, que acepten cargo..." style="width:100%;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);box-sizing:border-box;margin-bottom:10px" oninput="calcActualizarPara()">
+    <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">¿Cómo registrar?</div>
+    <div style="display:flex;gap:6px">
+      <button onclick="calcGuardar('vencimiento')" style="flex:1;padding:7px 4px;border-radius:6px;border:2px solid var(--red-b);background:var(--red-l);color:#a00;font-size:11px;font-weight:700;cursor:pointer">⏰ Vencimiento<br><span style="font-size:9px;font-weight:400">para mí</span></button>
+      <button onclick="calcGuardar('info')" style="flex:1;padding:7px 4px;border-radius:6px;border:2px solid #ccc;background:#f2f1ef;color:#666;font-size:11px;font-weight:700;cursor:pointer">📎 Para saber<br><span style="font-size:9px;font-weight:400">seguimiento</span></button>
+    </div>
   </div>
 </div>
 </body>
