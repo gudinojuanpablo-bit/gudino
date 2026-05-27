@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v139</title>
+<title>Gudiño y Asociados v144</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -299,7 +299,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .cal-ev:hover{opacity:.85}
 .cal-ev-past{font-size:9px;color:#aaa;border-radius:3px;padding:1px 5px;margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5;display:block;background:#e8e8e8;text-decoration:line-through}
 .t-inicial{background:#2980b9}.t-mediac,.t-concil{background:#e91e8c}
-.t-final{background:#f0c000}.t-recursiva{background:#d35400}.t-resolver{background:#7f8c8d}.t-otro{background:#8e44ad}
+.t-final{background:#f0c000}.t-recursiva{background:#d35400}.t-resolver{background:#7f8c8d}.t-otro{background:#8e44ad}.t-recordatorio{background:#95a5a6}.col-recordatorio{background:#f0f0f0!important;border-color:#bbb!important;color:#555!important}
 .af-wrap{background:var(--bg2);border-radius:6px;padding:12px;margin-top:10px;border:1px solid var(--border);display:none}
 .af-wrap.ab{display:block}
 .aud-list{margin-top:12px}
@@ -803,6 +803,7 @@ const TIPOS={
   resolver:{lbl:'A resolver',col:'#7f8c8d',cpCls:'col-resolver',tcCls:'tc-resolver'},
   concil:{lbl:'Mediación / Conciliación',col:'#e91e8c',cpCls:'col-mediac',tcCls:'tc-mediac'}, // alias
   otro:{lbl:'Otro',col:'#8e44ad',cpCls:'',tcCls:''},
+  recordatorio:{lbl:'Recordatorio',col:'#95a5a6',cpCls:'col-recordatorio',tcCls:'t-recordatorio'},
 };
 function tInfo(t){return TIPOS[t]||TIPOS.otro;}
 
@@ -1167,7 +1168,7 @@ function renderVMP(){
   const el=document.getElementById('vmp-list');
   if(!el)return;
   // Solo vencimientos propios (tipo_venc='vencimiento' y pl=true)
-  const todos=causas.filter(c=>c.ven&&c.est!=='archivada'&&c.pl&&c.tipo_venc==='vencimiento')
+  const todos=causas.filter(c=>c.ven&&c.est!=='archivada'&&c.pl)
     .sort((a,b)=>a.ven>b.ven?1:a.ven<b.ven?-1:0);
   const proximos5=todos.filter(c=>c.ven>=hoy&&c.ven<=en5);
   const resto=todos.filter(c=>c.ven>en5);
@@ -1334,10 +1335,13 @@ function rowHTML(c){
       <div class="ci-tv-tag">${(()=>{
         if(c.tipo_aud&&TIPOS[c.tipo_aud]){
           const t=TIPOS[c.tipo_aud];
-          let info=c.tipo_aud==='resolver'?'A resolver':'Audiencia '+t.lbl;
-          if(c.ven)info+=' · '+fmtS(c.ven);
-          if(c.aud_h)info+=' · '+c.aud_h+' hs';
-          if(c.aud_mod)info+=' · '+c.aud_mod;
+          let info=c.tipo_aud==='resolver'?'A resolver':c.tipo_aud==='recordatorio'?'Recordar: '+(c.tv||'...'):'Audiencia '+t.lbl;
+          if(c.ven){
+            info+=' · '+fmtS(c.ven);
+            if(c.tipo_aud==='recordatorio'){const d=dLeft(c.ven);if(d>0)info+=' · faltan '+d+'d';else if(d===0)info+=' · hoy';else info+=' · vencido';}
+          }
+          if(c.aud_h&&c.tipo_aud!=='recordatorio')info+=' · '+c.aud_h+' hs';
+          if(c.aud_mod&&c.tipo_aud!=='recordatorio')info+=' · '+c.aud_mod;
           return info;
         }
         if(!c.ven)return'';
@@ -1412,6 +1416,10 @@ function openCP(id,e){
   document.getElementById('gcp-aud').value=c.tipo_aud||'';
   document.getElementById('gcp-hora').value=c.aud_h||'';
   document.getElementById('gcp-mod').value=c.aud_mod||'';
+  const recWrap=document.getElementById('gcp-rec-wrap');
+  const recTxt=document.getElementById('gcp-rec-txt');
+  if(recWrap)recWrap.style.display=c.tipo_aud==='recordatorio'?'block':'none';
+  if(recTxt)recTxt.value=c.tv||c.tv_plazo||'';
   const bbrr=document.getElementById('gcp-btn-borrar');if(bbrr){bbrr.dataset.confirm='';bbrr.textContent='✕ Borrar';bbrr.style.background='';bbrr.style.color='#c00';}
 
   gcpSelVT(c.tipo_venc||'vencimiento');
@@ -1428,6 +1436,8 @@ function gcpSelAud(t){
   if(!openCID)return;
   const c=causas.find(x=>x.id===openCID);if(!c)return;
   c.tipo_aud=t;
+  const wrap=document.getElementById('gcp-rec-wrap');
+  if(wrap)wrap.style.display=t==='recordatorio'?'block':'none';
   gcpRenderGrid();
 }
 function closeCP(){
@@ -1523,13 +1533,16 @@ function gcpGuardar(){
   const horaVal=document.getElementById('gcp-hora').value||'';
   const modVal=document.getElementById('gcp-mod').value||'';
   const audVal=document.getElementById('gcp-aud').value||'';
+  const recTxtEl=document.getElementById('gcp-rec-txt');
+  const recTxt=audVal==='recordatorio'&&recTxtEl?recTxtEl.value.trim():'';
   const venFinal=pendingVen[id]!==undefined?pendingVen[id]:c.ven||'';
   if(!audVal&&!venFinal)return;
   c.ven=venFinal;
   c.aud_h=horaVal;
   c.aud_mod=modVal;
   c.tipo_aud=audVal;
-  if(audVal){c.tipo_venc='info';c.pl=false;}
+  if(audVal==='recordatorio'){c.tv=recTxt;c.tv_plazo=recTxt;c.tipo_venc='info';c.pl=true;}
+  else if(audVal){c.tipo_venc='info';c.pl=false;}
   delete pendingVen[id];
   sincAudiencia(c);
   sC();closeCP();refRow(id);updBadges();renderVencPanel();
@@ -2536,7 +2549,12 @@ iniciarApp();
     <option value="final">🟡 Final</option>
     <option value="recursiva">🟠 Vista recursiva</option>
     <option value="resolver">⚫ A resolver</option>
+    <option value="recordatorio">📌 Recordar...</option>
   </select>
+  <div id="gcp-rec-wrap" style="display:none;margin-bottom:8px">
+    <div class="cp-lbl">Recordar:</div>
+    <input class="fi" type="text" id="gcp-rec-txt" placeholder="turno perito médico, vence seguro..." style="font-size:11px;padding:4px 7px">
+  </div>
   <div class="cp-row2">
     <div>
       <div class="cp-lbl">Hora</div>
