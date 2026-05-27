@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v111</title>
+<title>Gudiño y Asociados v112</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1455,6 +1455,9 @@ function openCP(id,e){
   pop.style.top='55px';
   pop.style.right='10px';
   pop.classList.add('ab');
+  // Contraer el área de causas para que no quede tapada
+  const ctReg=document.getElementById('ct-reg');
+  if(ctReg)ctReg.style.marginRight='265px';
 }
 function selVT(id,t,e){
   if(e)e.stopPropagation();
@@ -1470,7 +1473,7 @@ function selVT(id,t,e){
   if(campoVen)campoVen.style.display=t==='vencimiento'?'block':'none';
   if(campoInfo)campoInfo.style.display=t==='info'?'block':'none';
 }
-function closeCP(){if(openCID===null)return;const p=document.getElementById('cp-'+openCID);if(p)p.classList.remove('ab');openCID=null;}
+function closeCP(){if(openCID===null)return;const p=document.getElementById('cp-'+openCID);if(p)p.classList.remove('ab');openCID=null;const ctReg=document.getElementById('ct-reg');if(ctReg)ctReg.style.marginRight='';}
 function navCP(id,dir,e){e.stopPropagation();if(!calM_map[id])calM_map[id]={y:HOY.getFullYear(),m:HOY.getMonth()};calM_map[id].m+=dir;if(calM_map[id].m>11){calM_map[id].m=0;calM_map[id].y++;}if(calM_map[id].m<0){calM_map[id].m=11;calM_map[id].y--;}renderCP(id);}
 function selCPT(id,t){
   const c=causas.find(x=>x.id===id);if(!c)return;
