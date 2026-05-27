@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v109</title>
+<title>Gudiño y Asociados v110</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1442,11 +1442,9 @@ function openCP(id,e){
   const vt=c.tipo_venc||'vencimiento';
   const hidVT=document.getElementById('cpvt-'+id);
   if(hidVT)hidVT.value=vt;
-  // init info fields
   const plazoEl=document.getElementById('cp-plazo-'+id);
   if(plazoEl)plazoEl.value=c.tv_plazo||c.tv||'';
   selVT(id,vt,null);
-  // hide plazo para if audiencia type set
   const campoVenInit=document.getElementById('cp-campo-ven-'+id);
   if(campoVenInit)campoVenInit.style.display=c.tipo_aud?'none':'block';
   const horaEl=document.getElementById('cp-hora-'+id);
@@ -1454,6 +1452,12 @@ function openCP(id,e){
   const modEl=document.getElementById('cp-mod-'+id);
   if(modEl)modEl.value=c.aud_mod||'';
   renderCP(id);
+  // Position popup to not cover content
+  const btnRect=e.target.getBoundingClientRect();
+  const popH=520;
+  const top=Math.min(btnRect.bottom+4, window.innerHeight-popH-10);
+  pop.style.top=Math.max(60,top)+'px';
+  pop.style.right='10px';
   pop.classList.add('ab');
 }
 function selVT(id,t,e){
@@ -1522,6 +1526,20 @@ function clearV(id,e){
 
 function sincTodasAudiencias(){
   const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
+  
+  // Primero limpiar duplicados por causaId — quedar solo con una por causa
+  const porCausa={};
+  audiencias.forEach(a=>{
+    if(a.causaId){
+      const key=String(a.causaId);
+      if(!porCausa[key])porCausa[key]=a;
+    }
+  });
+  // Reconstruir lista: audiencias sin causaId + una por causaId
+  const sinCausa=audiencias.filter(a=>!a.causaId);
+  audiencias=[...sinCausa,...Object.values(porCausa)];
+
+  // Ahora sincronizar causas con tipo_aud
   causas.forEach(c=>{
     if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
     const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
@@ -1529,7 +1547,6 @@ function sincTodasAudiencias(){
     if(existe){
       existe.f=c.ven;existe.h=c.aud_h||'';existe.c=c.car;existe.j=c.juz;existe.o=c.aud_obs||'';existe.t=t;
     } else {
-      // Crear si no existe
       audiencias.push({id:Date.now()+Math.random(),causaId:c.id,f:c.ven,h:c.aud_h||'',c:c.car,j:c.juz,o:c.aud_obs||'',t});
     }
   });
