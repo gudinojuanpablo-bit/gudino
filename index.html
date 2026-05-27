@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v144</title>
+<title>Gudiño y Asociados v145</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1338,7 +1338,7 @@ function rowHTML(c){
           let info=c.tipo_aud==='resolver'?'A resolver':c.tipo_aud==='recordatorio'?'Recordar: '+(c.tv||'...'):'Audiencia '+t.lbl;
           if(c.ven){
             info+=' · '+fmtS(c.ven);
-            if(c.tipo_aud==='recordatorio'){const d=dLeft(c.ven);if(d>0)info+=' · faltan '+d+'d';else if(d===0)info+=' · hoy';else info+=' · vencido';}
+            if(c.tipo_aud==='recordatorio'){const d=dLeft(c.ven);if(d>0)info+=` <span style="color:#bbb;font-size:10px">· faltan ${d}d</span>`;else if(d===0)info+=' <span style="color:#e24b4a;font-size:10px">· hoy</span>';else info+=' <span style="color:#bbb;font-size:10px">· vencido</span>';}
           }
           if(c.aud_h&&c.tipo_aud!=='recordatorio')info+=' · '+c.aud_h+' hs';
           if(c.aud_mod&&c.tipo_aud!=='recordatorio')info+=' · '+c.aud_mod;
