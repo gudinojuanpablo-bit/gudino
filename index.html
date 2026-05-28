@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v150</title>
+<title>Gudiño y Asociados v157</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1195,9 +1195,7 @@ function renderVMP(){
     const border=d===0?'#ffb3b3':d<=2?'#ffd09e':'#ffe066';
     html+=tarjeta(c,border,bg,color,label);
   });
-  if(!vencidos.length&&!proximos5.length){
-    html+='<div style="color:#888;text-align:center;padding:20px;font-size:12px">✓ Sin vencimientos urgentes</div>';
-  }
+  // sin urgentes check moved below recs urgentes
   if(resto.length){
     html+=`<div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;border-top:1px solid var(--border);padding-top:12px">Próximos vencimientos</div>`;
     resto.forEach(c=>{
@@ -1208,16 +1206,41 @@ function renderVMP(){
       </div>`;
     });
   }
-  // Sección Recordatorios — separada
-  if(recs.length){
+  // Recordatorios urgentes (<=1 día) van en sección urgente
+  const recsUrg=recs.filter(c=>dLeft(c.ven)<=1);
+  const recsResto=recs.filter(c=>dLeft(c.ven)>1);
+  recsUrg.forEach(c=>{
+    const d=dLeft(c.ven);
+    const horaStr=c.aud_h?' · '+c.aud_h+' hs':'';
+    const label=(d<=0?'Recordatorio vencido':'📌 Recordatorio mañana')+horaStr;
+    const color=d<=0?'#c0392b':'#d97706';
+    const bg=d<=0?'#fff0f0':'#fffbeb';
+    const border=d<=0?'#ffb3b3':'#fde68a';
+    html+=`<div style="padding:10px 12px;border-radius:6px;border:1px solid ${border};background:${bg};margin-bottom:6px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:10px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:.5px">${label}</span>
+        <span style="font-size:10px;color:#aaa">${fmtS(c.ven)}</span>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:2px">${c.car}</div>
+      ${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}
+    </div>`;
+  });
+  if(!vencidos.length&&!proximos5.length&&!recsUrg.length){
+    html='<div style="color:#888;text-align:center;padding:20px;font-size:12px">✓ Sin vencimientos urgentes</div>';
+  }
+  // Recordatorios no urgentes — sección separada
+  if(recsResto.length){
     html+=`<div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;border-top:1px solid var(--border);padding-top:12px">Recordatorios</div>`;
-    recs.forEach(c=>{
+    recsResto.forEach(c=>{
       const d=dLeft(c.ven);
-      const dLabel=d<0?'vencido':d===0?'hoy':'en '+d+'d';
-      const dColor=d<=0?'#e24b4a':'#aaa';
-      html+=`<div style="padding:8px 10px;border-radius:5px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px;display:flex;justify-content:space-between;align-items:center">
-        <div><div style="font-size:11px;font-weight:700;color:var(--text)">${c.car}</div>${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}</div>
-        <div style="text-align:right;flex-shrink:0;margin-left:8px"><div style="font-size:11px;font-weight:700;color:var(--text2)">${fmtS(c.ven)}</div><div style="font-size:10px;color:${dColor}">${dLabel}</div></div>
+      const horaStr=c.aud_h?' · '+c.aud_h+' hs':'';
+      html+=`<div style="padding:8px 10px;border-radius:5px;border:1px solid var(--border);background:var(--bg2);margin-bottom:5px">
+        <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:700;color:var(--text)">${fmtS(c.ven)}${horaStr}</span>
+          <span style="font-size:10px;color:#aaa">· en ${d}d</span>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--text);margin-top:2px">${c.car}</div>
+        ${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}
       </div>`;
     });
   }
@@ -1300,7 +1323,24 @@ function clearRam(id){
   refRow(id);updBadges();
   if(curView==='ram')renderRam();
 }
-function togRam(id){const c=causas.find(x=>x.id===id);if(!c)return;c.ram='';c.rdon=false;sC();refRow(id);updBadges();if(curView==='ram')renderRam();}
+function togRam(id){
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  if(c.ram&&!c.rdon){
+    // Guardar en historial unificado del expediente
+    if(!historial[id])historial[id]=[];
+    const fecha=todayISO();
+    historial[id].unshift({d:fecha,t:'⭐ Ramiro: '+c.ram,tipo:'ram'});
+    if(historial[id].length>30)historial[id]=historial[id].slice(0,30);
+    sH();
+    // También en c.hist para preview en panel Ramiro
+    if(!c.hist)c.hist=[];
+    const fechaStr=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+    c.hist.unshift({txt:c.ram,fecha:fechaStr,ts:Date.now()});
+    if(c.hist.length>10)c.hist=c.hist.slice(0,10);
+  }
+  c.ram='';c.rdon=false;
+  sC();refRow(id);updBadges();if(curView==='ram')renderRam();
+}
 function togRamE(id){const e=extraj.find(x=>x.id===id);if(!e)return;e.ram='';e.rdon=false;sE();renderExt();updBadges();if(curView==='ram')renderRam();}
 function borrarRam(id,e){
   e.stopPropagation();
@@ -1385,6 +1425,7 @@ function rowHTML(c){
         <div class="ci-not" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" title="Click para editar">${c.not}</div>
         <span onclick="edSt(${c.id},event)" title="Editar nota" style="position:absolute;top:0;right:0;font-size:10px;color:#ccc;cursor:pointer;padding:1px 3px;line-height:1">✏</span>
       </div>`:`<div class="ci-not" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))?'style="display:none"':''}></div>`}
+
       ${c.aud_obs?`<div class="ci-aud-obs-show" onclick="editAudObs(${c.id},event)">${c.aud_obs}</div>`:''}
       ${rNotaHTML(c,false)}
     </div>
@@ -1396,6 +1437,7 @@ function rowHTML(c){
 
       <div style="display:flex;gap:2px;align-items:center">
         <span class="hl" onclick="editRam(${c.id},event)" title="Tarea Ramiro">⭐</span>
+
         <span class="hl" onclick="abrirPlazo(${c.id})" title="Calcular plazo (oficios/cédulas)">⏱</span>
         <span class="hl" onclick="abrirCalcPlazo(${c.id},event)" title="Calculadora de plazos" style="font-size:13px">🧮</span>
         <span class="hl" onclick="agregarNota(${c.id},event)" title="Agregar comentario" style="font-size:14px;font-weight:900;color:#444;padding:0 3px">+</span>
@@ -1429,6 +1471,13 @@ function openCP(id,e){
   if(recWrap)recWrap.style.display=c.tipo_aud==='recordatorio'?'block':'none';
   if(recTxt)recTxt.value=c.tv||c.tv_plazo||'';
   const bbrr=document.getElementById('gcp-btn-borrar');if(bbrr){bbrr.dataset.confirm='';bbrr.textContent='✕ Borrar';bbrr.style.background='';bbrr.style.color='#c00';}
+  // Historial Ramiro
+  const histWrap=document.getElementById('gcp-ram-hist-wrap');
+  const histList=document.getElementById('gcp-ram-hist-list');
+  // Always hide avances section when opening popup — user must press button
+  if(histWrap)histWrap.style.display='none';
+  const avBtn=document.getElementById('gcp-btn-avances');
+  if(avBtn){avBtn.style.background='';avBtn.style.color='';}
 
   gcpSelVT(c.tipo_venc||'vencimiento');
   gcpRenderGrid();
@@ -1890,7 +1939,30 @@ function renderVen(){
   el.innerHTML=`<table class="vtbl"><thead><tr><th>Causa</th><th>Juzgado</th><th>Tipo</th><th>Fecha</th></tr></thead><tbody>${s.map(c=>{const d=dLeft(c.ven),lab=d<0?'Venció':d===0?'Hoy':d===1?'Mañana':`${d}d`;const pc=d<=0?'vp-hoy':d<=2?'vp-2d':d<=7?'vp-7':'vp-ok';const er=(d>=0&&d<=2)&&!movidas.has(c.id);return`<tr><td><strong>${c.car}</strong>${c.pl?'<span class="pdot"></span>':''}<br><span style="font-size:10px;font-family:monospace;color:${er?'#c0392b':'#bbb'};font-weight:${er?700:400}">${c.ex}</span></td><td style="font-size:11px;color:#888">${c.juz}</td><td style="font-size:11px">${c.tv||'—'}</td><td><span class="vpill ${pc}">${lab} (${fmtS(c.ven)})</span></td></tr>`;}).join('')}</tbody></table>`;
 }
 
-function showHist(id,e){e.stopPropagation();closeCP();const c=causas.find(x=>x.id===id),h=historial[id]||[];alert('Historial — '+c.car+'\n\n'+(h.length?h.map(r=>`${fmtS(r.d)}: ${r.t}`).join('\n\n'):'Sin historial aún.'));}
+function showHist(id,e){
+  if(e)e.stopPropagation();
+  const c=causas.find(x=>x.id===parseInt(id));if(!c)return;
+  const h=historial[id]||historial[parseInt(id)]||[];
+  const pop=document.getElementById('hist-modal');
+  const body=document.getElementById('hist-modal-body');
+  if(!pop||!body)return;
+  document.getElementById('hist-modal-title').textContent='📋 Avances · '+c.car;
+  if(!h.length){
+    body.innerHTML='<div style="padding:14px;font-size:12px;color:#aaa;text-align:center">Sin avances registrados aún.<br><span style="font-size:11px">Los cambios en notas y tareas de Ramiro se registran aquí.</span></div>';
+  } else {
+    body.innerHTML=h.map(r=>{
+      const esRam=r.tipo==='ram';
+      return`<div style="padding:9px 14px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+          <span style="font-size:10px;font-weight:700;color:${esRam?'#92400e':'#6b7280'}">${esRam?'⭐ Ramiro':'📝 Nota'}</span>
+          <span style="font-size:10px;color:#bbb">${fmtS(r.d)}</span>
+        </div>
+        <div style="font-size:12px;color:#444;line-height:1.4">${(r.t||'').replace('⭐ Ramiro: ','')}</div>
+      </div>`;
+    }).join('');
+  }
+  pop.classList.add('ab');
+}
 
 const JUZ_MAP={"Laboral": ["1° Laboral - Pallitto Matías Leonel", "2° Laboral - Berón Mariela", "3° Laboral - Padín María Gabriela", "4° Laboral - Soria Federico Marcelo", "5° Laboral - Caballero Humberto Gonzalo", "6° Laboral - Podestá de Oro Ana Guillermina", "C.A. Laboral Sala I (Ibañez - Daroni - Quattropani)", "C.A. Laboral Sala II (Parra - Raed de Rago - Vacante)"], "Civil": ["1° Civil - Rollán Héctor", "3° Civil - Arancibia Luis César", "4° Civil - Conti Picco Humberto J.", "5° Civil - Farina Roberto Pablo", "7° Civil - Balmaceda Vilma Emilce", "8° Civil - Otiñano Walter Ramón", "9° Civil - Oritja Pablo Nicolás", "11° Civil - Dias Amanda Rosa", "Contencioso Administrativo - Tettamanti Adriana Verónica", "C.A. Civil Sala I (Saffe Peña - Soria - Fernández Collado)", "C.A. Civil Sala II (Escobar - Pagés Lloveras - de la Torre)", "C.A. Civil Sala III (Pérez - Noguera Ramos - Rodríguez)", "C.A. Civil Sala IV (Romero - Varas - de la Torre)"], "Familia": ["1° Familia - López Marianela", "2° Familia - Romero Silvana", "3° Familia - Vacante", "4° Familia - Valdez Marisa"], "Juzgado de Paz": ["1° Paz Capital - González Bautista María Marta", "2° Paz Capital - Graffigna Fernando A.", "3° Paz Capital - Doña Ana Graciela", "4° Paz Capital - Lorenzo Carlos", "5° Paz Capital - Orellano Ricardo Aníbal", "6° Paz Capital - Gaitano Antonio", "7° Paz Capital - Zuliani Gerardo", "Paz Letrado Rawson - Espín Brkic Roxana Mariela", "Paz Letrado Rivadavia - Guerci Romero Ana Valeria", "Paz Letrado Chimbas - Cattani Hebe Graciela", "Paz Letrado Pocito - Moya Felipe M. / Assandri Laura Cecilia", "Paz Letrado Santa Lucía - Montero Verónica", "Paz Letrado Albardón - Oribe Oliveros Jorge Antonio", "Paz Letrado 25 de Mayo - Rodríguez Graciela A.", "Paz Letrado Iglesia - Aguilera Victoria Belén", "Paz Letrado Jáchal - Peñafort Martín", "Paz Letrado San Martín - Johnson Gerardo", "Paz Letrado Sarmiento - Barassi Minetto María Eugenia", "Paz Letrado Valle Fértil - Mulleady Luis María José", "Paz Letrado Caucete - Salva Mendoza Silvina Luciana", "Paz Letrado Calingasta - Troche Andrés L. Justino", "Paz Letrado Ullum - Conca Alejandra", "Paz Letrado Zonda - Caballero Adolfo Octavio", "Paz Letrado Angaco - Cuevas Carlos Adrián", "Paz Letrado 9 de Julio - Galván Daniel", "Cámara de Paz (Vargas - Pérez - Soria)", "Otros"]};
 function updJuzSelect(){
@@ -2128,7 +2200,9 @@ function renderRam(){
     h+=`<div class="a-sec"><h3>⭐ Encargos en causas (${pend.length+epend.length})</h3>`;
     [...pend,...epend].forEach(c=>{
       const isE=!!c.tit;
-      h+=`<div class="r-card"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${isE?c.tit:c.car}</div><div class="r-task">${c.ram}</div><div class="r-meta">${isE?'Extrajudicial · '+c.tipo:c.juz+' · '+c.ex}</div></div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="${isE?'togRamE':'togRam'}(${c.id})">✓ Cumplida</button><button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="${isE?'borrarRamE':'borrarRam'}(${c.id},event)">🗑</button></div></div>`;
+      const histPrev=(!isE&&c.hist&&c.hist.length)?c.hist.slice(0,2).map(h=>`<div style="font-size:10px;color:#bbb;margin-top:1px">✓ ${h.txt} · ${h.fecha}</div>`).join(''):'';
+      const histBtn=(!isE&&c.hist&&c.hist.length)?'':'';
+      h+=`<div class="r-card"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${isE?c.tit:c.car}</div><div class="r-task">${c.ram}</div><div class="r-meta">${isE?'Extrajudicial · '+c.tipo:c.juz+' · '+c.ex}</div>${histPrev}</div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="${isE?'togRamE':'togRam'}(${c.id})">✓ Cumplida</button>${histBtn}<button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="${isE?'borrarRamE':'borrarRam'}(${c.id},event)">🗑</button></div></div>`;
     });
     h+='</div>';
   }
@@ -2546,6 +2620,72 @@ function agregarNota(id,e){
   inp.addEventListener('click',function(e2){e2.stopPropagation();});
   wrap.addEventListener('click',function(e2){e2.stopPropagation();});
 }
+function verHist(id,e){
+  if(e)e.stopPropagation();
+  id=parseInt(id);
+  const c=causas.find(x=>x.id===id);
+  if(!c||!c.hist||!c.hist.length)return;
+  const pop=document.getElementById('hist-modal');
+  const body=document.getElementById('hist-modal-body');
+  if(!pop||!body)return;
+  document.getElementById('hist-modal-title').textContent='📜 Historial · '+c.car;
+  body.innerHTML=c.hist.map(h=>`
+    <div style="padding:8px 14px;border-bottom:1px solid var(--border)">
+      <div style="font-size:10px;color:#bbb;margin-bottom:2px">${h.fecha}</div>
+      <div style="font-size:12px;color:#888">✓ ${h.txt}</div>
+    </div>`).join('');
+  pop.classList.add('ab');
+}
+function cerrarHistModal(){
+  const pop=document.getElementById('hist-modal');
+  if(pop)pop.classList.remove('ab');
+}
+function toggleAvancesModal(){
+  if(!openCID)return;
+  const wrap=document.getElementById('gcp-ram-hist-wrap');
+  const btn=document.getElementById('gcp-btn-avances');
+  if(!wrap)return;
+  const showing=wrap.style.display!=='none';
+  if(showing){
+    wrap.style.display='none';
+    if(btn){btn.style.background='';btn.style.color='';}
+  } else {
+    // Populate with unified historial
+    const c=causas.find(x=>x.id===openCID);
+    const list=document.getElementById('gcp-ram-hist-list');
+    const h=(historial[openCID]||historial[parseInt(openCID)]||[]).slice(0,5);
+    if(list){
+      if(!h.length){
+        list.innerHTML='<div style="font-size:11px;color:#bbb;text-align:center;padding:6px">Sin movimientos aún</div>';
+      } else {
+        list.innerHTML=h.map(entry=>{
+          const esRam=(entry.tipo==='ram');
+          return`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:11px;color:${esRam?'#92400e':'#777'}">${esRam?'⭐ ':''}<b style="font-weight:500">${(entry.t||'').replace('⭐ Ramiro: ','')}</b></span>
+            <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:8px">${fmtS(entry.d)}</span>
+          </div>`;
+        }).join('');
+      }
+    }
+    wrap.style.display='block';
+    if(btn){btn.style.background='#e8f4fd';btn.style.color='#1a5276';}
+  }
+}
+function toggleLimpiarConfirm(btn){
+  if(btn.dataset.confirm==='1'){
+    btn.dataset.confirm='';
+    btn.textContent='🧹 Limpiar';
+    btn.style.background='';
+    btn.style.color='#888';
+    gcpLimpiarCausa();
+  } else {
+    btn.dataset.confirm='1';
+    btn.textContent='¿Confirmar?';
+    btn.style.background='#fff3cd';
+    btn.style.color='#856404';
+    setTimeout(()=>{btn.dataset.confirm='';btn.textContent='🧹 Limpiar';btn.style.background='';btn.style.color='#888';},3000);
+  }
+}
 iniciarApp();
 </script>
 
@@ -2598,9 +2738,13 @@ iniciarApp();
   </div>
   <hr class="cp-sep">
   <div style="display:flex;gap:5px">
-    <button class="cp-cl" onclick="event.stopPropagation();gcpHistorial()" style="flex:1;font-size:10px">🕐 Historial</button>
-    <button class="cp-cl" onclick="event.stopPropagation();gcpLimpiarCausa()" style="flex:1;font-size:10px;color:#888">🧹 Limpiar</button>
+    <button class="cp-cl" id="gcp-btn-avances" onclick="event.stopPropagation();toggleAvancesModal()" style="flex:1;font-size:10px">📋 Avances</button>
+    <button class="cp-cl" id="gcp-btn-limpiar" onclick="event.stopPropagation();toggleLimpiarConfirm(this)" style="flex:1;font-size:10px;color:#888">🧹 Limpiar</button>
     <button class="cp-cl" id="gcp-btn-borrar" onclick="event.stopPropagation();gcpConfirmarBorrar(this)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0;font-weight:700">✕ Borrar</button>
+  </div>
+  <div id="gcp-ram-hist-wrap" style="display:none;margin-top:8px;padding:10px;background:var(--bg2);border-radius:7px">
+    <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Últimos movimientos</div>
+    <div id="gcp-ram-hist-list"></div>
   </div>
 </div>
 
