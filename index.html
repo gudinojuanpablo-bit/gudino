@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v148</title>
+<title>Gudiño y Asociados v150</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1749,7 +1749,7 @@ function calcPlazo(e,tipo,dias){
   const tipoLbl=tipo==='oficio'?'Oficio diligenciado':'Cédula notificada';
   const dirigido=document.getElementById('plazo-dirigido').value.trim();
   const dirTxt=dirigido?' a '+dirigido:'';
-  document.getElementById('plazo-detalle').textContent=tipoLbl+dirTxt+' · diligenciado '+fmtS(inicio)+' · vence '+fmtS(resultado);
+  document.getElementById('plazo-detalle').textContent=tipoLbl+dirTxt;
   document.getElementById('plazo-resultado').style.display='block';
   actualizarPreviaPlazo();
 }
@@ -1770,8 +1770,12 @@ function usarPlazo(){
       // Texto completo: detalle del diligenciamiento + plazo para (si hay)
       const detTxt=document.getElementById('plazo-detalle').textContent||'';
       // Actualizar la fecha en el detalle al día con gracia
-      const detConGracia=detTxt.replace(/vence \d{2}\/\d{2}\/\d{4}/,'vence '+fmtS(fechaConGracia));
-      c.tv=plazoParaTxt?(detConGracia+' · plazo para '+plazoParaTxt):detConGracia;
+      // Formato: "Oficio diligenciado a X · el plazo para Y vence el DD/MM"
+      if(plazoParaTxt){
+        c.tv=detTxt+' · el plazo para '+plazoParaTxt+' vence el '+fmtS(fechaConGracia);
+      } else {
+        c.tv=detTxt+' · vence el '+fmtS(fechaConGracia);
+      }
       sC();refRow(cid);updBadges();renderVencPanel();
     }
   }
