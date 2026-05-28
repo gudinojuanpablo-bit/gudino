@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v157</title>
+<title>Gudiño y Asociados v158</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -2658,11 +2658,13 @@ function toggleAvancesModal(){
       if(!h.length){
         list.innerHTML='<div style="font-size:11px;color:#bbb;text-align:center;padding:6px">Sin movimientos aún</div>';
       } else {
-        list.innerHTML=h.map(entry=>{
+        list.innerHTML=h.slice(0,3).map(entry=>{
           const esRam=(entry.tipo==='ram');
-          return`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border)">
-            <span style="font-size:11px;color:${esRam?'#92400e':'#777'}">${esRam?'⭐ ':''}<b style="font-weight:500">${(entry.t||'').replace('⭐ Ramiro: ','')}</b></span>
-            <span style="font-size:10px;color:#bbb;flex-shrink:0;margin-left:8px">${fmtS(entry.d)}</span>
+          const txt=(entry.t||'').replace('⭐ Ramiro: ','');
+          const txtShort=txt.length>45?txt.slice(0,45)+'…':txt;
+          return`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid #eee">
+            <span style="font-size:10px;color:${esRam?'#92400e':'#888'}">${esRam?'⭐ ':''}${txtShort}</span>
+            <span style="font-size:9px;color:#ccc;flex-shrink:0;margin-left:6px">${fmtS(entry.d)}</span>
           </div>`;
         }).join('');
       }
@@ -2742,8 +2744,8 @@ iniciarApp();
     <button class="cp-cl" id="gcp-btn-limpiar" onclick="event.stopPropagation();toggleLimpiarConfirm(this)" style="flex:1;font-size:10px;color:#888">🧹 Limpiar</button>
     <button class="cp-cl" id="gcp-btn-borrar" onclick="event.stopPropagation();gcpConfirmarBorrar(this)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0;font-weight:700">✕ Borrar</button>
   </div>
-  <div id="gcp-ram-hist-wrap" style="display:none;margin-top:8px;padding:10px;background:var(--bg2);border-radius:7px">
-    <div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Últimos movimientos</div>
+  <div id="gcp-ram-hist-wrap" style="display:none;margin-top:6px;padding:7px 8px;background:var(--bg2);border-radius:6px">
+    <div style="font-size:9px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Últimos movimientos</div>
     <div id="gcp-ram-hist-list"></div>
   </div>
 </div>
