@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v147</title>
+<title>Gudiño y Asociados v148</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1367,9 +1367,14 @@ function rowHTML(c){
         }
         const tvTxt=c.tv?'Plazo para '+c.tv:'';
         if(c.tipo_venc==='info'){
-          const plazoRaw=(c.tv_plazo||c.tv||'').replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{27FF}\s]+/u,'').trim();
-          if(plazoRaw)return`Plazo para ${plazoRaw} · vence ${fmtS(c.ven)}${tag}`;
-          return c.ven?`📎 Para saber · vence ${fmtS(c.ven)}${tag}`:'';
+          const tvRaw=(c.tv||c.tv_plazo||'').trim();
+          if(!tvRaw)return c.ven?`📎 Para saber · vence ${fmtS(c.ven)}${tag}`:'';
+          // Si ya es texto de oficio/cédula, mostrar directo sin "Plazo para"
+          const esOficio=/^(Oficio|Cédula|Cedula)/i.test(tvRaw);
+          if(esOficio)return`${tvRaw}${tag}`;
+          // Para saber con texto corto — agregar "Plazo para"
+          const plazoRaw=tvRaw.replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{27FF}\s]+/u,'').trim();
+          return`Plazo para ${plazoRaw} · vence ${fmtS(c.ven)}${tag}`;
         }
         const tvClean=(c.tv||'').replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{27FF}\s]+/u,'').trim();
         const tvPrefijo=tvClean?(tvClean.toLowerCase().startsWith('plazo para')?tvClean:'Plazo para '+tvClean):'';
@@ -1756,13 +1761,17 @@ function usarPlazo(){
   if(cid){
     const c=causas.find(x=>x.id===cid);
     if(c){
-      c.ven=fecha;
+      // Sumar 1 día hábil de plazo de gracia
+      const fechaConGracia=sumarDiasHabiles(fecha,1);
+      c.ven=fechaConGracia;
       c.tipo_venc='info';
       c.pl=false;
       c.tv_plazo=plazoParaTxt;
       // Texto completo: detalle del diligenciamiento + plazo para (si hay)
       const detTxt=document.getElementById('plazo-detalle').textContent||'';
-      c.tv=plazoParaTxt?(detTxt+' · plazo para '+plazoParaTxt):detTxt;
+      // Actualizar la fecha en el detalle al día con gracia
+      const detConGracia=detTxt.replace(/vence \d{2}\/\d{2}\/\d{4}/,'vence '+fmtS(fechaConGracia));
+      c.tv=plazoParaTxt?(detConGracia+' · plazo para '+plazoParaTxt):detConGracia;
       sC();refRow(cid);updBadges();renderVencPanel();
     }
   }
