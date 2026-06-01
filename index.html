@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v163</title>
+<title>Gudiño y Asociados v166</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1681,35 +1681,46 @@ document.addEventListener('click',function(e){
 // ── MAIL LUNES Y VIERNES PARA RAMIRO ──
 function chequearMailRamiro(){
   const ahora=new Date();
-  const dia=ahora.getDay(); // 0=dom, 4=jue
+  const dia=ahora.getDay();
   const hora=ahora.getHours();
-  const min=ahora.getMinutes();
-  // Mandar la noche anterior: domingo (para lunes) y jueves (para viernes) entre 20:00 y 21:00
-  const esNoche=(dia===0||dia===4)&&hora===20&&min<30;
-  if(!esNoche)return;
-  const key='ga_ram_mail_'+isoD(ahora);
+  // Intentar enviar: domingo (dia=0) o jueves (dia=4) a partir de las 20hs
+  // Si se perdió la noche (lunes dia=1 o viernes dia=5), enviar igual hasta las 12
+  const esNochePrev=(dia===0||dia===4)&&hora>=20;
+  const esMañanaSig=(dia===1||dia===5)&&hora<12;
+  if(!esNochePrev&&!esMañanaSig)return;
+  // Clave: semana actual + si es para lunes o viernes
+  const paraLabel=(dia===0||dia===1)?'Lunes':'Viernes';
+  const key='ga_ram_mail_'+SK+'_'+paraLabel;
   if(localStorage.getItem(key))return;
   const pendCausas=causas.filter(c=>c.ram&&!c.rdon);
   const pendExt=extraj.filter(e=>e.ram&&!e.rdon);
   const pendGen=tareasRam.filter(t=>!t.done);
-  if(!pendCausas.length&&!pendExt.length&&!pendGen.length)return;
-  let resumen='TAREAS PENDIENTES PARA RAMIRO:\n\n';
+  if(!pendCausas.length&&!pendExt.length&&!pendGen.length){
+    localStorage.setItem(key,'1'); // no hay tareas, marcar como enviado igual
+    return;
+  }
+  let resumen='TAREAS PENDIENTES PARA RAMIRO - '+paraLabel.toUpperCase()+':\n\n';
   if(pendGen.length){resumen+='TAREAS GENERALES:\n';pendGen.forEach(t=>resumen+='- '+t.txt+'\n');resumen+='\n';}
-  if(pendCausas.length||pendExt.length){resumen+='ENCARGOS EN CAUSAS:\n';[...pendCausas,...pendExt].forEach(c=>resumen+='- '+(c.car||c.tit)+': '+c.ram+'\n');}
+  if(pendCausas.length||pendExt.length){
+    resumen+='ENCARGOS EN CAUSAS:\n';
+    [...pendCausas,...pendExt].forEach(c=>resumen+='- '+(c.car||c.tit)+': '+c.ram+'\n');
+  }
   const destinos=[];
   if(mailCfg.emailRam)destinos.push(mailCfg.emailRam);
   if(mailCfg.email)destinos.push(mailCfg.email);
   if(!destinos.length||!EJS_SVC||!EJS_TPL)return;
-  const diaLabel=dia===0?'Lunes':'Viernes';
+  const cuandoLabel=esNochePrev?'(noche anterior)':'(enviado esta mañana)';
   destinos.forEach(dest=>{
     emailjs.send(EJS_SVC,EJS_TPL,{
-      cliente:'Tareas de Ramiro - '+diaLabel,
+      cliente:'Tareas de Ramiro - '+paraLabel+' '+cuandoLabel,
       hora:'08:00',
       motivo:resumen,
       fecha:isoD(ahora).split('-').reverse().join('/')
-    }).catch(e=>console.warn('EmailJS Ramiro semanal:',e));
+    }).then(()=>{
+      localStorage.setItem(key,'1');
+      console.log('Mail Ramiro enviado -',paraLabel,cuandoLabel);
+    }).catch(e=>console.warn('EmailJS Ramiro:',e));
   });
-  localStorage.setItem(key,'1');
 }
 setInterval(chequearMailRamiro,10*60*1000); // cada 10 minutos
 setTimeout(chequearMailRamiro,5000);
@@ -2179,7 +2190,7 @@ function copyTxt(){
   });
   navigator.clipboard.writeText(t).then(()=>alert('¡Copiado! Pegalo en Word con Ctrl+V.'));
 }
-function confirmReset(){if(!confirm('¿Simular lunes? Se borran todos los verdes.'))return;movidas=new Set();sM();updProgress();renderBan();renderR();}
+function confirmReset(){if(!confirm('¿Simular lunes? Se borran todos los verdes.'))return;movidas=new Set();causas.forEach(c=>{delete c.ramNotif;});sC();sM();updProgress();renderBan();renderR();}
 document.addEventListener('click',function(e){
   if(openCID===null)return;
   if(_gcpClickInterno){_gcpClickInterno=false;return;} // click fue dentro del popup
@@ -2466,6 +2477,16 @@ function borrarTurno(){
   renderTurnos();
 }
 async function iniciarApp(){
+  // Lunes: borrar notificaciones verdes de Ramiro de la semana anterior
+  if(ES_LUN){
+    const resetKey='ga_ramnotif_reset_'+SK;
+    if(!localStorage.getItem(resetKey)){
+      let changed=false;
+      causas.forEach(c=>{if(c.ramNotif){delete c.ramNotif;changed=true;}});
+      if(changed)sC();
+      localStorage.setItem(resetKey,'1');
+    }
+  }
   updProgress();renderBan();renderR();
 }
 // ═══════════════════════════════════════
