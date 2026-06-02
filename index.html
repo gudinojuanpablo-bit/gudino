@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v166</title>
+<title>Gudiño y Asociados v173</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -644,7 +644,29 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
           <span style="font-size:24px">🧾</span>
           <div><div style="font-size:13px;font-weight:700">Gastos</div><div style="font-size:11px;color:#aaa">Sellados y gastos del estudio</div></div>
         </div>
+        <div onclick="goP('pendientes')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid #c5d0f0;background:#f0f4ff;cursor:pointer">
+          <span style="font-size:24px">📝</span>
+          <div><div style="font-size:13px;font-weight:700;color:#2a3a8a">Pendientes</div><div style="font-size:11px;color:#7a8cb0">Agenda libre de notas y tareas propias</div></div>
+          <span class="nb" id="cnt-pend" style="margin-left:auto;background:#2a3a8a">0</span>
+        </div>
       </div>
+    </div>
+
+    <div class="ct panel" id="panel-pendientes">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:#2a3a8a">📝 Pendientes</div>
+          <div style="font-size:11px;color:#aaa">Agenda libre — solo para vos</div>
+        </div>
+      </div>
+      <!-- Agregar pendiente -->
+      <div style="display:flex;gap:6px;margin-bottom:14px">
+        <input class="fi" type="text" id="pend-inp" placeholder="Escribí una nota y apretá + o Enter..." style="flex:1;font-size:13px" autofocus
+          onkeydown="if(event.key==='Enter')addPendiente()">
+        <button class="btn p" onclick="addPendiente()" style="padding:7px 14px;font-size:13px">+</button>
+      </div>
+      <!-- Lista -->
+      <div id="pend-list"></div>
     </div>
 
     <div class="ct panel" id="panel-nueva">
@@ -1011,7 +1033,7 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],gastos,audiencias,extraj,feriados,mailCfg,tareasRam};}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes};}
 function applyPayload(d){
   if(!d)return;
   if(d.causas){
@@ -1024,7 +1046,7 @@ function applyPayload(d){
     });
   }
   if(d.movidas)movidas=new Set(d.movidas);
-  if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;
+  if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;if(d.pendientes)pendientes=d.pendientes;
   if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;
   if(d.mailCfg)mailCfg=d.mailCfg;
   if(d.tareasRam)tareasRam=d.tareasRam;
@@ -1103,26 +1125,27 @@ setTimeout(async()=>{
 function niOn(id){document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));const el=document.getElementById('ni-'+id);if(el)el.classList.add('on');}
 function showRegLayout(v){
   document.getElementById('panel-reg-wrap').style.display=v?'flex':'none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes'].forEach(p=>{
     document.getElementById('panel-'+p).classList.remove('on');
   });
 }
 function showOtherPanel(id){
   document.getElementById('panel-reg-wrap').style.display='none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes'].forEach(p=>{
     document.getElementById('panel-'+p).classList.toggle('on',p===id);
   });
 }
 function goR(){filtroF=null;showRegLayout(true);niOn('reg');document.getElementById('ptitle').textContent='Registro de causas';renderBan();renderR();}
 function goF(f){filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Pendientes'};
   document.getElementById('ptitle').textContent=t[p]||p;
   showOtherPanel(p);
   niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her'}[p]||p);
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
   if(p==='audiencias'){sincTodasAudiencias();renderCal();}
+  if(p==='pendientes'){renderPendientes();setTimeout(()=>{const i=document.getElementById('pend-inp');if(i)i.focus();},100);}
   if(p==='extrajudiciales')renderExt();
   if(p==='vencemañana')renderVMP();
   if(p==='turnero')renderTurnos();
@@ -1280,49 +1303,61 @@ function editAudObs(id,e){
 function editRam(id,e){
   e.stopPropagation();
   closeCP();
-  const row=document.getElementById('cr-'+id);
-  if(!row)return;
-  // toggle: si ya hay editor abierto en esta fila, cerrarlo
-  const existing=row.querySelector('.ram-editor');
-  if(existing){existing.remove();return;}
-  // cerrar cualquier otro editor abierto
+  id=parseInt(id);
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  getRams(c);
+  const row=document.getElementById('cr-'+id);if(!row)return;
+  // Cerrar si ya hay uno abierto en otra causa
   document.querySelectorAll('.ram-editor').forEach(el=>el.remove());
-  const c=causas.find(x=>x.id===id);
-  if(!c)return;
-  const ci=row.querySelector('.ci');
-  if(!ci)return;
+  const ci=row.querySelector('.ci');if(!ci)return;
   const editor=document.createElement('div');
   editor.className='ram-editor';
-  editor.innerHTML=`⭐ <input id="ram-inp-${id}" placeholder="Tarea..." value="${c.ram||''}">
-    <button class="rbtn" onclick="saveRam(${id})">✓</button>
-    <button class="rbtn" onclick="this.closest('.ram-editor').remove()">✕</button>
-    ${c.ram?`<button class="rbtn" style="color:#c00" onclick="clearRam(${id})">🗑</button>`:''}`;
-  ci.appendChild(editor);
-  const inp=editor.querySelector('input');
-  if(inp)inp.focus();
   editor.onclick=ev=>ev.stopPropagation();
+  editor.style.cssText='display:flex;align-items:center;gap:5px;margin-top:4px;padding:3px 0';
+  editor.innerHTML=`
+    <span style="color:#f59e0b;font-size:13px">⭐</span>
+    <input id="ram-new-${id}" class="fi" placeholder="Tarea para Ramiro..."
+      style="flex:1;font-size:12px;padding:3px 8px">
+    <span onclick="event.stopPropagation();editor.remove()" style="color:#ccc;cursor:pointer;font-size:14px;padding:2px 5px">✕</span>`;
+  ci.appendChild(editor);
+  const inp=editor.querySelector('#ram-new-'+id);
+  if(inp){
+    inp.focus();
+    inp.onkeydown=ev=>{
+      if(ev.key==='Enter'){
+        ev.preventDefault();
+        const txt=inp.value.trim();
+        if(!txt){editor.remove();return;}
+        c.rams.push({id:Date.now(),txt,done:false});
+        c.ram=c.rams[0].txt;c.rdon=false;
+        editor.remove();
+        sC();refRow(id);updBadges();if(curView==='ram')renderRam();
+      }
+      if(ev.key==='Escape'){editor.remove();}
+    };
+  }
 }
-function saveRam(id){
-  const inp=document.getElementById('ram-inp-'+id);
-  if(!inp)return;
-  const c=causas.find(x=>x.id===id);
-  if(!c)return;
-  c.ram=inp.value.trim();
-  c.rdon=false;
-  sC();
+function ramAgregarLinea(id){}
+function ramBorrarLinea(id,idx){
+  id=parseInt(id);
+  const c=causas.find(x=>x.id===id);if(!c||!c.rams)return;
+  c.rams.splice(idx,1);
+  c.ram=c.rams.length?c.rams[0].txt:'';
+  c.rdon=c.rams.length?c.rams[0].done:false;
+  sC();refRow(id);updBadges();if(curView==='ram')renderRam();
+}
+function ramGuardar(id){
   document.querySelectorAll('.ram-editor').forEach(el=>el.remove());
-  refRow(id);updBadges();
-  if(curView==='ram')renderRam();
 }
+function saveRam(id){ramGuardar(id);}
 function clearRam(id){
-  const c=causas.find(x=>x.id===id);
-  if(!c)return;
-  c.ram='';c.rdon=false;
-  sC();
+  id=parseInt(id);
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  c.ram='';c.rdon=false;c.rams=[];
   document.querySelectorAll('.ram-editor').forEach(el=>el.remove());
-  refRow(id);updBadges();
-  if(curView==='ram')renderRam();
+  sC();refRow(id);updBadges();
 }
+
 function togRam(id){
   const c=causas.find(x=>x.id===id);if(!c)return;
   if(c.ram&&!c.rdon){
@@ -1355,16 +1390,25 @@ function borrarRamE(id,e){
   const ext=extraj.find(x=>x.id===id);if(!ext)return;
   ext.ram='';ext.rdon=false;sE();renderExt();updBadges();if(curView==='ram')renderRam();
 }
-function rNotaHTML(c,isExt){
-  if(!c.ram)return'';
-  const fn=isExt?`togRamE(${c.id})`:`togRam(${c.id})`;
-  const bfn=isExt?`borrarRamE(${c.id},event)`:`borrarRam(${c.id},event)`;
-  return`<div class="rnota${c.rdon?' done':''}" onclick="${fn}">
-    <span>⭐ <strong>Ramiro:</strong> ${c.ram} <span style="font-size:10px;color:${c.rdon?'#aaa':'#9B6F00'}">${c.rdon?'✓ Cumplido':'→ marcar cumplido'}</span></span>
-    <button class="rnota-del" onclick="${bfn}" title="Borrar tarea">🗑</button>
-  </div>`;
+function getRams(c){
+  if(!c.rams){
+    c.rams = c.ram ? [{id: Date.now(), txt: c.ram, done: c.rdon||false}] : [];
+    if(c.ram){c.ram='';c.rdon=false;}
+  }
+  return c.rams;
 }
-
+function rNotaHTML(c,isExt){
+  getRams(c);
+  if(!c.rams||!c.rams.length)return'';
+  const fsize=c.rams.length>2?'11px':'12px';
+  return c.rams.map(t=>{
+    if(t.done)return`<div class="rnota done" style="font-size:${fsize}"><span>⭐ <strong>Ramiro:</strong> ${t.txt} <span style="font-size:10px;color:#aaa">✓ Cumplido</span></span></div>`;
+    return`<div class="rnota" style="font-size:${fsize};display:flex;align-items:center;gap:4px">
+      <span style="flex:1" onclick="abrirCumplida(${c.id},${isExt},${t.id})">⭐ <strong>Ramiro:</strong> ${t.txt} <span style="font-size:10px;color:#9B6F00">→ marcar cumplido</span></span>
+      <span onclick="event.stopPropagation();ramBorrarLinea(${c.id},${c.rams.indexOf(t)})" style="color:#ddd;cursor:pointer;font-size:13px;padding:1px 4px">✕</span>
+    </div>`;
+  }).join('');
+}
 
 function rowHTML(c){
   const cls=rowCls(c),on=movidas.has(c.id);
@@ -2238,6 +2282,7 @@ function renderRam(){
 }
 
 let tareasRam=JSON.parse(localStorage.getItem('ga_tram')||'[]');
+let pendientes=JSON.parse(localStorage.getItem('ga_pend')||'[]');
 function saveTareasRam(){localStorage.setItem('ga_tram',JSON.stringify(tareasRam));fbSave();}
 function addTareaRam(){
   const inp=document.getElementById('tram-inp');
@@ -2786,6 +2831,60 @@ function togRamConComentario(id,comment){
   }
   c.ram='';c.rdon=false;
   sC();refRow(id);updBadges();if(curView==='ram')renderRam();
+}
+
+// ═══════════════════════════════════════════════
+// PENDIENTES — AGENDA LIBRE
+// ═══════════════════════════════════════════════
+function savePend(){localStorage.setItem('ga_pend',JSON.stringify(pendientes));fbSave();}
+function updCntPend(){const el=document.getElementById('cnt-pend');if(el){const n=pendientes.filter(p=>!p.done).length;el.textContent=n;el.style.display=n?'':'none';}}
+function addPendiente(){
+  const inp=document.getElementById('pend-inp');
+  const txt=inp?inp.value.trim():'';
+  if(!txt)return;
+  pendientes.unshift({id:Date.now(),txt,done:false,ts:Date.now()});
+  inp.value='';inp.focus();
+  savePend();renderPendientes();updCntPend();
+}
+function togglePendiente(id){
+  const p=pendientes.find(x=>x.id===id);if(!p)return;
+  p.done=!p.done;p.doneTs=p.done?Date.now():null;
+  savePend();renderPendientes();updCntPend();
+}
+function borrarPendiente(id){
+  pendientes=pendientes.filter(x=>x.id!==id);
+  savePend();renderPendientes();updCntPend();
+}
+function renderPendientes(){
+  const el=document.getElementById('pend-list');if(!el)return;
+  const pend=pendientes.filter(p=>!p.done);
+  const hechas=pendientes.filter(p=>p.done);
+  let h='';
+  if(!pendientes.length){
+    h='<div style="text-align:center;color:#bbb;padding:30px;font-size:13px">↑ Escribí una nota arriba y apretá +</div>';
+  } else {
+    // Pendientes
+    pend.forEach(p=>{
+      h+=`<div style="display:flex;align-items:flex-start;gap:10px;padding:11px 12px;background:#fff;border-radius:10px;border:1px solid #e0e7ff;margin-bottom:6px">
+        <input type="checkbox" onchange="togglePendiente(${p.id})" style="width:18px;height:18px;margin-top:1px;cursor:pointer;accent-color:#2a3a8a;flex-shrink:0">
+        <span style="flex:1;font-size:13px;color:var(--text);line-height:1.5">${p.txt}</span>
+        <span onclick="borrarPendiente(${p.id})" style="color:#ddd;cursor:pointer;font-size:16px;padding:0 2px;flex-shrink:0" title="Borrar">✕</span>
+      </div>`;
+    });
+    // Hechas (colapsables)
+    if(hechas.length){
+      h+=`<div style="margin-top:12px;margin-bottom:6px;font-size:10px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.7px">✓ Completadas (${hechas.length})</div>`;
+      hechas.forEach(p=>{
+        h+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f9f9f9;border-radius:8px;border:1px solid var(--border);margin-bottom:4px;opacity:.7">
+          <input type="checkbox" checked onchange="togglePendiente(${p.id})" style="width:16px;height:16px;cursor:pointer;accent-color:#888;flex-shrink:0">
+          <span style="flex:1;font-size:12px;color:#aaa;text-decoration:line-through">${p.txt}</span>
+          <span onclick="borrarPendiente(${p.id})" style="color:#ddd;cursor:pointer;font-size:14px;padding:0 2px;flex-shrink:0">✕</span>
+        </div>`;
+      });
+    }
+  }
+  el.innerHTML=h;
+  updCntPend();
 }
 iniciarApp();
 </script>
