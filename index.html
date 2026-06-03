@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v173</title>
+<title>Gudiño y Asociados v179</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -427,6 +427,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
       </div>
     </div>
     <div class="ni" id="ni-aud" onclick="goP('audiencias')">📅 Audiencias</div>
+    <div class="ni" id="ni-pend" onclick="goP('pendientes')">📝 Anotador <span class="nb" id="cnt-pend" style="background:#2a3a8a">0</span></div>
     <div class="ni" id="ni-nue" onclick="goP('nueva')">➕ Nueva causa</div>
     <div class="ni" id="ni-her" onclick="goP('herramientas')" style="color:#2980b9">🔧 Herramientas</div>
     <div class="ni" id="ni-cfg" onclick="goP('config')">⚙ Config. / Online</div>
@@ -462,6 +463,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
             <span style="font-size:10px;color:#aaa;font-weight:700;margin-right:2px">VER:</span>
             <div class="filtro-btn on" onclick="setFiltroEstado('');swV('reg')">Todas</div>
             <div class="filtro-btn" onclick="setFiltroEstado('trabajar');swV('reg')">📋 Para trabajar</div>
+            <div class="filtro-btn" onclick="setFiltroEstado('semana');swV('reg')">⏰ Vence esta semana</div>
             <div class="filtro-btn" id="btn-ram-fil" onclick="swV('ram')" style="display:flex;align-items:center;gap:4px">⭐ Ramiro <span class="tbadge y" id="rbadge" style="position:static;margin-left:2px">0</span></div>
           </div>
           <div class="view on" id="view-reg">
@@ -644,18 +646,46 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
           <span style="font-size:24px">🧾</span>
           <div><div style="font-size:13px;font-weight:700">Gastos</div><div style="font-size:11px;color:#aaa">Sellados y gastos del estudio</div></div>
         </div>
-        <div onclick="goP('pendientes')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid #c5d0f0;background:#f0f4ff;cursor:pointer">
-          <span style="font-size:24px">📝</span>
-          <div><div style="font-size:13px;font-weight:700;color:#2a3a8a">Pendientes</div><div style="font-size:11px;color:#7a8cb0">Agenda libre de notas y tareas propias</div></div>
-          <span class="nb" id="cnt-pend" style="margin-left:auto;background:#2a3a8a">0</span>
+        <div onclick="goP('inactivas')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid #f0d0a0;background:#fff8ec;cursor:pointer">
+          <span style="font-size:24px">💤</span>
+          <div><div style="font-size:13px;font-weight:700;color:#9a6800">Causas sin movimiento</div><div style="font-size:11px;color:#b8924a">Más de 2 semanas sin tocarse</div></div>
+          <span class="nb" id="cnt-inact" style="margin-left:auto;background:#cc8800">0</span>
         </div>
+        <div onclick="exportarPDF()" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
+          <span style="font-size:24px">📄</span>
+          <div><div style="font-size:13px;font-weight:700">Exportar PDF</div><div style="font-size:11px;color:#aaa">Listado de vencimientos de la semana</div></div>
+        </div>
+        <div onclick="goP('histmes')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
+          <span style="font-size:24px">📚</span>
+          <div><div style="font-size:13px;font-weight:700">Historial por mes</div><div style="font-size:11px;color:#aaa">Movimientos de todas las causas, por fecha</div></div>
+        </div>
+
       </div>
+    </div>
+
+    <div class="ct panel" id="panel-histmes">
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px">📚 Historial de movimientos</div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:12px">Todo lo que se hizo, agrupado por mes</div>
+      <div style="position:relative;margin-bottom:14px">
+        <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px">🔍</span>
+        <input class="fi" type="text" id="histmes-buscar" placeholder="Filtrar por carátula..." style="width:100%;padding:9px 12px 9px 34px;font-size:13px" oninput="renderHistMes()">
+      </div>
+      <div id="histmes-body"></div>
+    </div>
+
+    <div class="ct panel" id="panel-inactivas">
+      <div style="font-size:14px;font-weight:700;color:#9a6800;margin-bottom:4px">💤 Causas sin movimiento</div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:10px">Más de 2 semanas sin actividad</div>
+      <div style="font-size:11px;color:#888;background:#fff8ec;border:1px solid #f0d0a0;border-radius:8px;padding:8px 10px;margin-bottom:12px">
+        Tocá <strong>"Ya lo vi"</strong> para descartar una causa por una semana. Si sigue sin moverse, reaparece.
+      </div>
+      <div id="inactivas-body"></div>
     </div>
 
     <div class="ct panel" id="panel-pendientes">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
         <div style="flex:1">
-          <div style="font-size:14px;font-weight:700;color:#2a3a8a">📝 Pendientes</div>
+          <div style="font-size:14px;font-weight:700;color:#2a3a8a">📝 Anotador</div>
           <div style="font-size:11px;color:#aaa">Agenda libre — solo para vos</div>
         </div>
       </div>
@@ -972,7 +1002,7 @@ function sF(){svl('ga_f',feriados);fbSave();}
 function esFer(s){return!!feriados.find(f=>f.f===s);}
 function rowCls(c){
   if(movidas.has(c.id))return'mov';
-  if(c.tipo_aud==='resolver'||c.not&&c.not.toUpperCase().includes('A RESOLVER'))return'res';
+  if(c.tipo_aud==='resolver')return'res';
   // color de fondo según tipo de audiencia
   if(c.tipo_aud==='inicial')return'aud-inicial';
   if(c.tipo_aud==='mediac'||c.tipo_aud==='concil')return'aud-mediac';
@@ -1125,20 +1155,20 @@ setTimeout(async()=>{
 function niOn(id){document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));const el=document.getElementById('ni-'+id);if(el)el.classList.add('on');}
 function showRegLayout(v){
   document.getElementById('panel-reg-wrap').style.display=v?'flex':'none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes'].forEach(p=>{
     document.getElementById('panel-'+p).classList.remove('on');
   });
 }
 function showOtherPanel(id){
   document.getElementById('panel-reg-wrap').style.display='none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes'].forEach(p=>{
     document.getElementById('panel-'+p).classList.toggle('on',p===id);
   });
 }
 function goR(){filtroF=null;showRegLayout(true);niOn('reg');document.getElementById('ptitle').textContent='Registro de causas';renderBan();renderR();}
 function goF(f){filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Pendientes'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes'};
   document.getElementById('ptitle').textContent=t[p]||p;
   showOtherPanel(p);
   niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her'}[p]||p);
@@ -1146,6 +1176,8 @@ function goP(p){
   if(p==='config')renderCfg();
   if(p==='audiencias'){sincTodasAudiencias();renderCal();}
   if(p==='pendientes'){renderPendientes();setTimeout(()=>{const i=document.getElementById('pend-inp');if(i)i.focus();},100);}
+  if(p==='inactivas'){renderInactivas();}
+  if(p==='histmes'){renderHistMes();}
   if(p==='extrajudiciales')renderExt();
   if(p==='vencemañana')renderVMP();
   if(p==='turnero')renderTurnos();
@@ -1636,7 +1668,7 @@ function sincAudiencia(c){
   const panelAud=document.getElementById('panel-audiencias');
   if(panelAud&&panelAud.classList.contains('on'))renderCal();
 }
-function gcpGuardar(){
+function gcpGuardar(){if(openCID)touchCausa(openCID);
   if(!openCID)return;
   const id=openCID;
   const c=causas.find(x=>x.id===id);if(!c)return;
@@ -1708,7 +1740,7 @@ function togMov(id){
   if(col){col.style.background='';col.style.borderColor='';}
 }
 function edSt(id,e){if(e&&e.target&&e.target.closest('.chk-col'))return;if(openCID!==null){closeCP();return;}if(activeEd===id)return;if(activeEd!==null)edEn(activeEd);activeEd=id;const el=document.getElementById('not-'+id);if(el){el.contentEditable='true';el.focus();}}
-function edEn(id){const el=document.getElementById('not-'+id);if(!el){activeEd=null;return;}el.contentEditable='false';const c=causas.find(x=>x.id===id);if(!c){activeEd=null;return;}const nuevo=el.innerText.trim();if(nuevo!==c.not){if(!historial[id])historial[id]=[];historial[id].unshift({d:todayISO(),t:c.not});if(historial[id].length>30)historial[id]=historial[id].slice(0,30);c.not=nuevo;sC();sH();}activeEd=null;}
+function edEn(id){const el=document.getElementById('not-'+id);if(!el){activeEd=null;return;}el.contentEditable='false';const c=causas.find(x=>x.id===id);if(!c){activeEd=null;return;}const nuevo=el.innerText.trim();if(nuevo!==c.not){if(!historial[id])historial[id]=[];historial[id].unshift({d:todayISO(),t:c.not});if(historial[id].length>30)historial[id]=historial[id].slice(0,30);c.not=nuevo;c.lastTouch=Date.now();sC();sH();}activeEd=null;}
 function edK(e,id){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();edEn(id);}if(e.key==='Escape'){const el=document.getElementById('not-'+id);if(el)el.contentEditable='false';activeEd=null;}}
 
 
@@ -1822,11 +1854,16 @@ function limpiarCausa(id,e){
   if(e)e.stopPropagation();
   id=parseInt(id);
   const c=causas.find(x=>x.id===id);
-  if(!c){console.log('limpiarCausa: causa no encontrada id=',id,'openCID=',openCID);return;}
+  if(!c)return;
+  // Limpiar TODO el contenido de la causa
   c.ven='';c.tv='';c.tv_plazo='';c.pl=false;c.tipo_aud='';c.tipo_venc='vencimiento';
   c.aud_h='';c.aud_mod='';c.aud_obs='';c.tv_accion='';
+  c.not='';                  // nota
+  c.ram='';c.rdon=false;c.rams=[]; // tareas Ramiro
+  delete c.ramNotif;         // notificación verde
+  if(historial[id])delete historial[id]; // historial de avances
   if(pendingVen[id])delete pendingVen[id];
-  sC();
+  sC();sH();
   closeCP();
   const row=document.getElementById('cr-'+id);
   if(row){const t=document.createElement('div');t.innerHTML=rowHTML(c);row.replaceWith(t.firstChild);}
@@ -1974,6 +2011,11 @@ function renderR(){
   let fl=causas.filter(c=>c.est!=='archivada');
   if(filtroF)fl=fl.filter(c=>c.fue===filtroF);
   if(filtroEstado==='trabajar')fl=fl.filter(c=>!movidas.has(c.id));
+  if(filtroEstado==='semana'){
+    const hoy=todayISO();
+    const en7=isoD(new Date(HOY.getTime()+7*24*60*60*1000));
+    fl=fl.filter(c=>c.ven&&c.pl&&c.tipo_venc!=='info'&&c.ven>=hoy&&c.ven<=en7);
+  }
   if(filtroEstado==='resolver')fl=fl.filter(c=>c.tipo_aud==='resolver'||(c.not&&c.not.toUpperCase().includes('A RESOLVER')));
   if(filtroEstado==='urgente'){
     fl=fl.filter(c=>(c.est==='urgente'||(c.ven&&c.tipo_venc!=='info'))&&dLeft(c.ven)>=0);
@@ -2532,7 +2574,7 @@ async function iniciarApp(){
       localStorage.setItem(resetKey,'1');
     }
   }
-  updProgress();renderBan();renderR();
+  initLastTouch();updProgress();renderBan();renderR();updCntInact();
 }
 // ═══════════════════════════════════════
 // PRESENCIA — quién está conectado
@@ -2664,7 +2706,7 @@ function calcGuardar(tipo){
 
 
 // ── AGREGAR NOTA RÁPIDA ──
-function agregarNota(id,e){
+function agregarNota(id,e){touchCausa(id);
   if(e)e.stopPropagation();
   id=parseInt(id);
   const row=document.getElementById('cr-'+id);if(!row)return;
@@ -2814,7 +2856,7 @@ function confirmarCumplida(){
   _cumId=null;
 }
 function togRamConComentario(id,comment){
-  const c=causas.find(x=>x.id===id);if(!c)return;
+  const c=causas.find(x=>x.id===id);if(!c)return;touchCausa(id);
   if(c.ram&&!c.rdon){
     if(!historial[id])historial[id]=[];
     const fecha=todayISO();
@@ -2837,7 +2879,10 @@ function togRamConComentario(id,comment){
 // PENDIENTES — AGENDA LIBRE
 // ═══════════════════════════════════════════════
 function savePend(){localStorage.setItem('ga_pend',JSON.stringify(pendientes));fbSave();}
-function updCntPend(){const el=document.getElementById('cnt-pend');if(el){const n=pendientes.filter(p=>!p.done).length;el.textContent=n;el.style.display=n?'':'none';}}
+function updCntPend(){
+  const n=pendientes.filter(p=>!p.done).length;
+  const el=document.getElementById('cnt-pend');if(el){el.textContent=n;el.style.display=n?'':'none';}
+}
 function addPendiente(){
   const inp=document.getElementById('pend-inp');
   const txt=inp?inp.value.trim():'';
@@ -2885,6 +2930,168 @@ function renderPendientes(){
   }
   el.innerHTML=h;
   updCntPend();
+}
+updCntPend();
+// ═══════════════════════════════════════════════
+// SEGUIMIENTO DE INACTIVIDAD
+// ═══════════════════════════════════════════════
+function touchCausa(id){
+  id=parseInt(id);
+  const c=causas.find(x=>x.id===id);
+  if(c){c.lastTouch=Date.now();}
+}
+function initLastTouch(){
+  // Para causas sin lastTouch: usar fecha del último historial, o arrancar el reloj ahora
+  causas.forEach(c=>{
+    if(!c.lastTouch){
+      const h=historial[c.id];
+      if(h&&h.length&&h[0].d){
+        c.lastTouch=new Date(h[0].d+'T12:00:00').getTime();
+      } else {
+        c.lastTouch=Date.now();
+      }
+    }
+  });
+}
+function semanaActualKey(){
+  // Lunes de la semana actual como clave
+  const d=new Date();
+  const day=d.getDay();
+  const diff=d.getDate()-day+(day===0?-6:1);
+  const lun=new Date(d.setDate(diff));
+  return lun.toISOString().split('T')[0];
+}
+function getInactivas(){
+  const limite=14*24*60*60*1000; // 2 semanas
+  const ahora=Date.now();
+  const wk=semanaActualKey();
+  const descartadas=JSON.parse(localStorage.getItem('ga_inact_descartadas')||'{}');
+  return causas.filter(c=>{
+    if(c.est==='archivada')return false;
+    const lt=c.lastTouch||ahora;
+    if(ahora-lt<limite)return false;
+    // ¿descartada esta semana?
+    if(descartadas[c.id]===wk)return false;
+    return true;
+  }).sort((a,b)=>(a.lastTouch||0)-(b.lastTouch||0));
+}
+function updCntInact(){
+  const el=document.getElementById('cnt-inact');
+  if(el){const n=getInactivas().length;el.textContent=n;el.style.display=n?'':'none';}
+}
+function renderInactivas(){
+  const el=document.getElementById('inactivas-body');if(!el)return;
+  const lista=getInactivas();
+  if(!lista.length){
+    el.innerHTML='<div style="text-align:center;color:#aaa;padding:30px;font-size:13px">✓ Todas las causas tuvieron movimiento reciente</div>';
+    updCntInact();return;
+  }
+  const ahora=Date.now();
+  el.innerHTML=lista.map(c=>{
+    const dias=Math.floor((ahora-(c.lastTouch||ahora))/(24*60*60*1000));
+    return`<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:7px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">${c.car}</div>
+        <div style="font-size:11px;color:#aaa">${c.juz} · ${c.ex||''}</div>
+        <div style="font-size:11px;color:#cc8800;margin-top:2px">Sin movimiento hace ${dias} días</div>
+      </div>
+      <button onclick="descartarInactiva(${c.id})" style="flex-shrink:0;padding:8px 12px;border-radius:8px;border:1px solid #c5d0f0;background:#f0f4ff;color:#2a3a8a;font-size:12px;font-weight:700;cursor:pointer">Ya lo vi</button>
+    </div>`;
+  }).join('');
+  updCntInact();
+}
+function descartarInactiva(id){
+  id=parseInt(id);
+  const wk=semanaActualKey();
+  const descartadas=JSON.parse(localStorage.getItem('ga_inact_descartadas')||'{}');
+  descartadas[id]=wk;
+  localStorage.setItem('ga_inact_descartadas',JSON.stringify(descartadas));
+  renderInactivas();
+}
+
+// ═══════════════════════════════════════════════
+// EXPORTAR PDF — vencimientos de la semana
+// ═══════════════════════════════════════════════
+function exportarPDF(){
+  const hoy=todayISO();
+  const en7=isoD(new Date(HOY.getTime()+7*24*60*60*1000));
+  const venc=causas.filter(c=>c.ven&&c.pl&&c.tipo_venc!=='info'&&c.ven>=hoy&&c.ven<=en7&&c.est!=='archivada')
+    .sort((a,b)=>a.ven>b.ven?1:-1);
+  const fechaHoy=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
+  let filas='';
+  if(!venc.length){
+    filas='<tr><td colspan="3" style="text-align:center;padding:20px;color:#888">Sin vencimientos esta semana</td></tr>';
+  } else {
+    venc.forEach(c=>{
+      const d=dLeft(c.ven);
+      const cuando=d===0?'HOY':d===1?'Mañana':'en '+d+' días';
+      filas+=`<tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #ddd;font-weight:700">${fmtS(c.ven)}<br><span style="font-size:10px;color:#888;font-weight:400">${cuando}</span></td>
+        <td style="padding:8px 10px;border-bottom:1px solid #ddd"><strong>${c.car}</strong><br><span style="font-size:11px;color:#666">${c.juz} · ${c.ex||''}</span>${c.tv?`<br><span style="font-size:11px;color:#444">${c.tv}</span>`:''}</td>
+      </tr>`;
+    });
+  }
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Vencimientos ${fechaHoy}</title>
+    <style>body{font-family:Arial,sans-serif;padding:30px;color:#222}h1{font-size:18px;margin-bottom:2px}.sub{color:#888;font-size:12px;margin-bottom:20px}table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;padding:8px 10px;background:#f0f0f0;border-bottom:2px solid #ccc;font-size:11px;text-transform:uppercase;letter-spacing:.5px}@media print{button{display:none}}</style>
+    </head><body>
+    <h1>Gudiño y Asociados — Vencimientos de la semana</h1>
+    <div class="sub">Generado el ${fechaHoy}</div>
+    <table><thead><tr><th style="width:120px">Vence</th><th>Causa</th></tr></thead><tbody>${filas}</tbody></table>
+    <button onclick="window.print()" style="margin-top:24px;padding:10px 18px;background:#16182a;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">🖨 Imprimir / Guardar PDF</button>
+    </body></html>`);
+  win.document.close();
+}
+
+function renderHistMes(){
+  const el=document.getElementById('histmes-body');if(!el)return;
+  const q=(document.getElementById('histmes-buscar')?.value||'').toLowerCase().trim();
+  // Juntar todos los movimientos de todas las causas
+  const todos=[];
+  causas.forEach(c=>{
+    if(q&&!c.car.toLowerCase().includes(q)&&!(c.ex||'').toLowerCase().includes(q))return;
+    const h=historial[c.id];
+    if(h&&h.length){
+      h.forEach(entry=>{
+        todos.push({fecha:entry.d,texto:entry.t,tipo:entry.tipo,causa:c.car,juz:c.juz});
+      });
+    }
+  });
+  if(!todos.length){
+    el.innerHTML='<div style="text-align:center;color:#aaa;padding:30px;font-size:13px">'+(q?'Sin movimientos para esa carátula':'Sin movimientos registrados aún')+'</div>';
+    return;
+  }
+  // Ordenar por fecha desc
+  todos.sort((a,b)=>a.fecha<b.fecha?1:a.fecha>b.fecha?-1:0);
+  // Agrupar por mes
+  const meses={};
+  const mesNom=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  todos.forEach(m=>{
+    const [y,mo]=m.fecha.split('-');
+    const key=y+'-'+mo;
+    const label=mesNom[parseInt(mo)-1]+' '+y;
+    if(!meses[key])meses[key]={label,items:[]};
+    meses[key].items.push(m);
+  });
+  let html='';
+  Object.keys(meses).sort().reverse().forEach(key=>{
+    const grupo=meses[key];
+    html+=`<div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)">${grupo.label} · ${grupo.items.length}</div>`;
+    grupo.items.forEach(m=>{
+      const esRam=m.tipo==='ram';
+      const txt=(m.texto||'').replace('⭐ Ramiro: ','').replace('Ramiro: ','');
+      html+=`<div style="display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #f3f3f3">
+        <div style="font-size:11px;color:#bbb;flex-shrink:0;width:42px">${fmtS(m.fecha).slice(0,5)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;color:#333"><span style="color:${esRam?'#92400e':'#666'}">${esRam?'⭐ ':'📝 '}</span>${txt}</div>
+          <div style="font-size:10px;color:#bbb">${m.causa}</div>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  el.innerHTML=html;
 }
 iniciarApp();
 </script>
