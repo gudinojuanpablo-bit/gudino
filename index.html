@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v183</title>
+<title>Gudiño y Asociados v184</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -2285,7 +2285,9 @@ document.addEventListener('click',function(e){
 
 function renderRam(){
   const el=document.getElementById('ram-body');
-  const pend=causas.filter(c=>c.ram&&!c.rdon);
+  // Juntar todas las tareas pendientes de cada causa (multi-tarea)
+  const pendTasks=[];
+  causas.forEach(c=>{getRams(c);c.rams.filter(t=>!t.done).forEach(t=>pendTasks.push({c,t}));});
   const epend=extraj.filter(e=>e.ram&&!e.rdon);
   let h='';
 
@@ -2308,19 +2310,40 @@ function renderRam(){
     </div>
   </div>`;
 
-  // TAREAS EN CAUSAS
-  if(pend.length||epend.length){
-    h+=`<div class="a-sec"><h3>⭐ Encargos en causas (${pend.length+epend.length})</h3>`;
-    [...pend,...epend].forEach(c=>{
-      const isE=!!c.tit;
-      const histPrev=(!isE&&c.hist&&c.hist.length)?c.hist.slice(0,2).map(h=>`<div style="font-size:10px;color:#bbb;margin-top:1px">✓ ${h.txt} · ${h.fecha}</div>`).join(''):'';
-      const histBtn=(!isE&&c.hist&&c.hist.length)?'':'';
-      h+=`<div class="r-card"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${isE?c.tit:c.car}</div><div class="r-task">${c.ram}</div><div class="r-meta">${isE?'Extrajudicial · '+c.tipo:c.juz+' · '+c.ex}</div>${histPrev}</div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="abrirCumplida(${c.id},${isE?'true':'false'})">✓ Cumplida</button>${histBtn}<button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="${isE?'borrarRamE':'borrarRam'}(${c.id},event)">🗑</button></div></div>`;
+  // TAREAS EN CAUSAS (multi-tarea)
+  if(pendTasks.length||epend.length){
+    h+=`<div class="a-sec"><h3>⭐ Encargos en causas (${pendTasks.length+epend.length})</h3>`;
+    pendTasks.forEach(({c,t})=>{
+      h+=`<div class="r-card"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${c.car}</div><div class="r-task">${t.txt}</div><div class="r-meta">${c.juz} · ${c.ex}</div></div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="cumplirTareaRam(${c.id},${t.id})">✓ Cumplida</button><button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="borrarTareaRam(${c.id},${t.id},event)">🗑</button></div></div>`;
+    });
+    epend.forEach(c=>{
+      h+=`<div class="r-card"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${c.tit}</div><div class="r-task">${c.ram}</div><div class="r-meta">Extrajudicial · ${c.tipo}</div></div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="abrirCumplida(${c.id},true)">✓ Cumplida</button><button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="borrarRamE(${c.id},event)">🗑</button></div></div>`;
     });
     h+='</div>';
   }
-  if(!pend.length&&!epend.length&&!tareasRam.length)h='<div style="color:#aaa;text-align:center;padding:30px">Sin tareas para Ramiro.</div>';
+  if(!pendTasks.length&&!epend.length&&!tareasRam.length)h='<div style="color:#aaa;text-align:center;padding:30px">Sin tareas para Ramiro.</div>';
   el.innerHTML=h;
+}
+function cumplirTareaRam(cid,tid){
+  cid=parseInt(cid);
+  const c=causas.find(x=>x.id===cid);if(!c)return;
+  getRams(c);
+  const t=c.rams.find(x=>x.id===tid);if(!t)return;
+  // Abrir modal de cumplida con comentario para esta tarea específica
+  _cumTarea={cid,tid};
+  document.getElementById('cum-task').textContent=t.txt;
+  document.getElementById('cum-comment').value='';
+  document.getElementById('cum-overlay').style.display='flex';
+  setTimeout(()=>document.getElementById('cum-comment').focus(),100);
+}
+function borrarTareaRam(cid,tid,e){
+  if(e)e.stopPropagation();
+  cid=parseInt(cid);
+  const c=causas.find(x=>x.id===cid);if(!c)return;
+  getRams(c);
+  c.rams=c.rams.filter(x=>x.id!==tid);
+  c.ram=c.rams.length?c.rams[0].txt:'';
+  sC();refRow(cid);updBadges();renderRam();
 }
 
 let tareasRam=JSON.parse(localStorage.getItem('ga_tram')||'[]');
@@ -2829,9 +2852,9 @@ function descartarRamNotif(id,e){
   sC();refRow(id);
 }
 
-let _cumId=null,_cumIsE=false;
+let _cumId=null,_cumIsE=false,_cumTarea=null;
 function abrirCumplida(id,isE){
-  _cumId=parseInt(id);_cumIsE=isE;
+  _cumId=parseInt(id);_cumIsE=isE;_cumTarea=null;
   const c=!isE?causas.find(x=>x.id===_cumId):extraj.find(x=>x.id===_cumId);
   if(!c)return;
   document.getElementById('cum-task').textContent=c.ram||'';
@@ -2842,18 +2865,42 @@ function abrirCumplida(id,isE){
 }
 function cerrarCumplida(){
   document.getElementById('cum-overlay').style.display='none';
-  _cumId=null;
+  _cumId=null;_cumTarea=null;
 }
 function confirmarCumplida(){
   const comment=document.getElementById('cum-comment').value.trim();
   const ov=document.getElementById('cum-overlay');
   ov.style.display='none';
-  if(_cumIsE){
+  if(_cumTarea){
+    // Multi-tarea específica
+    cumplirTareaConComentario(_cumTarea.cid,_cumTarea.tid,comment);
+  } else if(_cumIsE){
     togRamE(_cumId,comment);
   } else {
     togRamConComentario(_cumId,comment);
   }
-  _cumId=null;
+  _cumId=null;_cumTarea=null;
+}
+function cumplirTareaConComentario(cid,tid,comment){
+  cid=parseInt(cid);
+  const c=causas.find(x=>x.id===cid);if(!c)return;
+  touchCausa(cid);getRams(c);
+  const t=c.rams.find(x=>x.id===tid);if(!t)return;
+  const fecha=todayISO();
+  const entrada='Ramiro: '+t.txt+(comment?' — '+comment:'');
+  if(!historial[cid])historial[cid]=[];
+  historial[cid].unshift({d:fecha,t:entrada,tipo:'ram'});
+  if(historial[cid].length>30)historial[cid]=historial[cid].slice(0,30);
+  sH();
+  const fechaStr=new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  if(!c.hist)c.hist=[];
+  c.hist.unshift({txt:t.txt+(comment?' — '+comment:''),fecha:fechaStr,ts:Date.now()});
+  if(c.hist.length>10)c.hist=c.hist.slice(0,10);
+  c.ramNotif={txt:t.txt,comentario:comment,fecha:fechaStr};
+  // Sacar esta tarea
+  c.rams=c.rams.filter(x=>x.id!==tid);
+  c.ram=c.rams.length?c.rams[0].txt:'';c.rdon=false;
+  sC();refRow(cid);updBadges();if(curView==='ram')renderRam();
 }
 function togRamConComentario(id,comment){
   const c=causas.find(x=>x.id===id);if(!c)return;touchCausa(id);
