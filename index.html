@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v184</title>
+<title>Gudiño y Asociados v185</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1185,7 +1185,9 @@ function goP(p){
 function swV(v){curView=v;['reg','ale','ven','ram','resolver'].forEach(x=>{const ve=document.getElementById('view-'+x);if(ve)ve.classList.toggle('on',x===v);});const ramBtn=document.getElementById('btn-ram-fil');if(ramBtn)ramBtn.classList.toggle('on',v==='ram');if(v==='ale')renderAle();if(v==='ven')renderVen();if(v==='ram')renderRam();if(v==='resolver')renderResolver();}
 
 function updBadges(){
-  const r=causas.filter(c=>c.ram&&!c.rdon).length+extraj.filter(e=>e.ram&&!e.rdon).length;
+  let r=0;
+  causas.forEach(c=>{getRams(c);r+=c.rams.filter(t=>!t.done).length;});
+  r+=extraj.filter(e=>e.ram&&!e.rdon).length;
   const rbEl=document.getElementById('rbadge');if(rbEl)rbEl.textContent=r;
   document.getElementById('cnt-ext').textContent=extraj.filter(e=>e.est!=='cerrado').length;
   const cntTur=document.getElementById('cnt-tur');
