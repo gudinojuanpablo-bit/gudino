@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v185</title>
+<title>Gudiño y Asociados v187</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -837,7 +837,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 // ═══════════════════════════════════════════════
 const HOY=new Date(),DOW=HOY.getDay(),ES_LUN=DOW===1,ES_VIE=DOW===5;
 function lunesDe(d){const r=new Date(d),di=(r.getDay()===0)?-6:1-r.getDay();r.setDate(r.getDate()+di);return r;}
-const LUN=lunesDe(HOY),VIE=new Date(LUN);VIE.setDate(LUN.getDate()+4);
+// Domingo desde las 20hs ya cuenta como semana nueva (el verde se borra el domingo a la noche)
+const _refSem=new Date(HOY);
+if(HOY.getDay()===0&&HOY.getHours()>=20)_refSem.setDate(_refSem.getDate()+1);
+const LUN=lunesDe(_refSem),VIE=new Date(LUN);VIE.setDate(LUN.getDate()+4);
 const SK=LUN.toISOString().split('T')[0];
 function fmt2(d){return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});}
 function fmtS(s){return s?s.split('-').reverse().join('/'):'—';}
@@ -1063,7 +1066,7 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes};}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes};}
 function applyPayload(d){
   if(!d)return;
   if(d.causas){
@@ -1075,7 +1078,11 @@ function applyPayload(d){
       if(c)c.ven=pendingVen[sid];
     });
   }
-  if(d.movidas)movidas=new Set(d.movidas);
+  if(d.movidas){
+    // Solo cargar las movidas si son de la semana actual; si son viejas, arrancar en 0
+    if(d.movidasSK===SK)movidas=new Set(d.movidas);
+    else movidas=new Set();
+  }
   if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;if(d.pendientes)pendientes=d.pendientes;
   if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;
   if(d.mailCfg)mailCfg=d.mailCfg;
@@ -1787,16 +1794,18 @@ function chequearMailRamiro(){
   if(mailCfg.emailRam)destinos.push(mailCfg.emailRam);
   if(mailCfg.email)destinos.push(mailCfg.email);
   if(!destinos.length||!EJS_SVC||!EJS_TPL)return;
-  const cuandoLabel=esNochePrev?'(noche anterior)':'(enviado esta mañana)';
   destinos.forEach(dest=>{
     emailjs.send(EJS_SVC,EJS_TPL,{
-      cliente:'Tareas de Ramiro - '+paraLabel+' '+cuandoLabel,
+      to_email:dest,
+      email:dest,
+      titulo:'Encargos para Ramiro - '+paraLabel,
+      cliente:'ENCARGOS PARA RAMIRO - '+paraLabel,
       hora:'08:00',
       motivo:resumen,
       fecha:isoD(ahora).split('-').reverse().join('/')
     }).then(()=>{
       localStorage.setItem(key,'1');
-      console.log('Mail Ramiro enviado -',paraLabel,cuandoLabel);
+      console.log('Mail Ramiro enviado a',dest);
     }).catch(e=>console.warn('EmailJS Ramiro:',e));
   });
 }
@@ -1851,6 +1860,21 @@ function abrirPlazo(causaId){
   document.querySelectorAll('.plazo-d').forEach(el=>el.classList.remove('on'));
   document.getElementById('plazo-modal').classList.add('ab');
   document.getElementById('plazo-overlay').classList.add('ab');
+}
+function clearV(id,e){
+  if(e)e.stopPropagation();
+  id=parseInt(id);
+  const c=causas.find(x=>x.id===id);
+  if(!c)return;
+  // Borrar SOLO el vencimiento/plazo/audiencia — conservar nota, Ramiro, historial
+  c.ven='';c.tv='';c.tv_plazo='';c.tv_accion='';c.pl=false;
+  c.tipo_aud='';c.tipo_venc='vencimiento';
+  c.aud_h='';c.aud_mod='';c.aud_obs='';
+  if(pendingVen[id])delete pendingVen[id];
+  sC();
+  const row=document.getElementById('cr-'+id);
+  if(row){const t=document.createElement('div');t.innerHTML=rowHTML(c);row.replaceWith(t.firstChild);}
+  updBadges();renderVencPanel();
 }
 function limpiarCausa(id,e){
   if(e)e.stopPropagation();
@@ -2430,6 +2454,9 @@ function chequearRecordatorios(){
     const key = 'tur_' + t.id + '_' + t.f;
     if(yaNotificados[key]) return;
     emailjs.send(EJS_SVC, EJS_TPL, {
+      to_email: mailCfg.email||'',
+      email: mailCfg.email||'',
+      titulo: 'Recordatorio de turno',
       cliente: t.cli || 'Sin nombre',
       hora:    t.h,
       motivo:  t.mot || '—',
@@ -2451,9 +2478,12 @@ function chequearRecordatorios(){
     const key = 'aud_' + a.id + '_' + a.f;
     if(yaNotificados[key]) return;
     emailjs.send(EJS_SVC, EJS_TPL, {
+      to_email: mailCfg.email||'',
+      email: mailCfg.email||'',
+      titulo: 'Recordatorio de audiencia',
       cliente: a.c || 'Sin causa',
       hora:    a.h || 'Sin hora',
-      motivo:  '⚖ AUDIENCIA — ' + (a.j||'') + (a.o?' · '+a.o:''),
+      motivo:  'AUDIENCIA — ' + (a.j||'') + (a.o?' · '+a.o:''),
       fecha:   a.f.split('-').reverse().join('/')
     }).then(()=>{
       yaNotificados[key] = true;
