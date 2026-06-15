@@ -74,6 +74,12 @@ button{cursor:pointer}
   box-shadow:0 1px 3px rgba(0,0,0,.06);transition:transform .12s}
 .card:active{transform:scale(.985)}
 .card.urg{box-shadow:0 0 0 1.5px var(--redbd),0 1px 3px rgba(0,0,0,.06)}
+.card.a-inicial{background:#eaf3fb}.card.a-mediac{background:#fdecf5}.card.a-final{background:#fdf8e3}
+.card.a-recursiva{background:#fdf0e6}.card.a-resolver{background:#f0f1f2}.card.a-recordatorio{background:#f3f4f5}
+@media (prefers-color-scheme:dark){
+  .card.a-inicial{background:#13243a}.card.a-mediac{background:#2a1320}.card.a-final{background:#2a2510}
+  .card.a-recursiva{background:#2a1c10}.card.a-resolver{background:#1f2022}.card.a-recordatorio{background:#1f2123}
+}
 .cb{padding:14px 16px}
 .cr1{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .cnm{font-size:16px;font-weight:700;line-height:1.25;letter-spacing:-.3px;flex:1}
@@ -101,7 +107,7 @@ button{cursor:pointer}
 
 /* expand */
 .exp{max-height:0;overflow:hidden;transition:max-height .28s cubic-bezier(.4,0,.2,1)}
-.exp.on{max-height:200px}
+.exp.on{max-height:280px}
 .exp-in{border-top:1px solid var(--hair);padding:12px 16px;display:flex;gap:9px}
 .exp-in input{flex:1;background:rgba(120,120,128,.1);border-radius:10px;padding:11px 14px;font-size:15px;color:var(--ink)}
 .exp-in button{width:46px;border-radius:10px;background:var(--nav);color:#fff;font-size:24px;font-weight:300}
@@ -348,7 +354,18 @@ function render(){
 }
 
 // ===== CAUSAS =====
-function rowCls(c){if(!c.ven||c.tipo_venc==='info'||c.tipo_aud==='recordatorio')return'';const d=dLeft(c.ven);if(c.pl&&d<=1)return'urg';return'';}
+function rowCls(c){
+  // Color por tipo de audiencia (igual que en la PC)
+  if(c.tipo_aud==='inicial')return'a-inicial';
+  if(c.tipo_aud==='mediac'||c.tipo_aud==='concil')return'a-mediac';
+  if(c.tipo_aud==='final')return'a-final';
+  if(c.tipo_aud==='recursiva')return'a-recursiva';
+  if(c.tipo_aud==='resolver')return'a-resolver';
+  if(c.tipo_aud==='recordatorio')return'a-recordatorio';
+  // Vencimientos urgentes
+  if(c.ven&&c.tipo_venc!=='info'&&c.pl&&dLeft(c.ven)<=1)return'urg';
+  return'';
+}
 function pill(c){
   if(!c.ven)return['g','Sin fecha'];
   const d=dLeft(c.ven);
@@ -391,10 +408,16 @@ function renderCausas(){
           ${c.ramNotif?`<div class="gbn"><div class="gbn-r"><span>✅</span><div class="gbn-t">Ramiro: ${esc(c.ramNotif.txt)}</div><span class="gbn-x" onclick="event.stopPropagation();descNotif(${c.id})">×</span></div>${c.ramNotif.comentario?`<div class="gbn-c">${esc(c.ramNotif.comentario)}</div>`:''}</div>`:''}
           ${notas.length?`<div class="note">${notas.map(n=>`<div class="ln">${esc(n)}</div>`).join('')}</div>`:''}
         </div>
-        <div class="exp" id="ex${c.id}"><div class="exp-in">
-          <input id="ni${c.id}" placeholder="Agregar nota…" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')addNota(${c.id})">
-          <button onclick="event.stopPropagation();addNota(${c.id})">+</button>
-        </div></div>
+        <div class="exp" id="ex${c.id}">
+          <div class="exp-in">
+            <input id="ni${c.id}" placeholder="Agregar nota…" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')addNota(${c.id})">
+            <button onclick="event.stopPropagation();addNota(${c.id})">+</button>
+          </div>
+          <div class="exp-in" style="border-top:none;padding-top:0">
+            <input id="ri${c.id}" placeholder="⭐ Tarea para Ramiro…" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')addRamCausa(${c.id})" style="background:var(--gldbg)">
+            <button onclick="event.stopPropagation();addRamCausa(${c.id})" style="background:#c59a10">⭐</button>
+          </div>
+        </div>
       </div>`;
     });
     h+='</div>';
@@ -414,6 +437,16 @@ function addNota(id){
   c.not=(c.not&&c.not.trim())?c.not+'\n'+txt:txt;c.lastTouch=Date.now();
   i.value='';i.blur();persist();
   // re-render solo manteniendo abierto
+  document.getElementById('view').innerHTML=renderCausas();
+  setTimeout(()=>{const e=document.getElementById('ex'+id);if(e){e.classList.add('on');openId=id;document.getElementById('cd'+id).scrollIntoView({block:'center',behavior:'smooth'});}},60);
+}
+function addRamCausa(id){
+  const i=document.getElementById('ri'+id);const txt=i?i.value.trim():'';if(!txt)return;
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  getRams(c);
+  c.rams.push({id:Date.now()+Math.random(),txt,done:false});
+  c.ram=c.rams[0].txt;c.lastTouch=Date.now();
+  i.value='';i.blur();persist();
   document.getElementById('view').innerHTML=renderCausas();
   setTimeout(()=>{const e=document.getElementById('ex'+id);if(e){e.classList.add('on');openId=id;document.getElementById('cd'+id).scrollIntoView({block:'center',behavior:'smooth'});}},60);
 }
