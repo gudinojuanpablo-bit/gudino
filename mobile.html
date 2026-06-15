@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Gudiño">
 <meta name="theme-color" content="#0b0d1a">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='180' height='180' rx='40' fill='%230b0d1a'/%3E%3Ctext x='90' y='120' font-size='90' text-anchor='middle' fill='%23fff' font-family='Georgia'%3EG%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Crect width='180' height='180' rx='40' fill='%23ffffff'/%3E%3Ctext x='90' y='112' font-size='62' font-weight='bold' text-anchor='middle' font-family='Georgia,serif'%3E%3Ctspan fill='%23000000'%3EG%3C/tspan%3E%3Ctspan fill='%23e0201b'%3Ey%3C/tspan%3E%3Ctspan fill='%23000000'%3EA%3C/tspan%3E%3C/text%3E%3C/svg%3E">
 <title>Gudiño & Asociados</title>
 <style>
 :root{
@@ -256,6 +256,44 @@ button{cursor:pointer}
 
 <nav class="nav" id="nav"></nav>
 
+<!-- sheet vencimiento/audiencia -->
+<div class="ov" id="ovVenc">
+  <div class="sh">
+    <div class="sh-g"></div>
+    <div class="sh-t">📅 Vencimiento / Audiencia</div>
+    <div style="padding:8px 20px 0">
+      <label style="font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.3px">Tipo</label>
+      <select id="vsTipo" onchange="vsToggleCampos()" style="width:100%;background:rgba(120,120,128,.1);border-radius:11px;padding:13px 14px;font-size:16px;margin-top:6px;color:var(--ink)">
+        <option value="">— Sin fecha —</option>
+        <option value="venc">⏰ Vencimiento (plazo)</option>
+        <option value="info">📎 Solo para saber</option>
+        <option value="recordatorio">📌 Recordatorio</option>
+        <option value="inicial">📅 Audiencia inicial</option>
+        <option value="mediac">📅 Mediación / Conciliación</option>
+        <option value="final">📅 Audiencia final</option>
+        <option value="recursiva">📅 Vista recursiva</option>
+        <option value="resolver">⚖️ A resolver</option>
+      </select>
+    </div>
+    <div style="padding:14px 20px 0">
+      <label style="font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.3px">Fecha</label>
+      <input type="date" id="vsFecha" style="width:100%;background:rgba(120,120,128,.1);border-radius:11px;padding:13px 14px;font-size:16px;margin-top:6px;color:var(--ink)">
+    </div>
+    <div style="padding:14px 20px 0;display:none" id="vsHoraWrap">
+      <label style="font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.3px">Hora</label>
+      <input type="time" id="vsHora" style="width:100%;background:rgba(120,120,128,.1);border-radius:11px;padding:13px 14px;font-size:16px;margin-top:6px;color:var(--ink)">
+    </div>
+    <div style="padding:14px 20px 0;display:none" id="vsTextoWrap">
+      <label style="font-size:12px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.3px">Plazo para / Detalle</label>
+      <input id="vsTexto" placeholder="Ej: contestar traslado" style="width:100%;background:rgba(120,120,128,.1);border-radius:11px;padding:13px 14px;font-size:16px;margin-top:6px;color:var(--ink)">
+    </div>
+    <div class="sh-b">
+      <button class="go" style="background:var(--blu)" onclick="guardarVenc()">Guardar</button>
+      <button class="x" onclick="closeVenc()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <!-- sheet cumplida -->
 <div class="ov" id="ovCum">
   <div class="sh">
@@ -406,9 +444,16 @@ function renderCausas(){
           ${tv?`<div class="ctv">${tv}</div>`:''}
           ${rams.map(t=>`<div class="ram"><span class="st">⭐</span>${esc(t.txt)}</div>`).join('')}
           ${c.ramNotif?`<div class="gbn"><div class="gbn-r"><span>✅</span><div class="gbn-t">Ramiro: ${esc(c.ramNotif.txt)}</div><span class="gbn-x" onclick="event.stopPropagation();descNotif(${c.id})">×</span></div>${c.ramNotif.comentario?`<div class="gbn-c">${esc(c.ramNotif.comentario)}</div>`:''}</div>`:''}
-          ${notas.length?`<div class="note">${notas.map(n=>`<div class="ln">${esc(n)}</div>`).join('')}</div>`:''}
+          ${notas.length?`<div class="note">${notas.map((n,ni)=>`<div class="ln" style="display:flex;gap:6px;align-items:flex-start"><span style="flex:1">${esc(n)}</span></div>`).join('')}</div>`:''}
         </div>
         <div class="exp" id="ex${c.id}">
+          ${notas.length?`<div style="padding:10px 16px 0">
+            <div style="font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Notas — tocá para editar</div>
+            ${notas.map((n,ni)=>`<div style="display:flex;gap:7px;align-items:center;margin-bottom:5px">
+              <input value="${esc(n).replace(/"/g,'&quot;')}" onclick="event.stopPropagation()" onblur="editNota(${c.id},${ni},this.value)" onkeydown="if(event.key==='Enter')this.blur()" style="flex:1;background:rgba(120,120,128,.1);border-radius:9px;padding:9px 12px;font-size:14px;color:var(--ink)">
+              <span onclick="event.stopPropagation();delNota(${c.id},${ni})" style="color:var(--red);font-size:18px;padding:2px 6px">🗑</span>
+            </div>`).join('')}
+          </div>`:''}
           <div class="exp-in">
             <input id="ni${c.id}" placeholder="Agregar nota…" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')addNota(${c.id})">
             <button onclick="event.stopPropagation();addNota(${c.id})">+</button>
@@ -416,6 +461,10 @@ function renderCausas(){
           <div class="exp-in" style="border-top:none;padding-top:0">
             <input id="ri${c.id}" placeholder="⭐ Tarea para Ramiro…" onclick="event.stopPropagation()" onkeydown="if(event.key==='Enter')addRamCausa(${c.id})" style="background:var(--gldbg)">
             <button onclick="event.stopPropagation();addRamCausa(${c.id})" style="background:#c59a10">⭐</button>
+          </div>
+          <div style="padding:6px 16px 12px;display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="event.stopPropagation();abrirVencSheet(${c.id})" style="flex:1;min-width:120px;padding:11px;border-radius:10px;background:var(--blubg);color:var(--blu);font-size:13px;font-weight:700">📅 Vencimiento / Audiencia</button>
+            ${(c.ven||c.tipo_aud)?`<button onclick="event.stopPropagation();limpiarVencMob(${c.id})" style="padding:11px 14px;border-radius:10px;background:rgba(120,120,128,.14);color:var(--mut);font-size:13px;font-weight:600">Limpiar fecha</button>`:''}
           </div>
         </div>
       </div>`;
@@ -450,6 +499,66 @@ function addRamCausa(id){
   document.getElementById('view').innerHTML=renderCausas();
   setTimeout(()=>{const e=document.getElementById('ex'+id);if(e){e.classList.add('on');openId=id;document.getElementById('cd'+id).scrollIntoView({block:'center',behavior:'smooth'});}},60);
 }
+function editNota(id,idx,val){
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  const notas=(c.not||'').split('\n').filter(Boolean);
+  if(idx>=notas.length)return;
+  const nv=val.trim();
+  if(nv===notas[idx])return;
+  if(nv)notas[idx]=nv;else notas.splice(idx,1);
+  c.not=notas.join('\n');c.lastTouch=Date.now();
+  persist();
+  const e=document.getElementById('ex'+id);const wasOpen=e&&e.classList.contains('on');
+  document.getElementById('view').innerHTML=renderCausas();
+  if(wasOpen)setTimeout(()=>{const x=document.getElementById('ex'+id);if(x){x.classList.add('on');openId=id;}},50);
+}
+function delNota(id,idx){
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  const notas=(c.not||'').split('\n').filter(Boolean);
+  notas.splice(idx,1);c.not=notas.join('\n');c.lastTouch=Date.now();
+  persist();
+  document.getElementById('view').innerHTML=renderCausas();
+  setTimeout(()=>{const x=document.getElementById('ex'+id);if(x){x.classList.add('on');openId=id;}},50);
+}
+function limpiarVencMob(id){
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  c.ven='';c.tv='';c.tv_plazo='';c.pl=false;c.tipo_aud='';c.tipo_venc='vencimiento';c.aud_h='';c.aud_mod='';
+  persist();
+  document.getElementById('view').innerHTML=renderCausas();
+  setTimeout(()=>{const x=document.getElementById('ex'+id);if(x){x.classList.add('on');openId=id;}},50);
+}
+// Sheet de vencimiento/audiencia
+let _vencId=null;
+function abrirVencSheet(id){
+  _vencId=id;const c=causas.find(x=>x.id===id);if(!c)return;
+  document.getElementById('vsFecha').value=c.ven||'';
+  document.getElementById('vsTipo').value=c.tipo_aud||(c.pl?'venc':'');
+  document.getElementById('vsTexto').value=c.tv||'';
+  document.getElementById('vsHora').value=c.aud_h||'';
+  document.getElementById('ovVenc').classList.add('on');
+  vsToggleCampos();
+}
+function vsToggleCampos(){
+  const t=document.getElementById('vsTipo').value;
+  const esAud=['inicial','mediac','final','recursiva','resolver','recordatorio'].includes(t);
+  document.getElementById('vsHoraWrap').style.display=(esAud&&t!=='resolver')?'block':'none';
+  document.getElementById('vsTextoWrap').style.display=(t==='venc'||t==='info'||t==='recordatorio')?'block':'none';
+}
+function guardarVenc(){
+  const c=causas.find(x=>x.id===_vencId);if(!c){closeVenc();return;}
+  const fecha=document.getElementById('vsFecha').value;
+  const tipo=document.getElementById('vsTipo').value;
+  const texto=document.getElementById('vsTexto').value.trim();
+  const hora=document.getElementById('vsHora').value;
+  c.ven=fecha;c.aud_h=hora;c.lastTouch=Date.now();
+  if(tipo==='venc'){c.tipo_venc='vencimiento';c.pl=true;c.tipo_aud='';c.tv=texto;}
+  else if(tipo==='info'){c.tipo_venc='info';c.pl=false;c.tipo_aud='';c.tv=texto;}
+  else if(tipo==='recordatorio'){c.tipo_aud='recordatorio';c.pl=true;c.tipo_venc='vencimiento';c.tv=texto;}
+  else if(tipo){c.tipo_aud=tipo;c.pl=true;c.tipo_venc='vencimiento';c.tv='';}
+  else{c.tipo_aud='';c.tv=texto;}
+  closeVenc();persist();render();
+}
+function closeVenc(){document.getElementById('ovVenc').classList.remove('on');_vencId=null;}
 function descNotif(id){const c=causas.find(x=>x.id===id);if(c){delete c.ramNotif;persist();render();}}
 function setFuero(f,el){fuero=f;document.querySelectorAll('.seg b').forEach(b=>b.classList.remove('on'));el.classList.add('on');document.getElementById('view').innerHTML=renderCausas();document.getElementById('scr').scrollTop=0;}
 
