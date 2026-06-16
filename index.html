@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v187</title>
+<title>Gudiño y Asociados v193</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -324,7 +324,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .gtbl td{padding:6px 8px;border-bottom:1px solid #eee}
 .gtbl tr:hover td{background:var(--bg2)}
 .ppill{display:inline-block;padding:2px 7px;border-radius:8px;font-size:9px;font-weight:700}
-.pjp{background:var(--blue-l);color:#0C447C}.peuge{background:var(--green-l);color:#27500A}.pyani{background:var(--amber-l);color:#633806}
+.pjp{background:var(--blue-l);color:#0C447C}.peuge{background:var(--green-l);color:#27500A}.pyani{background:var(--amber-l);color:#633806}.pros{background:#fce4ec;color:#880e4f}.pald{background:#e8eaf6;color:#283593}.prei{background:#e0f2f1;color:#00695c}.pram{background:#fff3e0;color:#e65100}.pcli{background:#f3e5f5;color:#6a1b9a}.poth{background:#eceff1;color:#37474f}
 
 /* ── FORMS ── */
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
@@ -620,9 +620,22 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
       <div id="g-form" style="display:none;background:var(--bg2);border-radius:6px;padding:11px 13px;margin-bottom:10px;border:1px solid var(--border)">
         <div class="fg" style="grid-template-columns:1fr 1fr 1fr">
           <div class="fgg"><label class="fl">Fecha</label><input class="fi" type="date" id="gf-f"></div>
-          <div class="fgg"><label class="fl">Proceso</label><input class="fi" id="gf-p" placeholder="Ej: Figueroa Hector"></div>
+          <div class="fgg" style="grid-column:span 2"><label class="fl">Proceso / Causas</label>
+            <div style="display:flex;gap:6px">
+              <div style="flex:1;position:relative">
+                <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px">🔍</span>
+                <input class="fi" id="gf-causa-buscar" placeholder="Buscar causa..." autocomplete="off"
+                  style="width:100%;padding-left:28px"
+                  onfocus="mostrarListaCausasGasto()"
+                  oninput="mostrarListaCausasGasto()">
+                <div id="gf-causa-lista" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;background:#fff;border:1px solid var(--border);border-radius:7px;max-height:220px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.12);margin-top:2px"></div>
+              </div>
+            </div>
+            <div id="gf-causas-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px"></div>
+            <input type="hidden" id="gf-p" value="">
+          </div>
           <div class="fgg"><label class="fl">Monto ($)</label><input class="fi" type="number" id="gf-m"></div>
-          <div class="fgg"><label class="fl">¿Quién pagó?</label><select class="fi" id="gf-q"><option>JP</option><option>EUGE</option><option>YANI</option><option>RAMIRO</option><option>Cliente</option></select></div>
+          <div class="fgg"><label class="fl">¿Quién pagó?</label><select class="fi" id="gf-q"><option>JP</option><option>EUGE</option><option>YANI</option><option>ROSANA</option><option>ALDANA</option><option>REINALDO</option><option>RAMIRO</option><option>Cliente</option><option>OTRO</option></select></div>
           <div class="fgg" style="grid-column:span 2"><label class="fl">Observaciones</label><input class="fi" id="gf-o" placeholder="Ej: 1 UF y 1 UP"></div>
         </div>
         <div class="fa"><button class="btn p" onclick="addG()">Agregar</button><button class="btn" onclick="document.getElementById('g-form').style.display='none'">Cancelar</button></div>
@@ -711,7 +724,11 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
           <option value="Juzgado de Paz">Juzgado de Paz</option>
         </select></div>
         <div class="fgg"><label class="fl">Juzgado</label>
-        <select class="fi" id="f-juz" style="margin-top:3px">
+        <div style="position:relative;margin-top:3px">
+          <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px">🔍</span>
+          <input class="fi" id="f-juz-buscar" placeholder="Escribí para filtrar (ej: 4, rollán, chimbas)..." autocomplete="off" style="width:100%;padding-left:26px;font-size:11px" oninput="filtrarJuz()">
+        </div>
+        <select class="fi" id="f-juz" style="margin-top:4px">
           <option value="">— Elegí el fuero primero —</option>
         </select></div>
         <div class="fgg"><label class="fl">Estado</label><select class="fi" id="f-est"><option value="activa">Activa</option><option value="urgente">Urgente</option><option value="suspendida">Suspendida</option></select></div>
@@ -844,6 +861,7 @@ const LUN=lunesDe(_refSem),VIE=new Date(LUN);VIE.setDate(LUN.getDate()+4);
 const SK=LUN.toISOString().split('T')[0];
 function fmt2(d){return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});}
 function fmtS(s){return s?s.split('-').reverse().join('/'):'—';}
+function fmtSD(s){if(!s)return'—';const[y,m,d]=s.split('-').map(Number);const dt=new Date(y,m-1,d);const dias=['dom','lun','mar','mié','jue','vie','sáb'];return dias[dt.getDay()]+' '+s.split('-').reverse().join('/');}
 function dLeft(s){if(!s)return 9999;const[y,m,d]=s.split('-').map(Number);const ven=new Date(y,m-1,d);const hoy=new Date(HOY.getFullYear(),HOY.getMonth(),HOY.getDate());return Math.round((ven-hoy)/86400000);}
 function todayISO(){return HOY.toISOString().split('T')[0];}
 function manaISO(){const d=new Date(HOY);d.setDate(d.getDate()+1);return d.toISOString().split('T')[0];}
@@ -1494,17 +1512,17 @@ function rowHTML(c){
         const tvTxt=c.tv?'Plazo para '+c.tv:'';
         if(c.tipo_venc==='info'){
           const tvRaw=(c.tv||c.tv_plazo||'').trim();
-          if(!tvRaw)return c.ven?`📎 Para saber · vence ${fmtS(c.ven)}${tag}`:'';
+          if(!tvRaw)return c.ven?`📎 Para saber · vence ${fmtSD(c.ven)}${tag}`:'';
           // Si ya es texto de oficio/cédula, mostrar directo sin "Plazo para"
           const esOficio=/^(Oficio|Cédula|Cedula)/i.test(tvRaw);
           if(esOficio)return`${tvRaw}${tag}`;
           // Para saber con texto corto — agregar "Plazo para"
           const plazoRaw=tvRaw.replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{27FF}\s]+/u,'').trim();
-          return`Plazo para ${plazoRaw} · vence ${fmtS(c.ven)}${tag}`;
+          return`Plazo para ${plazoRaw} · vence ${fmtSD(c.ven)}${tag}`;
         }
         const tvClean=(c.tv||'').replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{27FF}\s]+/u,'').trim();
         const tvPrefijo=tvClean?(tvClean.toLowerCase().startsWith('plazo para')?tvClean:'Plazo para '+tvClean):'';
-        if(c.ven)return(mostrarReloj?'⏰ ':'')+( tvPrefijo?tvPrefijo+' · vence ':'vence ')+fmtS(c.ven)+tag;
+        if(c.ven)return(mostrarReloj?'⏰ ':'')+( tvPrefijo?tvPrefijo+' · vence ':'vence ')+fmtSD(c.ven)+tag;
         return '';
       })()}</div>
       ${c.not?`<div style="position:relative;display:inline-block;width:100%">
@@ -2108,15 +2126,22 @@ function updJuzSelect(){
   const fue=document.getElementById('f-fue').value;
   const sel=document.getElementById('f-juz');
   if(!sel)return;
+  const q=(document.getElementById('f-juz-buscar')?.value||'').toLowerCase().trim();
   sel.innerHTML='<option value="">— Elegí el juzgado —</option>';
-  if(JUZ_MAP[fue])JUZ_MAP[fue].forEach(j=>{const op=document.createElement('option');op.value=j;op.textContent=j;sel.appendChild(op);});
+  if(JUZ_MAP[fue]){
+    const lista=q?JUZ_MAP[fue].filter(j=>j.toLowerCase().includes(q)):JUZ_MAP[fue];
+    lista.forEach(j=>{const op=document.createElement('option');op.value=j;op.textContent=j;sel.appendChild(op);});
+    // Si el filtro deja una sola opción, seleccionarla automáticamente
+    if(q&&lista.length===1)sel.value=lista[0];
+  }
 }
+function filtrarJuz(){updJuzSelect();}
 function addCausa(){
   const ex=document.getElementById('f-ex').value.trim(),car=document.getElementById('f-car').value.trim();
   if(!ex||!car){alert('Completá expediente y carátula.');return;}
   causas.push({id:Date.now(),ex,car,fue:document.getElementById('f-fue').value,juz:document.getElementById('f-juz').value.trim()||'—',est:document.getElementById('f-est').value,ven:'',tv:'',tipo_aud:'',pl:document.getElementById('f-pl').checked,not:document.getElementById('f-not').value.trim(),ram:document.getElementById('f-ram').value.trim(),rdon:document.getElementById('f-rdon').checked});
   sC();updProgress();
-  ['f-ex','f-car','f-juz','f-not','f-ram'].forEach(i=>document.getElementById(i).value='');
+  ['f-ex','f-car','f-juz','f-not','f-ram','f-juz-buscar'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
   document.getElementById('f-pl').checked=false;document.getElementById('f-rdon').checked=false;
   const ok=document.getElementById('form-ok');ok.style.display='block';setTimeout(()=>ok.style.display='none',2500);
 }
@@ -2262,12 +2287,85 @@ function renderG(){
   let tot=0,jp=0,otr=0;gastos.forEach(g=>{tot+=g.m;if(g.q==='JP')jp+=g.m;else otr+=g.m;});
   document.getElementById('g-tot').textContent=pesos(tot);document.getElementById('g-jp').textContent=pesos(jp);document.getElementById('g-otr').textContent=pesos(otr);
   document.getElementById('g-body').innerHTML=[...gastos].sort((a,b)=>new Date(b.f)-new Date(a.f)).map(g=>{
-    const pc=g.q==='JP'?'pjp':g.q==='EUGE'?'peuge':'pyani';
+    const pcMap={JP:'pjp',EUGE:'peuge',YANI:'pyani',ROSANA:'pros',ALDANA:'pald',REINALDO:'prei',RAMIRO:'pram',Cliente:'pcli',OTRO:'poth'};const pc=pcMap[g.q]||'poth';
     return`<tr><td style="white-space:nowrap">${fmtS(g.f)}</td><td>${g.p}</td><td style="font-weight:700">${pesos(g.m)}</td><td><span class="ppill ${pc}">${g.q}</span></td><td style="color:#888">${g.o}</td><td><button class="ib" onclick="delG(${g.id})">🗑</button></td></tr>`;
   }).join('');
 }
-function toggleGF(){const f=document.getElementById('g-form');f.style.display=f.style.display==='none'?'block':'none';}
-function addG(){const m=parseFloat(document.getElementById('gf-m').value),p=document.getElementById('gf-p').value.trim();if(!p||!m){alert('Completá proceso y monto.');return;}gastos.push({id:Date.now(),f:document.getElementById('gf-f').value||todayISO(),p,m,q:document.getElementById('gf-q').value,o:document.getElementById('gf-o').value.trim()});sG();document.getElementById('g-form').style.display='none';renderG();}
+let _causasGasto=[]; // causas seleccionadas para el gasto actual
+function poblarCausasGasto(){
+  // ya no usa select; el combo busca en vivo
+  const inp=document.getElementById('gf-causa-buscar');
+  if(inp)inp.value='';
+  const lista=document.getElementById('gf-causa-lista');
+  if(lista)lista.style.display='none';
+}
+function mostrarListaCausasGasto(){
+  const inp=document.getElementById('gf-causa-buscar');
+  const lista=document.getElementById('gf-causa-lista');
+  if(!inp||!lista)return;
+  const q=inp.value.toLowerCase().trim();
+  const activas=causas.filter(c=>c.est!=='archivada')
+    .filter(c=>!q||c.car.toLowerCase().includes(q)||(c.ex||'').toLowerCase().includes(q))
+    .sort((a,b)=>a.car.localeCompare(b.car));
+  let h='<div onclick="elegirCausaGasto(\'__NUEVA__\')" style="padding:9px 12px;cursor:pointer;font-size:12px;font-weight:700;color:#2a3a8a;background:#f0f4ff;border-bottom:1px solid var(--border)">➕ Causa nueva (escribir en observaciones)</div>';
+  if(activas.length){
+    h+=activas.map(c=>`<div onclick="elegirCausaGasto('${c.car.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" style="padding:8px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid #f3f3f3" onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background='#fff'">${c.car}</div>`).join('');
+  } else {
+    h+='<div style="padding:10px 12px;font-size:11px;color:#aaa">Sin coincidencias</div>';
+  }
+  lista.innerHTML=h;
+  lista.style.display='block';
+}
+function elegirCausaGasto(v){
+  const lista=document.getElementById('gf-causa-lista');
+  const inp=document.getElementById('gf-causa-buscar');
+  if(v==='__NUEVA__'){
+    // Causa nueva: foco en observaciones para escribir el nombre
+    if(lista)lista.style.display='none';
+    if(inp)inp.value='';
+    const obs=document.getElementById('gf-o');
+    if(obs){obs.focus();obs.placeholder='Escribí el nombre de la causa nueva acá...';}
+    if(!_causasGasto.includes('CAUSA NUEVA'))_causasGasto.push('CAUSA NUEVA');
+    renderCausasGastoTags();
+    return;
+  }
+  if(!_causasGasto.includes(v))_causasGasto.push(v);
+  if(inp)inp.value='';
+  if(lista)lista.style.display='none';
+  renderCausasGastoTags();
+}
+// Cerrar la lista si se hace click afuera
+document.addEventListener('click',e=>{
+  const lista=document.getElementById('gf-causa-lista');
+  const inp=document.getElementById('gf-causa-buscar');
+  if(lista&&inp&&!lista.contains(e.target)&&e.target!==inp)lista.style.display='none';
+});
+function quitarCausaGasto(i){_causasGasto.splice(i,1);renderCausasGastoTags();}
+function renderCausasGastoTags(){
+  const el=document.getElementById('gf-causas-tags');
+  if(!el)return;
+  el.innerHTML=_causasGasto.map((c,i)=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-l);color:#0C447C;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600">${c}<span onclick="quitarCausaGasto(${i})" style="cursor:pointer;color:#88a">✕</span></span>`).join('');
+}
+function toggleGF(){
+  const f=document.getElementById('g-form');
+  const showing=f.style.display!=='none'&&f.style.display!=='';
+  f.style.display=showing?'none':'block';
+  if(!showing){_causasGasto=[];renderCausasGastoTags();poblarCausasGasto();document.getElementById('gf-p').value='';}
+}
+function addG(){
+  const m=parseFloat(document.getElementById('gf-m').value);
+  const libre=document.getElementById('gf-p').value.trim();
+  // Combinar causas elegidas + texto libre
+  let proceso='';
+  if(_causasGasto.length){proceso=_causasGasto.join(' + ');}
+  if(libre){proceso=proceso?proceso+' + '+libre:libre;}
+  if(!proceso||!m){alert('Elegí al menos una causa (o escribí el proceso) y el monto.');return;}
+  gastos.push({id:Date.now(),f:document.getElementById('gf-f').value||todayISO(),p:proceso,m,q:document.getElementById('gf-q').value,o:document.getElementById('gf-o').value.trim()});
+  sG();
+  _causasGasto=[];
+  document.getElementById('g-form').style.display='none';
+  renderG();
+}
 function delG(id){if(!confirm('¿Eliminar?'))return;gastos=gastos.filter(g=>g.id!==id);sG();renderG();}
 
 function renderCfg(){
