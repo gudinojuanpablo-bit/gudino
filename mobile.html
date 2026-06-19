@@ -312,7 +312,7 @@ button{cursor:pointer}
 
 <script>
 "use strict";
-const FB='https://gudino-asociados-default-rtdb.firebaseio.com/datos.json';
+const FB='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoza40/datos.json';
 const HOY=new Date();
 
 // estado
@@ -326,6 +326,8 @@ function save_ls(){localStorage.setItem('ga_c',JSON.stringify(causas));localStor
 // utils
 const iso=d=>d.toISOString().split('T')[0];
 const fmt=s=>s?s.split('-').reverse().join('/'):'';
+const DIAS=['dom','lun','mar','mié','jue','vie','sáb'];
+function fmtD(s){if(!s)return'';const[y,m,d]=s.split('-').map(Number);return DIAS[new Date(y,m-1,d).getDay()]+' '+fmt(s);}
 const today=()=>iso(HOY);
 function dLeft(s){if(!s)return 9999;const[y,m,d]=s.split('-').map(Number);return Math.round((new Date(y,m-1,d)-new Date(HOY.getFullYear(),HOY.getMonth(),HOY.getDate()))/864e5);}
 function pesos(n){return '$'+(n||0).toLocaleString('es-AR');}
@@ -418,8 +420,8 @@ function pill(c){
 }
 function tvLine(c){
   if(c.tipo_aud==='recordatorio'){const d=dLeft(c.ven);return 'Recordar: '+esc(c.tv||'')+(c.aud_h?' · '+c.aud_h+'hs':'')+(c.ven?` <span class="d">· ${d>0?'en '+d+'d':d===0?'hoy':'vencido'}</span>`:'');}
-  if(c.tipo_aud&&c.ven){const t=TIPOS[c.tipo_aud]||TIPOS.otro;let s=(c.tipo_aud==='resolver'?'A resolver':t.l)+' · '+fmt(c.ven);if(c.aud_h)s+=' · '+c.aud_h+'hs';if(c.aud_mod)s+=' · '+esc(c.aud_mod);return s;}
-  if(c.tv&&c.ven){const d=dLeft(c.ven);const tag=` <span class="d">· ${d>0?'faltan '+d+'d':d===0?'HOY':'vencido'}</span>`;return(/^(Oficio|Cédula)/i.test(c.tv)?esc(c.tv):'Plazo para '+esc(c.tv)+' · vence '+fmt(c.ven))+tag;}
+  if(c.tipo_aud&&c.ven){const t=TIPOS[c.tipo_aud]||TIPOS.otro;let s=(c.tipo_aud==='resolver'?'A resolver':t.l)+' · '+fmtD(c.ven);if(c.aud_h)s+=' · '+c.aud_h+'hs';if(c.aud_mod)s+=' · '+esc(c.aud_mod);return s;}
+  if(c.tv&&c.ven){const d=dLeft(c.ven);const tag=` <span class="d">· ${d>0?'faltan '+d+'d':d===0?'HOY':'vencido'}</span>`;return(/^(Oficio|Cédula)/i.test(c.tv)?esc(c.tv):'Plazo para '+esc(c.tv)+' · vence '+fmtD(c.ven))+tag;}
   return '';
 }
 function renderCausas(){
