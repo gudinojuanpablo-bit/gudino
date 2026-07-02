@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHRleHQgeD0iMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjE0IiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0MwMzkyQiI+RzwvdGV4dD4KICA8dGV4dCB4PSIxMiIgeT0iMjIiIGZvbnQtZmFtaWx5PSJHZW9yZ2lhLHNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iYm9sZCIgCiAgICAgICAgZmlsbD0iI0M5QTg0QyI+JmFtcDs8L3RleHQ+CiAgPHRleHQgeD0iMjAiIHk9IjIyIiBmb250LWZhbWlseT0iR2VvcmdpYSxzZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIAogICAgICAgIGZpbGw9IiNDMDM5MkIiPkE8L3RleHQ+Cjwvc3ZnPg==">
-<title>Gudiño y Asociados v195</title>
+<title>Gudiño y Asociados v199</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -188,6 +188,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .cp-d.tod{border-color:var(--blue)}
 .cp-d.pas{color:#ddd}
 .cp-d.mar{color:var(--blue);font-weight:700} /* martes */
+.cp-d.cp-fer{background:#ffe3e0;color:#d0021b;font-weight:800} /* feriado / feria */
 /* casilleros coloreados por tipo */
 .cp-d.col-inicial{background:#ddeeff;color:#1a4f7a;border-color:#2980b9}
 .cp-d.col-mediac,.cp-d.col-concil{background:#fde8f4;color:#8b0052;border-color:#e91e8c}
@@ -292,7 +293,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
 .cal-cell:hover{background:var(--bg2)}
 .cal-cell.vacia{background:transparent;border-color:transparent;cursor:default}
 .cal-cell.hoy{border-color:var(--blue);background:var(--blue-l)}
-.cal-cell.fer{background:var(--amber-l);border-color:var(--amber-b)}
+.cal-cell.fer{background:#ffe3e0;border-color:#ff9c93}
+.cal-cell.fer .cal-dn{color:#d0021b;font-weight:800}
+.cal-cell.feria-jud{background:#ffd9d4;border-color:#ff7a6b}
+.cal-cell.feria-jud .cal-dn{color:#c0021b;font-weight:800}
 .cal-dn{font-size:10px;font-weight:700;color:#aaa;margin-bottom:2px}
 .cal-cell.hoy .cal-dn{color:var(--blue)}
 .cal-ev{font-size:9px;color:#fff;border-radius:3px;padding:1px 5px;margin-bottom:2px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5;display:block}
@@ -463,7 +467,6 @@ body{background:var(--bg2);color:var(--text);font-size:13px}
             <span style="font-size:10px;color:#aaa;font-weight:700;margin-right:2px">VER:</span>
             <div class="filtro-btn on" onclick="setFiltroEstado('');swV('reg')">Todas</div>
             <div class="filtro-btn" onclick="setFiltroEstado('trabajar');swV('reg')">📋 Para trabajar</div>
-            <div class="filtro-btn" onclick="setFiltroEstado('semana');swV('reg')">⏰ Vence esta semana</div>
             <div class="filtro-btn" id="btn-ram-fil" onclick="swV('ram')" style="display:flex;align-items:center;gap:4px">⭐ Ramiro <span class="tbadge y" id="rbadge" style="position:static;margin-left:2px">0</span></div>
           </div>
           <div class="view on" id="view-reg">
@@ -1020,7 +1023,24 @@ function sF(){svl('ga_f',feriados);fbSave();}
 // ═══════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════
-function esFer(s){return!!feriados.find(f=>f.f===s);}
+// Feriados nacionales fijos (mismo día todos los años) + trasladables 2026
+const FERIADOS_NAC_2026=[
+  '2026-01-01','2026-02-16','2026-02-17','2026-03-24','2026-04-02','2026-04-03',
+  '2026-05-01','2026-05-25','2026-06-15','2026-06-20','2026-07-09','2026-08-17',
+  '2026-10-12','2026-11-23','2026-12-08','2026-12-25',
+  // fin de 2026 → verano ya cubierto por feria judicial
+];
+const FERIAS_JUD_CAL=[
+  {desde:'2026-07-06',hasta:'2026-07-20'},
+  {desde:'2026-12-01',hasta:'2027-01-31'},
+];
+function enFeriaJud(s){return FERIAS_JUD_CAL.some(f=>s>=f.desde&&s<=f.hasta);}
+function esFer(s){
+  if(feriados.find(f=>f.f===s))return true;
+  if(FERIADOS_NAC_2026.includes(s))return true;
+  if(enFeriaJud(s))return true;
+  return false;
+}
 function rowCls(c){
   if(movidas.has(c.id))return'mov';
   if(c.tipo_aud==='resolver')return'res';
@@ -1650,7 +1670,8 @@ function gcpRenderGrid(){
     if(isT&&!isSel)cl+=' tod';
     if(isP&&!isSel)cl+=' pas';
     if(isM&&!isSel&&!isP)cl+=' mar';
-    h+=`<div class="${cl}" onclick="event.stopPropagation();gcpSelDia('${iso}')" title="${isM?'Martes — vencimiento tipico':''}${esFer(iso)?' Feriado':''}">${d}${esFer(iso)?'*':''}</div>`;
+    if(esFer(iso)&&!isSel)cl+=' cp-fer';
+    h+=`<div class="${cl}" onclick="event.stopPropagation();gcpSelDia('${iso}')" title="${isM?'Martes — vencimiento tipico':''}${esFer(iso)?' Feriado / Feria':''}">${d}</div>`;
   }
   document.getElementById('gcp-grid').innerHTML=h;
 }
@@ -1868,15 +1889,20 @@ function setFiltroEstado(f){
 // ── PLAZO DÍAS HÁBILES ──
 let plazoCausaId=null;
 const FERIADOS_FIJOS=['01-01','05-01','07-09','12-08','11-10','20-11','08-12','25-12'];
+// Ferias judiciales (rangos inclusive) — días inhábiles
+const FERIAS_JUDICIALES=[
+  {desde:'2026-07-06',hasta:'2026-07-20',n:'Feria de invierno'},
+  {desde:'2026-12-01',hasta:'2027-01-31',n:'Feria de verano'},
+];
+function enFeriaJudicial(isoStr){
+  return FERIAS_JUDICIALES.some(f=>isoStr>=f.desde&&isoStr<=f.hasta);
+}
 
 function esHabil(d){
   const dow=d.getDay();
   if(dow===0||dow===6)return false;
-  const mm=String(d.getMonth()+1).padStart(2,'0');
-  const dd2=String(d.getDate()).padStart(2,'0');
-  if(FERIADOS_FIJOS.includes(mm+'-'+dd2))return false;
   const iso=d.toISOString().split('T')[0];
-  if(feriados.find(f=>f.f===iso))return false;
+  if(esFer(iso))return false;
   return true;
 }
 function sumarDiasHabiles(fechaISO,dias){
@@ -2238,13 +2264,13 @@ function renderCal(){
   for(let d=1;d<=tot;d++){
     const iso=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const da=audiencias.filter(a=>a.f===iso).sort((a,b)=>(a.h||'99')>(b.h||'99')?1:-1);
-    const isT=iso===ts,isF=esFer(iso);
-    let cl='cal-cell';if(isT)cl+=' hoy';if(isF&&!da.length)cl+=' fer';
+    const isT=iso===ts,isF=esFer(iso),isFeria=enFeriaJud(iso);
+    let cl='cal-cell';if(isT)cl+=' hoy';if(isF&&!da.length)cl+=' fer';if(isFeria&&!da.length)cl+=' feria-jud';
     // isPast: fecha anterior a hoy, O es hoy pero ya pasó la hora de cada audiencia
     const isPast=iso<ts;
     if(isPast&&!isT)cl+=' pas';
     const horaAhora=`${String(HOY.getHours()).padStart(2,'0')}:${String(HOY.getMinutes()).padStart(2,'0')}`;
-    h+=`<div class="${cl}" onclick="abrirFA('${iso}')"><div class="cal-dn">${d}${isF?' ⚠':''}</div>${da.map(a=>{
+    h+=`<div class="${cl}" onclick="abrirFA('${iso}')"><div class="cal-dn">${d}</div>${da.map(a=>{
       const audiPast=isPast||(isT&&a.h&&a.h<horaAhora);
       const evCls=audiPast?'cal-ev cal-ev-past':'cal-ev t-'+(a.t||'otro');
       return`<div class="${evCls}" onclick="editFA('${a.id}',event)">${a.h?a.h+' ':''}${a.c}</div>`;
