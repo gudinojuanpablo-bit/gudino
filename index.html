@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v284</title>
+<title>Gudiño Cabrera y Asociados v292</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1393,10 +1393,27 @@ function goP(p){
 }
 function swV(v){curView=v;['reg','ale','ven','ram','resolver'].forEach(x=>{const ve=document.getElementById('view-'+x);if(ve)ve.classList.toggle('on',x===v);});const ramBtn=document.getElementById('btn-ram-fil');if(ramBtn)ramBtn.classList.toggle('on',v==='ram');if(v==='ale')renderAle();if(v==='ven')renderVen();if(v==='ram')renderRam();if(v==='resolver')renderResolver();}
 
+function _carpetaTasks(){
+  const out=[];
+  causas.forEach(c=>{
+    if(c.est==='archivada')return;
+    const p=c.prueba;if(!p)return;
+    ['peritos','testigos','informes','inspeccion'].forEach(tipo=>{
+      (p[tipo]||[]).forEach((it,i)=>{
+        if(prEstado(it,tipo)==='carpeta'){
+          const nom=tipo==='informes'?(it.dest||'organismo'):(it.nombre||'sin nombre');
+          out.push({c,tipo,i,nom,doc:tipo==='informes'?'Oficio':'Cédula'});
+        }
+      });
+    });
+  });
+  return out;
+}
 function updBadges(){
   let r=0;
   causas.forEach(c=>{getRams(c);r+=c.rams.filter(t=>!t.done).length;});
   r+=extraj.filter(e=>e.ram&&!e.rdon).length;
+  r+=_carpetaTasks().length;
   const rbEl=document.getElementById('rbadge');if(rbEl)rbEl.textContent=r;
   document.getElementById('cnt-ext').textContent=extraj.filter(e=>e.est!=='cerrado').length;
   const cntTur=document.getElementById('cnt-tur');
@@ -2631,7 +2648,17 @@ function renderRam(){
   const pendTasks=[];
   causas.forEach(c=>{getRams(c);c.rams.filter(t=>!t.done).forEach(t=>pendTasks.push({c,t}));});
   const epend=extraj.filter(e=>e.ram&&!e.rdon);
+  const carpeta=_carpetaTasks();
   let h='';
+
+  // DILIGENCIAMIENTOS EN CARPETA (cédulas/oficios listos para llevar)
+  if(carpeta.length){
+    h+=`<div class="a-sec" style="margin-bottom:10px"><h3>⭐ A diligenciar — en carpeta (${carpeta.length})</h3>`;
+    carpeta.forEach(({c,tipo,i,nom,doc})=>{
+      h+=`<div class="r-card" style="border-left:3px solid #E6A817"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${c.car}</div><div class="r-task">${doc} — ${nom}</div><div class="r-meta">${c.juz} · ${c.ex}</div></div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="prCambiarEstado(${c.id},'${tipo}',${i},'dilig');renderRam()">✓ Diligenciada</button><button class="btn" style="font-size:11px" onclick="irAPrueba(${c.id})">Abrir</button></div></div>`;
+    });
+    h+='</div>';
+  }
 
   // TAREAS GENERALES
   h+=`<div class="a-sec" style="margin-bottom:10px">
@@ -2663,7 +2690,7 @@ function renderRam(){
     });
     h+='</div>';
   }
-  if(!pendTasks.length&&!epend.length&&!tareasRam.length)h='<div style="color:#aaa;text-align:center;padding:30px">Sin tareas para Ramiro.</div>';
+  if(!pendTasks.length&&!epend.length&&!tareasRam.length&&!carpeta.length)h='<div style="color:#aaa;text-align:center;padding:30px">Sin tareas para Ramiro.</div>';
   el.innerHTML=h;
 }
 function cumplirTareaRam(cid,tid){
@@ -3794,12 +3821,14 @@ function generarCedulasWord(){
 
   const doc=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
   <head><meta charset="utf-8"><title>Cédulas</title>
-  <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]-->
+  <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
   <style>
-    @page{size:A4;margin:4.5cm 2cm 4.5cm 4.5cm}
-    body{font-family:Arial,sans-serif;font-size:12pt;line-height:2}
-    p{margin:0 0 6pt 0}
-  </style></head><body>${cuerpo}</body></html>`;
+    @page Section1{size:21cm 29.7cm;margin:4.5cm 2cm 4.5cm 4.5cm;mso-page-orientation:portrait}
+    div.Section1{page:Section1}
+    body{font-family:Arial,sans-serif;font-size:12pt;color:#000}
+    p{margin:0 0 6pt 0;line-height:200%;mso-line-height-rule:auto;font-family:Arial,sans-serif;font-size:12pt;color:#000}
+    b,i,strong,em{font-family:Arial,sans-serif;color:#000}
+  </style></head><body><div class="Section1">${cuerpo}</div></body></html>`;
 
   const blob=new Blob(['\ufeff'+doc],{type:'application/msword'});
   const a=document.createElement('a');
@@ -4130,11 +4159,10 @@ function escHTML(){
     <p>S_____/_____D</p>
     <div style="font-size:${fit.fs}pt;line-height:${fit.lh}">
     <p style="margin-top:12pt;text-align:justify;${S}">Tengo el agrado de dirigirme a Ud. a fin de comunicarle que en los <b>Autos N° ${c.ex||'____'}</b>, caratulados <b>"${c.car}"</b>, que se tramitan por ante el <b>${jz.nombre.toUpperCase()}</b>, se ha ${reit?'dispuesto <b>REITERAR</b> el presente oficio':'ordenado librar el presente'} a los fines de que ${d.pedido||'________________'}.-</p>
-    ${esLab?`<p style="text-align:justify;${S}">Se le hace saber que <b>las actuaciones de trabajo tienen carácter urgente</b>, razón por la cual, están obligados a prestar preferente atención y dar pronto despacho a las diligencias que se le encomiendan.-</p>
-    <p style="font-weight:bold">PLAZO PARA CONTESTAR OFICIO: 10 DÍAS</p>
+    ${esLab?`<p style="font-weight:bold">PLAZO PARA CONTESTAR OFICIO: 10 DÍAS</p>
     <p style="font-weight:bold">MAIL OFICIAL DEL JUZGADO: ${mailJuz}</p>`
     :`<p style="text-align:justify;${S}">Responder dentro de los diez días hábiles, presencialmente en soporte papel en ${dirJuz}, o al correo oficial del Juzgado: <b>${mailJuz}</b>.-</p>`}
-    ${d.prov?`<p style="text-align:justify;${S}">Que para mayores recaudos transcribo la providencia que así lo ordena y que en su parte pertinente reza: <i>"${d.prov}"</i>.-</p>`:''}
+    ${d.prov?`<p style="text-align:justify;${S}">Para mayores recaudos se transcribe la providencia que así lo ordena y que, en su parte pertinente, dice: <i>"${d.prov}"</i>.-</p>`:''}
     ${esLab?'':`<p style="${S}">Cumplido, sírvalo devolver con todo lo actuado.-</p>`}
     ${d.aperc?`<p style="font-size:${fit.ap||8}pt;line-height:1.25;text-align:justify;margin-top:8pt">${d.aperc}</p>`:''}
     </div>
@@ -4143,11 +4171,11 @@ function escHTML(){
   // Escrito de mero trámite estándar
   const rolParte=rol==='apoderado'?`apoderado ${parte==='actora'?'del actor':'de la demandada'}`:`letrado patrocinante ${parte==='actora'?'del actor':'de la demandada'}`;
   return `<p style="text-align:center;font-weight:bold;margin-bottom:22pt">${def.titulo}</p>
-  <p style="font-weight:bold">${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.nombre)}:</p>
+  <p>${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.nombre)}:</p>
   <p style="text-align:justify;text-indent:1.25cm;margin-top:10pt"><b>JUAN PABLO GUDIÑO</b>, abogado del foro local, M.P. N° 4683, ${rolParte}, en <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${c.car}"</b>, a V.S. respetuosamente digo:</p>
   <p style="text-align:justify;text-indent:1.25cm">${def.cuerpo(d)}</p>
-  <p style="margin-top:16pt;text-align:center">Proveer de conformidad,</p>
-  <p style="font-weight:bold;text-align:center">SERÁ JUSTICIA.-</p>`;
+  <p style="margin-top:16pt;text-align:center">Proveer de conformidad</p>
+  <p style="font-weight:bold;text-align:center">SERÁ JUSTICIA</p>`;
 }
 function _ladoDeCausa(c){
   if(c&&c.rol)return c.rol;
@@ -4202,7 +4230,13 @@ function escVistaPrevia(){
 function _escDocCompleto(){
   escCalcularFit();
   const h=escHTML();if(!h)return null;
-  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Escrito</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]--><style>@page{size:A4;margin:4.5cm 2cm 4.5cm 4.5cm}body{font-family:Arial,sans-serif;font-size:12pt;line-height:2}p{margin:0 0 6pt 0}</style></head><body>${h}</body></html>`;
+  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Escrito</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]--><style>
+@page Section1{size:21cm 29.7cm;margin:4.5cm 2cm 4.5cm 4.5cm;mso-page-orientation:portrait}
+div.Section1{page:Section1}
+body{font-family:Arial,sans-serif;font-size:12pt;color:#000}
+p{margin:0 0 6pt 0;line-height:200%;mso-line-height-rule:auto;font-family:Arial,sans-serif;font-size:12pt;color:#000;text-align:justify}
+b,i,strong,em{font-family:Arial,sans-serif;color:#000}
+</style></head><body><div class="Section1">${h}</div></body></html>`;
 }
 function escDescargarPDF(){
   escGuardarGenerado();
@@ -4288,6 +4322,7 @@ function escDescargarWord(){
 // ═══════════════════════════════════════════════
 const ETAPAS=[
   {k:'preparatoria',n:'Medida preparatoria',   c:'#6D7A8C'},
+  {k:'especiales',n:'Procesos especiales',      c:'#7A6A9C'},
   {k:'litis',   n:'Traba de litis',            c:'#888780'},
   {k:'inicial', n:'Audiencia inicial',         c:'#185FA5'},
   {k:'prueba',  n:'Etapa de prueba',           c:'#BA7517'},
@@ -4346,7 +4381,7 @@ function prAviso(tipo,it,i){
   if(tipo==='peritos'){if(!it.nombre)falta.push('nombre');}
   if(tipo==='testigos'){if(!it.nombre)falta.push('nombre');}
   if(tipo==='inspeccion'){if(!it.nombre)falta.push('quién/dónde');}
-  if(tipo==='informes'){if(!it.dest)falta.push('organismo');if(!it.pedido)falta.push('qué se requiere');}
+  if(tipo==='informes'){if(!it.dest)falta.push('organismo');}
   const id=`id="pr-av-${tipo}-${i}"`;
   if(!falta.length)return `<span ${id} style="font-size:10px;color:var(--green);font-weight:600">✓ listo</span>`;
   return `<span ${id} style="font-size:10px;color:#B45309;font-weight:600">Falta: ${falta.join(', ')}</span>`;
@@ -4415,6 +4450,7 @@ function renderPrueba(){
   const hab=et==='prueba';
 
   head.innerHTML=`
+    <div onclick="goR()" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;color:var(--navy);font-size:12px;font-weight:700;margin-bottom:12px;padding:5px 11px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)">← Volver a las causas</div>
     <div style="font-size:14px;font-weight:700">${c.car}</div>
     <div style="font-size:11px;color:#aaa;margin-bottom:10px">${c.ex||'s/n'} · ${c.juz||''}</div>
     <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Etapa procesal</div>
@@ -4423,13 +4459,7 @@ function renderPrueba(){
         <option value=""${!et?' selected':''} disabled>Elegí la etapa…</option>
         ${ETAPAS.map(e=>`<option value="${e.k}"${e.k===et?' selected':''}>${e.n}</option>`).join('')}
       </select>
-    </div>
-    ${hab?`<div style="display:flex;gap:10px;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:9px 12px;margin-bottom:12px;flex-wrap:wrap">
-      <span style="font-size:11px;color:#888;font-weight:600">AUDIENCIA FINAL</span>
-      <input type="date" class="fi" style="width:auto;font-size:12px" value="${p.audFinal||''}" onchange="prAud('audFinal',this.value)">
-      <input type="time" class="fi" style="width:auto;font-size:12px" value="${p.audHora||''}" onchange="prAud('audHora',this.value)">
-      ${p.audFinal?`<span style="font-size:12px;font-weight:700;color:${diasHastaPr(p.audFinal)<=15?'var(--red)':'var(--navy)'}">${textoDiasPr(p.audFinal)}</span>`:''}
-    </div>`:''}`;
+    </div>`;
 
   if(!hab){
     body.innerHTML=`<div style="text-align:center;padding:26px 20px;color:#aaa;font-size:12px;background:var(--bg2);border:1px dashed var(--border2);border-radius:10px">
@@ -4440,7 +4470,8 @@ function renderPrueba(){
     prSeccion('peritos','Pericial','Perito titular designado',p.peritos)+
     prSeccion('testigos','Testimonial','Testigos a citar',p.testigos)+
     prSeccion('informes','Informes','Reparticiones a oficiar',p.informes)+
-    prSeccion('inspeccion','Inspección ocular','Reconocimiento judicial',p.inspeccion);
+    prSeccion('inspeccion','Inspección ocular','Reconocimiento judicial',p.inspeccion)+
+    `<div onclick="goR()" style="text-align:center;margin-top:6px;cursor:pointer;color:var(--navy);font-size:12px;font-weight:700;padding:9px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)">← Volver a las causas</div>`;
 }
 function prAud(k,v){
   const c=causas.find(x=>x.id===_prCid);if(!c)return;
@@ -4511,12 +4542,34 @@ function _perLine(it){
   const est_k=prEstado(it,'peritos');
   const estN=(CED_ESTADOS.find(e=>e.k===est_k)||{n:est_k}).n;
   const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
-  const vtxt=(est_k==='dilig'&&it.venc)?vB(it.venc,'vence'):'';
-  return `${esp}${nom} — Notificación: <span style="color:${pend?'var(--red)':'inherit'};font-weight:${pend?'600':'400'}">${estN}</span>${vtxt}`;
+  const dil=(est_k==='dilig'&&it.dilig)?' el '+_dv(it.dilig):'';
+  const vtxt=(est_k==='dilig'&&it.venc)?' · '+_vencHTML(it.venc,'vence'):'';
+  const star=est_k==='carpeta'?' · <span style="color:#E6A817;font-weight:700">⭐ Ramiro</span>':'';
+  return `${esp}${nom} — Notificación: <span style="color:${pend?'var(--red)':'inherit'};font-weight:${pend?'600':'400'}">${estN}${dil}</span>${vtxt}${star}`;
+}
+const INCORP_CED=[{k:'',n:'incorporación…'},{k:'juzgado',n:'la agrega el juzgado'},{k:'adjuntar',n:'adjuntar cédula'},{k:'agregada',n:'cédula agregada'}];
+const INCORP_OF=[{k:'',n:'incorporación…'},{k:'falta',n:'falta incorporar'},{k:'incorp',n:'incorporado'}];
+function _incorpLbl(tipo,k){if(!k)return '';const L=(tipo==='informes'?INCORP_OF:INCORP_CED).find(o=>o.k===k);return L?L.n:'';}
+function prIncorp(cid,tipo,i,v){const c=causas.find(x=>x.id===cid);if(!c)return;const it=getPrueba(c)[tipo][i];if(!it)return;it.incorp=v;c.lastTouch=Date.now();touchCausa(cid);sC();if(typeof renderR==='function')renderR();_prRefreshPanel();}
+function prGuardar(cid,tipo,i){const c=causas.find(x=>x.id===cid);if(!c)return;const it=getPrueba(c)[tipo][i];if(!it)return;it.saved=true;sC();if(typeof renderR==='function')renderR();_prRefreshPanel();}
+function prEditar(cid,tipo,i){const c=causas.find(x=>x.id===cid);if(!c)return;const it=getPrueba(c)[tipo][i];if(!it)return;it.saved=false;_prRefreshPanel();}
+function _prResumen(tipo,it){
+  if(tipo==='peritos'){const base=_perLine(it);const inc=(((it.fase||'notif')==='notif')&&it.incorp)?' · '+_incorpLbl('peritos',it.incorp):'';return base+inc;}
+  const nom=tipo==='informes'?(it.dest||'(sin organismo)'):(it.nombre||'(sin nombre)');
+  const est_k=prEstado(it,tipo);
+  const estN=((tipo==='informes'?OF_ESTADOS:CED_ESTADOS).find(e=>e.k===est_k)||{n:est_k}).n;
+  const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
+  const dilig=(est_k==='dilig'||est_k==='reiterado');
+  const dil=(dilig&&it.dilig)?' el '+_dv(it.dilig):'';
+  const vtxt=(dilig&&it.venc)?' · '+_vencHTML(it.venc,'vence'):'';
+  const inc=it.incorp?' · '+_incorpLbl(tipo,it.incorp):'';
+  const star=est_k==='carpeta'?' · <span style="color:#E6A817;font-weight:700">⭐ Ramiro</span>':'';
+  const lbl=tipo==='informes'?'Oficio':'Notificación';
+  return `${nom} — ${lbl}: <span style="color:${pend?'var(--red)':'inherit'};font-weight:${pend?'600':'400'}">${estN}${dil}</span>${vtxt}${inc}${star}`;
 }
 function prSeccion(tipo,titulo,sub,items){
   const esInf=tipo==='informes';
-  const listos=items.filter(it=>esInf?(it.dest&&it.pedido):(it.nombre)).length;
+  const listos=items.filter(it=>esInf?(it.dest):(it.nombre)).length;
   const filas=items.map((it,i)=>{
     const est_k=prEstado(it,tipo);
     const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
@@ -4535,13 +4588,15 @@ function prSeccion(tipo,titulo,sub,items){
     const paraMi=it.plazoPara!=='notif';
     const estSel=`<select onchange="prCambiarEstado(${_prCid},'${tipo}',${i},this.value)" style="font-size:11px;padding:3px 6px;border:1px solid ${pend?'var(--red)':_estColor(est_k,it)};border-radius:6px;background:${pend?'#FCEBEB':'#fff'};color:${pend?'#A32D2D':'var(--text2)'};font-weight:600">${ESTS.map(e=>`<option value="${e.k}"${e.k===est_k?' selected':''}>${e.n}</option>`).join('')}</select>`;
     let extra='';
-    if(est_k==='dilig'){
-      extra=`<input type="date" value="${it.dilig||''}" onchange="prDiligFecha(${_prCid},'${tipo}',${i},this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--border2);border-radius:5px;width:130px">
-      <select onchange="prDiligDias(${_prCid},'${tipo}',${i},this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--border2);border-radius:5px">${_plazoOpts(nd)}</select>
-      <span data-dvenc="${_prCid}-${tipo}-${i}">${nd>0?_vencHTML(it.venc,'vence'):''}</span>`;
+    if(est_k==='dilig'||est_k==='reiterado'){
+      const sinPlazo=(tipo==='testigos');
+      extra=`<input type="date" value="${it.dilig||''}" onchange="prDiligFecha(${_prCid},'${tipo}',${i},this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--border2);border-radius:5px;width:130px">`
+        +(sinPlazo?'':`<select onchange="prDiligDias(${_prCid},'${tipo}',${i},this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--border2);border-radius:5px">${_plazoOpts(nd)}</select>
+      <span data-dvenc="${_prCid}-${tipo}-${i}">${nd>0?_vencHTML(it.venc,'vence'):''}</span>`);
     }
+    const ramStar=est_k==='carpeta'?`<span title="Tarea de Ramiro: llevar a diligenciar" style="color:#E6A817;font-weight:700;font-size:11.5px">⭐ Ramiro</span>`:'';
     let acc=est_k==='cumplida'?`<span style="color:var(--green);font-weight:700;font-size:13px">✓ cumplida</span>`:'';
-    let estadoLinea=estSel+extra+acc, bordFinal=bordC;
+    let estadoLinea=estSel+extra+ramStar+acc, bordFinal=bordC;
     if(tipo==='peritos'){
       const fase=it.fase||'notif';
       const faseSel=`<select onchange="prFaseSet(${_prCid},${i},this.value)" title="Estado de la pericia" style="font-size:11px;padding:3px 6px;border:1px solid var(--border-strong,var(--border2));border-radius:6px;background:#fff;color:var(--navy);font-weight:700">${PERITO_FASES.map(f=>`<option value="${f.k}"${f.k===fase?' selected':''}>${f.n}</option>`).join('')}</select>`;
@@ -4549,7 +4604,7 @@ function prSeccion(tipo,titulo,sub,items){
       const plazoBox=(fa,np)=>`<select onchange="prPerPlazo(${_prCid},${i},'${fa}',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--border2);border-radius:5px">${_plazoOpts(np)}</select>`;
       if(fase==='notif'){
         bordFinal=pend?'var(--red)':_estColor(est_k,it);
-        estadoLinea=faseSel+estSel+extra+acc;
+        estadoLinea=faseSel+estSel+extra+ramStar+acc;
       } else if(fase==='acepto'){
         bordFinal='var(--border2)';
         const np=it.acPlazo!=null?it.acPlazo:10;
@@ -4560,11 +4615,22 @@ function prSeccion(tipo,titulo,sub,items){
         estadoLinea=faseSel+fechaBox('dictamen',it.dcFecha,'presentó el')+plazoBox('dictamen',np)+`<span id="pervenc-${i}">${_perVencHTML(it,'dictamen')}</span>`;
       }
     }
-    const pedido=esInf?`<textarea class="fi" style="width:100%;font-size:12px;height:46px;resize:vertical;margin-top:6px" placeholder="¿Qué se le requiere al organismo? Ej: informe la titularidad del vehículo al tiempo del accidente" onchange="prSet('informes',${i},'pedido',this.value)">${it.pedido||''}</textarea>`:'';
+    const showInc=(est_k==='dilig'||est_k==='reiterado'||est_k==='cumplida')&&(tipo!=='peritos'||(it.fase||'notif')==='notif');
+    const incSel=showInc?`<select onchange="prIncorp(${_prCid},'${tipo}',${i},this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border2);border-radius:6px;background:#fff;color:var(--text2)">${(esInf?INCORP_OF:INCORP_CED).map(o=>`<option value="${o.k}"${o.k===(it.incorp||'')?' selected':''}>${o.n}</option>`).join('')}</select>`:'';
+    estadoLinea=estadoLinea+incSel;
+    const done=est_k==='cumplida';
+    if(it.saved){
+      return `<div style="border:1px solid var(--border);border-left:3px solid ${bordFinal};border-radius:8px;padding:7px 11px;margin-bottom:6px;background:var(--bg);display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px">
+        ${_prChk(_prCid,tipo,i,done)}
+        <span style="flex:1;min-width:150px;color:var(--text);${done?'opacity:.65':''}">${_prResumen(tipo,it)}</span>
+        <button class="btn-mini" onclick="prEditar(${_prCid},'${tipo}',${i})" style="font-size:11px">✎ editar</button>
+        <span onclick="prDel('${tipo}',${i})" style="cursor:pointer;color:#ccc;font-size:14px">✕</span>
+      </div>`;
+    }
     return `<div style="border:1px solid var(--border);border-left:3px solid ${bordFinal};border-radius:8px;padding:9px 11px;margin-bottom:7px;background:var(--bg)">
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${entrada}${prAviso(tipo,it,i)}<span onclick="prDel('${tipo}',${i})" style="cursor:pointer;color:#ccc;font-size:14px;margin-left:auto">✕</span></div>
-      ${pedido}
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${_prChk(_prCid,tipo,i,done)}${entrada}${prAviso(tipo,it,i)}<span onclick="prDel('${tipo}',${i})" style="cursor:pointer;color:#ccc;font-size:14px;margin-left:auto">✕</span></div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:7px">${estadoLinea}</div>
+      <div style="margin-top:8px"><button class="btn" style="font-size:11px;background:var(--navy);color:#fff;border-color:var(--navy)" onclick="prGuardar(${_prCid},'${tipo}',${i})">💾 Guardar</button></div>
     </div>`;
   }).join('');
   return `<div style="margin-bottom:10px;border:1px solid var(--border);border-radius:10px;overflow:hidden">
@@ -4631,109 +4697,39 @@ function pruebaInline(c){
   const col=todo?'var(--green)':'var(--text2)';
   let audTxt='';
   if(p.audFinal){const d=_faltan(p.audFinal);const cA=d<0?'#999':d<=7?'var(--red)':'var(--text2)';audTxt=`<span style="color:${cA};font-weight:600;margin-left:2px">· 📅 ${_dv(p.audFinal)}${d<0?'':d===0?' HOY':' ('+d+'d)'}</span>`;}
-  let h='<div style="margin-top:6px;border-top:1px dashed var(--border2);padding-top:7px">';
-  h+=`<div onclick="togglePrueba(${c.id},event)" title="Ver / ocultar prueba" style="display:flex;align-items:center;gap:6px;font-size:10.5px;cursor:pointer;padding:2px 4px;user-select:none"><span style="font-size:11px;color:var(--text3)">${abierto?'▾':'▸'}</span><span style="font-weight:700;color:${col};text-transform:uppercase;letter-spacing:.4px">Prueba${tot?' · '+ok+'/'+tot+(todo?' ✓':''):''}</span>${audTxt}<span style="margin-left:auto;color:var(--text2);font-size:9px;padding:2px 8px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-weight:600">${abierto?'ocultar':'ver detalle'}</span></div>`;
+  let h='<div style="margin-top:2px;border-top:1px dashed var(--border2);padding-top:4px">';
+  const rightCtrls=`<span style="color:var(--text2);font-size:9px;padding:2px 8px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-weight:600">${abierto?'ocultar':'ver detalle'}</span>`;
+  h+=`<div onclick="togglePrueba(${c.id},event)" title="Ver / ocultar prueba" style="display:flex;align-items:center;gap:6px;font-size:10.5px;cursor:pointer;padding:1px 4px;user-select:none"><span style="font-size:11px;color:var(--text3)">${abierto?'▾':'▸'}</span><span style="font-weight:700;color:${col};text-transform:uppercase;letter-spacing:.4px">📋 Prueba${tot?' · '+ok+'/'+tot+(todo?' ✓':''):''}</span>${audTxt}<span style="margin-left:auto;display:flex;gap:5px;align-items:center">${rightCtrls}</span></div>`;
   if(!abierto)return h+'</div>';
 
-  const simple=_pruebaSimple.has(c.id);
-  h+=`<div style="display:flex;justify-content:flex-end;margin:4px 0 2px"><span onclick="togglePruebaSimple(${c.id},event)" title="Cambiar entre vista simple y edición" style="cursor:pointer;user-select:none;font-size:9px;color:var(--text2);padding:2px 9px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-weight:600">${simple?'✎ vista de edición':'☰ vista simple'}</span></div>`;
-  if(simple){
-    if(p.audFinal){const d=_faltan(p.audFinal);const cA=d<0?'#999':d<=7?'var(--red)':'var(--navy)';h+=`<div style="font-size:10.5px;color:#9a9a9a;padding:1px 4px">📅 Audiencia final ${_dv(p.audFinal)} <b style="color:${cA}">${d<0?'ya pasó':d===0?'hoy':'faltan '+d+'d'}</b></div>`;}
-    if(!secs.length)h+=`<div style="font-size:10.5px;color:#bbb;padding:2px 4px">Sin diligencias cargadas.</div>`;
-    secs.forEach(s=>{
-      h+=`<div style="font-size:9.5px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.4px;margin:6px 0 1px">${s.ico} ${s.t}</div>`;
-      p[s.k].forEach(it=>{
-        const est_k=prEstado(it,s.k);
-        const nom=s.k==='informes'?(it.dest||'(sin organismo)'):(it.nombre||'(sin nombre)');
-        const etq=(s.k==='peritos'&&it.espec)?it.espec+' · ':'';
-        const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
-        const estTxt=(CED_ESTADOS.concat(OF_ESTADOS).find(e=>e.k===est_k)||{n:est_k}).n;
-        let plazo='';
-        if(est_k==='dilig'&&it.venc){plazo=' '+_vencHTML(it.venc,'vence');}
-        h+=`<div style="font-size:10.5px;line-height:1.35;padding:1px 4px;color:#9a9a9a">• ${etq}${nom} — <span style="color:${pend?'var(--red)':'#9a9a9a'}">${estTxt}</span>${plazo}</div>`;
-      });
-    });
-    return h+'</div>';
-  }
-
-  // ── Cargar / analizar (plegado aparte) ──
-  const cargAb=_cargOpen.has(c.id);
-  h+=`<div style="margin-top:6px"><div onclick="toggleCargador(${c.id},event)" style="cursor:pointer;user-select:none;display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:var(--navy);padding:4px 8px;border:1px solid var(--border);border-radius:7px;background:var(--bg)"><span style="font-size:11px">${cargAb?'▾':'＋'}</span><span>Cargar / analizar prueba</span><span style="margin-left:auto;font-size:9px;color:var(--text3)">${cargAb?'ocultar':'mostrar'}</span></div>`;
-  if(cargAb){
-    h+=`<div style="margin-top:6px">
-      <textarea id="pv-prov-${c.id}" onclick="event.stopPropagation()" placeholder="Pegá la providencia o el acta (MEV) y se completa solo..." style="width:100%;height:52px;font-size:11px;border:1px solid var(--border);border-radius:7px;padding:7px 9px;resize:vertical;font-family:inherit;background:var(--bg)"></textarea>
-      <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center">
-        <button class="btn" style="font-size:10.5px;background:var(--navy);color:#fff;border-color:var(--navy)" onclick="event.stopPropagation();prPegarProv(${c.id})">🔎 Analizar y cargar</button>
-        <button class="btn" style="font-size:10.5px" onclick="event.stopPropagation();prAddFila(${c.id},'peritos')">+ Perito</button>
-        <button class="btn" style="font-size:10.5px" onclick="event.stopPropagation();prAddFila(${c.id},'testigos')">+ Testigo</button>
-        <button class="btn" style="font-size:10.5px" onclick="event.stopPropagation();prAddFila(${c.id},'informes')">+ Oficio</button>
-        <button class="btn" style="font-size:10.5px" onclick="event.stopPropagation();prAddFila(${c.id},'inspeccion')">+ Inspección</button>
-        <span id="pv-msg-${c.id}" style="font-size:10.5px;color:#888"></span>
-      </div></div>`;
-  }
-  h+=`</div>`;
-
-  // ── Audiencia final ──
-  h+=`<div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;font-size:10.5px"><span style="color:#888;font-weight:600">Audiencia final</span><input type="date" onclick="event.stopPropagation()" class="fi" style="width:auto;font-size:11px;padding:3px 6px" value="${p.audFinal||''}" onchange="prAudFila(${c.id},'audFinal',this.value)"><input type="time" onclick="event.stopPropagation()" class="fi" style="width:auto;font-size:11px;padding:3px 6px" value="${p.audHora||''}" onchange="prAudFila(${c.id},'audHora',this.value)">`;
-  if(p.audFinal){const d=_faltan(p.audFinal);const urg=d<0?'#999':d<=7?'var(--red)':d<=15?'#B45309':'var(--navy)';h+=`<span style="font-weight:700;color:${urg}">${d<0?'ya pasó':d===0?'HOY':'faltan '+d+'d'}</span>`;}
-  h+=`</div>`;
-
-  // ── Diligencias ──
+  // ── Diligencias (resumen; se carga/edita en el panel) ──
   secs.forEach(s=>{
     const tot=p[s.k].length,ok=p[s.k].filter(x=>prEstado(x,s.k)==='cumplida').length;
-    h+=`<div style="display:flex;align-items:center;gap:6px;margin:8px 0 4px"><span style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.4px">${s.ico} ${s.t}</span><span style="font-size:9.5px;color:${ok===tot?'var(--green)':'#bbb'};font-weight:600">${ok}/${tot}${ok===tot?' ✓':''}</span></div>`;
+    h+=`<div style="display:flex;align-items:center;gap:6px;margin:7px 0 3px"><span style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.4px">${s.ico} ${s.t}</span><span style="font-size:9.5px;color:${ok===tot?'var(--green)':'#bbb'};font-weight:600">${ok}/${tot}${ok===tot?' ✓':''}</span></div>`;
     p[s.k].forEach((it,i)=>{
-      if(s.k==='peritos'){
-        const fase=it.fase||'notif';
-        const est_k0=prEstado(it,'peritos');
-        const rojo=(fase==='notif'&&(est_k0==='pendiente'||est_k0==='carpeta'||est_k0==='despachada'));
-        h+=`<div style="display:flex;align-items:center;gap:6px;font-size:11px;padding:5px 8px;line-height:1.5;background:var(--bg);border:1px solid var(--border);border-left:3px solid ${rojo?'var(--red)':_estColor(est_k0,it)};border-radius:7px;margin-bottom:4px;flex-wrap:wrap"><span style="flex:1;min-width:130px;color:var(--text)">${_perLine(it)}</span><button class="btn-mini" onclick="event.stopPropagation();irAPrueba(${c.id})" title="Editar en el panel de prueba" style="font-size:10px">✎</button></div>`;
-        return;
-      }
-      const nom=s.k==='informes'?(it.dest||'(sin organismo)'):(it.nombre||'(sin nombre)');
-      const falta=s.k==='informes'?(!it.dest||!it.pedido):(!it.nombre);
-      const doc=s.k==='informes'?'oficio':'cédula';
       const est_k=prEstado(it,s.k);
-      const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
-      const ESTS=s.k==='informes'?OF_ESTADOS:CED_ESTADOS;
-      const sel=`<select onchange="prCambiarEstado(${c.id},'${s.k}',${i},this.value)" onclick="event.stopPropagation()" style="font-size:10.5px;padding:2px 4px;border:1px solid ${pend?'var(--red)':_estColor(est_k,it)};border-radius:6px;background:${pend?'#FCEBEB':'#fff'};color:${pend?'#A32D2D':'var(--text2)'};font-weight:600;max-width:190px">${ESTS.map(e=>`<option value="${e.k}"${e.k===est_k?' selected':''}>${e.n}</option>`).join('')}</select>`;
-      let est='',btn='';
-      if(est_k==='cumplida'){
-        btn='';
-        est=`<span style="color:var(--green);font-weight:700">✓</span>`;
-      } else if(est_k==='dilig'){
-        const nd=it.plazoDias!=null?it.plazoDias:(PLAZO_DILIG[s.k]||0);
-        const dias=it.venc?_faltan(it.venc):null;
-        est=`<span style="display:inline-flex;align-items:center;gap:4px;color:#666;flex-wrap:wrap">
-          <input type="date" value="${it.dilig||''}" onchange="prDiligFecha(${c.id},'${s.k}',${i},this.value)" onclick="event.stopPropagation()" style="font-size:10px;padding:0 2px;border:1px solid var(--border2);border-radius:4px;width:120px">
-          <select onchange="prDiligDias(${c.id},'${s.k}',${i},this.value)" onclick="event.stopPropagation()" style="font-size:10px;padding:0 2px;border:1px solid var(--border2);border-radius:4px">${_plazoOpts(nd)}</select>
-          <span data-dvenc="${c.id}-${s.k}-${i}">${nd>0?_vencHTML(it.venc,'vence'):''}</span></span>`;
-        const vencido=it.venc&&dias!==null&&dias<0;
-        btn=(s.k==='informes'&&vencido?`<button class="btn-mini" onclick="event.stopPropagation();prReiterar(${c.id},${i})" style="font-size:10px;background:#FEF3C7;border-color:#FCD34D;color:#92400E;font-weight:700">↻ Reiterar</button> `:'');
-      } else if(est_k==='carpeta'){
-        est=s.k==='informes'?'':`<span style="color:#7a5c10;font-size:10.5px">lista para que la lleve Ramiro</span>`;
-        btn=`<button class="btn-mini" onclick="event.stopPropagation();prGenDesdeFila(${c.id},'${s.k}',${i})" title="Volver a abrir en el generador" style="font-size:10px">📄</button>`;
-      } else if(est_k==='despachada'){
-        est='';btn='';
-      } else {
-        est=falta?`<span style="color:#B45309">falta ${s.k==='informes'?'completar qué se pide':'el nombre'}</span>`:'';
-        btn=`<button class="btn-mini" onclick="event.stopPropagation();prGenDesdeFila(${c.id},'${s.k}',${i})" style="font-size:10px;font-weight:700">📄 Confeccionar ${doc}</button>`;
-      }
-      est=sel+' '+est;
-            const etq=(s.k==='peritos'&&it.espec)?`<strong style="color:var(--navy);text-transform:capitalize">${it.espec}:</strong> `:'';
-      const bordC=pend?'var(--red)':_estColor(est_k,it);
-      h+=`<div style="display:flex;align-items:center;gap:6px;font-size:11px;padding:5px 8px;line-height:1.5;background:var(--bg);border:1px solid var(--border);border-left:3px solid ${bordC};border-radius:7px;margin-bottom:4px;flex-wrap:wrap">
-        <span style="flex:1;min-width:130px;color:var(--text)">${etq}${nom}</span>
-        <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${est}${btn}</span></div>`;
+      const done=est_k==='cumplida';
+      const pend=!done&&((s.k==='peritos')
+        ? ((it.fase||'notif')==='notif'&&(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada'))
+        : (est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada'));
+      const bordC=done?'var(--green)':pend?'var(--red)':_estColor(est_k,it);
+      h+=`<div style="display:flex;align-items:center;gap:7px;font-size:11px;padding:4px 8px;line-height:1.4;background:var(--bg);border:1px solid var(--border);border-left:3px solid ${bordC};border-radius:7px;margin-bottom:4px">
+        <span onclick="event.stopPropagation();prToggleDone(${c.id},'${s.k}',${i})" title="Marcar terminada" style="cursor:pointer;width:16px;height:16px;border:1.5px solid ${done?'var(--green)':'var(--border-strong,#bbb)'};border-radius:4px;display:inline-flex;align-items:center;justify-content:center;color:var(--green);font-size:12px;font-weight:800;flex-shrink:0;background:${done?'#EAF7EE':'transparent'}">${done?'✓':''}</span>
+        <span onclick="event.stopPropagation();irAPrueba(${c.id})" style="flex:1;min-width:120px;color:var(--text);cursor:pointer;${done?'opacity:.65':''}">${_prResumen(s.k,it)}</span>
+        <span onclick="event.stopPropagation();irAPrueba(${c.id})" style="color:var(--text3);font-size:10px;cursor:pointer">✎</span></div>`;
     });
   });
-
-  // ── Rol + Historial ──
-  h+=`<div style="display:flex;gap:6px;align-items:center;margin-top:9px"><span style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.4px">Rol</span>${['actora','demandada'].map(r=>`<div onclick="event.stopPropagation();setRolFila(${c.id},'${r}')" style="cursor:pointer;user-select:none;font-size:10px;padding:3px 9px;border-radius:10px;border:1px solid ${_ladoDeCausa(c)===r?'var(--navy)':'var(--border)'};background:${_ladoDeCausa(c)===r?'var(--navy)':'var(--bg)'};color:${_ladoDeCausa(c)===r?'#fff':'var(--text2)'};font-weight:${_ladoDeCausa(c)===r?'700':'500'}">${r==='actora'?'Actora':'Demandada'}</div>`).join('')}</div>`;
-  h+=`<details style="margin-top:8px"><summary onclick="event.stopPropagation()" style="cursor:pointer;font-size:10.5px;color:#8a94a6;font-weight:600">🕘 Historial de la causa</summary><div style="margin-top:5px;max-height:180px;overflow-y:auto">${logHTML(c)}</div></details>`;
+  h+=`<div onclick="event.stopPropagation();irAPrueba(${c.id})" style="margin-top:7px;cursor:pointer;font-size:10.5px;color:var(--navy);font-weight:700;padding:5px 10px;border:1px dashed var(--border-strong,var(--border));border-radius:8px;display:inline-block">＋ Cargar / editar prueba en el panel</div>`;
 
   return h+'</div>';
 }
+function prToggleDone(cid,tipo,i){
+  const c=causas.find(x=>x.id===cid);if(!c)return;
+  const it=getPrueba(c)[tipo][i];if(!it)return;
+  const era=prEstado(it,tipo);
+  prCambiarEstado(cid,tipo,i,era==='cumplida'?(it._prevEst||'pendiente'):(()=>{it._prevEst=era;return 'cumplida';})());
+}
+function _prChk(cid,tipo,i,done){return `<span onclick="event.stopPropagation();prToggleDone(${cid},'${tipo}',${i})" title="Marcar terminada" style="cursor:pointer;width:17px;height:17px;border:1.5px solid ${done?'var(--green)':'#bbb'};border-radius:4px;display:inline-flex;align-items:center;justify-content:center;color:var(--green);font-size:12px;font-weight:800;flex-shrink:0;background:${done?'#EAF7EE':'transparent'}">${done?'✓':''}</span>`;}
 function togglePrueba(cid,e){
   if(e)e.stopPropagation();
   cid=parseInt(cid);
@@ -4766,8 +4762,9 @@ const CED_ESTADOS=[
 ];
 const OF_ESTADOS=[
   {k:'pendiente',n:'Confeccionar oficio'},
-  {k:'carpeta',n:'En carpeta'},
-  {k:'dilig',n:'Despachado (corre plazo)'},
+  {k:'carpeta',n:'En carpeta (lista p/ diligenciar)'},
+  {k:'dilig',n:'Diligenciado (corre plazo)'},
+  {k:'reiterado',n:'Reiteración'},
   {k:'cumplida',n:'Contestado'},
 ];
 function prEstado(it,tipo){
@@ -4798,7 +4795,12 @@ function prCambiarEstado(cid,tipo,i,k){
   if(k==='dilig'){
     if(!it.dilig)it.dilig=new Date().toISOString().split('T')[0];
     if(it.plazoDias==null)it.plazoDias=PLAZO_DILIG[tipo]||0;
-    if(it.plazoPara==null)it.plazoPara=tipo==='informes'?'notif':'mi';
+    it.cerrada='';
+    _prRecalcVenc(it);
+  }
+  if(k==='reiterado'){
+    it.dilig=new Date().toISOString().split('T')[0];
+    if(it.plazoDias==null)it.plazoDias=PLAZO_DILIG[tipo]||0;
     it.cerrada='';
     _prRecalcVenc(it);
   }
@@ -5246,7 +5248,13 @@ function renderEscGen(){
   cont.innerHTML=h;
 }
 function _escGenDoc(html){
-  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Escrito</title><style>@page{size:A4;margin:4.5cm 2cm 4.5cm 4.5cm}body{font-family:Arial,sans-serif;font-size:12pt;line-height:2}</style></head><body>${html}</body></html>`;
+  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Escrito</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]--><style>
+@page Section1{size:21cm 29.7cm;margin:4.5cm 2cm 4.5cm 4.5cm;mso-page-orientation:portrait}
+div.Section1{page:Section1}
+body{font-family:Arial,sans-serif;font-size:12pt;color:#000}
+p{margin:0 0 6pt 0;line-height:200%;mso-line-height-rule:auto;font-family:Arial,sans-serif;font-size:12pt;color:#000;text-align:justify}
+b,i,strong,em{font-family:Arial,sans-serif;color:#000}
+</style></head><body><div class="Section1">${html}</div></body></html>`;
 }
 function escGenAbrir(cid,idx){
   const c=causas.find(x=>x.id===cid);if(!c)return;const e=(c.escritos||[])[idx];if(!e)return;
