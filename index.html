@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v274</title>
+<title>Gudiño Cabrera y Asociados v284</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1149,6 +1149,7 @@ const F0=[{f:'2026-05-25',n:'25 de mayo'},{f:'2026-06-17',n:'Belgrano'}];
 let causas=JSON.parse(localStorage.getItem('ga_c')||'null')||C0;
 let movidas=new Set(JSON.parse(localStorage.getItem('ga_m_'+SK)||'[]'));
 let _pruebaOpen=new Set(JSON.parse(localStorage.getItem('ga_propen')||'[]'));
+let _pruebaSimple=new Set(JSON.parse(localStorage.getItem('ga_prsimple')||'[]'));
 let _cargOpen=new Set(JSON.parse(localStorage.getItem('ga_cargopen')||'[]'));
 let historial=JSON.parse(localStorage.getItem('ga_h')||'{}');
 let gastos=JSON.parse(localStorage.getItem('ga_g')||'null')||G0;
@@ -1661,8 +1662,7 @@ function rowHTML(c){
   return`<div class="cr ${cls}" id="cr-${c.id}">
     <div class="chk-col" data-mov="${c.id}"><div class="chkbox${on?' on':''}">${on?'✓':''}</div></div>
     <div class="ci">
-      <div class="ci-car">${c.car}<select onchange="setEtapaFila(${c.id},this.value)" onclick="event.stopPropagation()" title="Etapa procesal" style="font-size:10px;font-weight:700;border:none;border-radius:9px;padding:2px 7px;margin-left:5px;cursor:pointer;-webkit-appearance:none;appearance:none;max-width:170px;vertical-align:middle;background:${c.etapa?etapaInfo(c.etapa).c:'var(--bg3)'};color:${c.etapa?'#fff':'var(--text3)'}"><option value=""${!c.etapa?' selected':''} disabled hidden>etapa ▾</option>${ETAPAS.map(e=>`<option value="${e.k}"${e.k===c.etapa?' selected':''} style="background:#fff;color:#222">${e.n}</option>`).join('')}</select>${(()=>{const b=c.etapa==='prueba'?_plazoBadge(c):'';return b||(c.pl?'<span class="pdot" title="Con plazo"></span>':'');})()}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':''}
-        <span class="${exCls(c)}"> · ${c.ex}</span>
+      <div class="ci-car">${c.car}<span class="${exCls(c)}"> · ${c.ex}</span>${(()=>{const etLbl=c.etapa?etapaInfo(c.etapa).n:'etapa';const w=(etLbl.length+2.5).toFixed(1);return `<select onchange="setEtapaFila(${c.id},this.value)" onclick="event.stopPropagation()" title="Etapa procesal" style="font-size:10px;font-weight:600;border:none;padding:0 2px;margin-left:5px;cursor:pointer;-webkit-appearance:none;appearance:none;box-sizing:border-box;width:${w}ch;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;background:transparent;color:${c.etapa?etapaInfo(c.etapa).c:'var(--text3)'}"><option value=""${!c.etapa?' selected':''} disabled hidden>etapa</option>${ETAPAS.map(e=>`<option value="${e.k}"${e.k===c.etapa?' selected':''} style="background:#fff;color:#222">${e.n}</option>`).join('')}</select>`;})()}${(()=>{const b=c.etapa==='prueba'?_plazoBadge(c):'';return b||(c.pl?'<span class="pdot" title="Con plazo"></span>':'');})()}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':''}
       </div>
       <div class="ci-tv-tag">${(()=>{
         if(c.tipo_aud&&TIPOS[c.tipo_aud]){
@@ -4287,6 +4287,7 @@ function escDescargarWord(){
 // ETAPA DE LA CAUSA + TABLERO DE PRUEBA
 // ═══════════════════════════════════════════════
 const ETAPAS=[
+  {k:'preparatoria',n:'Medida preparatoria',   c:'#6D7A8C'},
   {k:'litis',   n:'Traba de litis',            c:'#888780'},
   {k:'inicial', n:'Audiencia inicial',         c:'#185FA5'},
   {k:'prueba',  n:'Etapa de prueba',           c:'#BA7517'},
@@ -4300,8 +4301,8 @@ function etapaInfo(k){return ETAPAS.find(e=>e.k===k)||ETAPAS[0];}
 let _prCid=null;
 
 function getPrueba(c){
-  c.prueba=c.prueba||{peritos:[],testigos:[],informes:[],audFinal:'',audHora:''};
-  ['peritos','testigos','informes'].forEach(k=>{c.prueba[k]=c.prueba[k]||[];});
+  c.prueba=c.prueba||{peritos:[],testigos:[],informes:[],inspeccion:[],audFinal:'',audHora:''};
+  ['peritos','testigos','informes','inspeccion'].forEach(k=>{c.prueba[k]=c.prueba[k]||[];});
   return c.prueba;
 }
 function setEtapa(k){
@@ -4322,6 +4323,7 @@ function prAdd(tipo){
   if(tipo==='peritos')p.peritos.push({nombre:'',dom:'',espec:''});
   if(tipo==='testigos')p.testigos.push({nombre:'',dom:''});
   if(tipo==='informes')p.informes.push({dest:'',pedido:''});
+  if(tipo==='inspeccion')p.inspeccion.push({nombre:'',dom:''});
   sC();renderPrueba();
 }
 function prDel(tipo,i){
@@ -4341,8 +4343,9 @@ function prSet(tipo,i,campo,v){
 }
 function prAviso(tipo,it,i){
   const falta=[];
-  if(tipo==='peritos'){if(!it.nombre)falta.push('nombre');if(!it.dom)falta.push('domicilio');}
-  if(tipo==='testigos'){if(!it.nombre)falta.push('nombre');if(!it.dom)falta.push('domicilio');}
+  if(tipo==='peritos'){if(!it.nombre)falta.push('nombre');}
+  if(tipo==='testigos'){if(!it.nombre)falta.push('nombre');}
+  if(tipo==='inspeccion'){if(!it.nombre)falta.push('quién/dónde');}
   if(tipo==='informes'){if(!it.dest)falta.push('organismo');if(!it.pedido)falta.push('qué se requiere');}
   const id=`id="pr-av-${tipo}-${i}"`;
   if(!falta.length)return `<span ${id} style="font-size:10px;color:var(--green);font-weight:600">✓ listo</span>`;
@@ -4364,6 +4367,8 @@ function prGenerar(tipo,i){
     irAEscrito(c.id,'cedula_perito',{dest:it.nombre||'',dom:it.dom||'',obs:'SE ACOMPAÑA COPIA DE LOS PUNTOS DE PERICIA.-',_fromFila:true},faltan);
   } else if(tipo==='testigos'){
     irAEscrito(c.id,'cedula_testigo',{dest:it.nombre||'',dom:it.dom||'',obs:'CONCURRIR CON D.N.I.-',_fromFila:true},faltan);
+  } else if(tipo==='inspeccion'){
+    irAEscrito(c.id,'cedula_testigo',{dest:it.nombre||'',dom:it.dom||'',obs:'A LOS FINES DE LA INSPECCIÓN OCULAR ORDENADA.-',_fromFila:true},faltan);
   } else {
     irAEscrito(c.id,esLab?'oficio_lab':'oficio_civ',{dest:it.dest||'',pedido:it.pedido||'',_fromFila:true},faltan);
   }
@@ -4434,7 +4439,8 @@ function renderPrueba(){
   body.innerHTML=
     prSeccion('peritos','Pericial','Perito titular designado',p.peritos)+
     prSeccion('testigos','Testimonial','Testigos a citar',p.testigos)+
-    prSeccion('informes','Informes','Reparticiones a oficiar',p.informes);
+    prSeccion('informes','Informes','Reparticiones a oficiar',p.informes)+
+    prSeccion('inspeccion','Inspección ocular','Reconocimiento judicial',p.inspeccion);
 }
 function prAud(k,v){
   const c=causas.find(x=>x.id===_prCid);if(!c)return;
@@ -4453,31 +4459,112 @@ function textoDiasPr(iso){
   if(d===0)return 'es HOY';
   return `faltan ${d} día${d!==1?'s':''}`;
 }
+const PERITO_FASES=[
+  {k:'notif',    n:'Notificación al perito'},
+  {k:'acepto',   n:'Aceptó el cargo'},
+  {k:'dictamen', n:'Presentó el dictamen'},
+];
+function prFaseSet(cid,i,v){
+  const c=causas.find(x=>x.id===cid);if(!c)return;
+  const it=getPrueba(c).peritos[i];if(!it)return;
+  it.fase=v;logC(c,'Pericia '+(it.nombre||'')+' → '+((PERITO_FASES.find(f=>f.k===v)||{}).n||v));
+  c.lastTouch=Date.now();touchCausa(cid);sC();
+  if(typeof renderR==='function')renderR();_prRefreshPanel();
+}
+function _recPer(it,pre){const f=it[pre+'Fecha'],n=it[pre+'Plazo']||0;const y=f?parseInt(f.split('-')[0],10):0;it[pre+'Venc']=(f&&y>=1000&&n>0)?sumarDiasHabiles(f,n):'';}
+function _vencHTML(venc,pre){
+  if(!venc)return '';
+  const d=_faltan(venc);
+  const col=(d<=1)?'#e24b4a':(d<=3?'#B45309':'var(--navy)');
+  const anim=(d<=1)?';animation:vence-hoy-pulse 1.5s ease-in-out infinite':'';
+  return `<b style="font-size:11px;font-weight:700;color:${col}${anim}">${pre||'vence'} ${_dv(venc)} (${d<0?'vencido':d===0?'HOY':'faltan '+d+'d'})</b>`;
+}
+function _plazoOpts(sel){return [0,3,5,10,15,20,30].map(n=>`<option value="${n}"${n===sel?' selected':''}>${n===0?'sin plazo':n+' días'}</option>`).join('');}
+function _perVencHTML(it,fase){
+  const v=fase==='acepto'?it.acVenc:it.dcVenc;
+  return _vencHTML(v,fase==='acepto'?'presenta antes del':'impugnar antes del');
+}
+function prPerFecha(cid,i,fase,v){
+  const c=causas.find(x=>x.id===cid);if(!c)return;
+  const it=getPrueba(c).peritos[i];if(!it||!v)return;
+  if(fase==='acepto'){it.acFecha=v;if(it.acPlazo==null)it.acPlazo=10;_recPer(it,'ac');}
+  if(fase==='dictamen'){it.dcFecha=v;if(it.dcPlazo==null)it.dcPlazo=5;_recPer(it,'dc');}
+  c.lastTouch=Date.now();touchCausa(cid);sC();if(typeof renderR==='function')renderR();updBadges();
+  const el=document.getElementById('pervenc-'+i);if(el)el.innerHTML=_perVencHTML(it,fase);
+}
+function prPerPlazo(cid,i,fase,v){
+  const c=causas.find(x=>x.id===cid);if(!c)return;
+  const it=getPrueba(c).peritos[i];if(!it)return;
+  const n=Math.max(0,Math.min(90,parseInt(v,10)||0));
+  if(fase==='acepto'){it.acPlazo=n;_recPer(it,'ac');}
+  if(fase==='dictamen'){it.dcPlazo=n;_recPer(it,'dc');}
+  sC();if(typeof renderR==='function')renderR();updBadges();
+  const el=document.getElementById('pervenc-'+i);if(el)el.innerHTML=_perVencHTML(it,fase);
+}
+function _perLine(it){
+  const fase=it.fase||'notif';
+  const esp=it.espec?it.espec+' · ':'';
+  const nom=it.nombre||'(sin nombre)';
+  const vB=(v,txt)=>v?' · '+_vencHTML(v,txt):'';
+  if(fase==='acepto')return `${esp}${nom} — Aceptó el cargo${it.acFecha?' '+_dv(it.acFecha):''}${vB(it.acVenc,'presenta antes del')}`;
+  if(fase==='dictamen')return `${esp}${nom} — Presentó el dictamen${it.dcFecha?' '+_dv(it.dcFecha):''}${vB(it.dcVenc,'impugnar antes del')}`;
+  const est_k=prEstado(it,'peritos');
+  const estN=(CED_ESTADOS.find(e=>e.k===est_k)||{n:est_k}).n;
+  const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
+  const vtxt=(est_k==='dilig'&&it.venc)?vB(it.venc,'vence'):'';
+  return `${esp}${nom} — Notificación: <span style="color:${pend?'var(--red)':'inherit'};font-weight:${pend?'600':'400'}">${estN}</span>${vtxt}`;
+}
 function prSeccion(tipo,titulo,sub,items){
-  const listos=items.filter(it=>tipo==='informes'?(it.dest&&it.pedido):(it.nombre&&it.dom)).length;
+  const esInf=tipo==='informes';
+  const listos=items.filter(it=>esInf?(it.dest&&it.pedido):(it.nombre)).length;
   const filas=items.map((it,i)=>{
-    if(tipo==='informes'){
-      return `<div style="border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:7px;background:var(--bg)">
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-          <input class="fi" list="org-lib" style="flex:1;font-size:12px" placeholder="Organismo / repartición" value="${(it.dest||'').replace(/"/g,'&quot;')}" onchange="prSet('informes',${i},'dest',this.value)">${orgListaHTML()}
-          ${prAviso('informes',it,i)}
-          <span onclick="prDel('informes',${i})" style="cursor:pointer;color:#ccc;font-size:14px">✕</span>
-        </div>
-        <textarea class="fi" style="width:100%;font-size:12px;height:52px;resize:vertical" placeholder="¿Qué se le requiere al organismo? Ej: informe la titularidad del vehículo al tiempo del accidente" onchange="prSet('informes',${i},'pedido',this.value)">${it.pedido||''}</textarea>
-        <button class="btn" style="margin-top:6px;font-size:11px;background:var(--navy);color:#fff;border-color:var(--navy)" onclick="prGenerar('informes',${i})">📄 Generar oficio</button>
-      </div>`;
+    const est_k=prEstado(it,tipo);
+    const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
+    const ESTS=esInf?OF_ESTADOS:CED_ESTADOS;
+    const doc=esInf?'oficio':'cédula';
+    const bordC=pend?'var(--red)':_estColor(est_k,it);
+    let entrada;
+    if(esInf){
+      entrada=`<input class="fi" list="org-lib" style="flex:1;min-width:150px;font-size:12px" placeholder="Organismo / repartición" value="${(it.dest||'').replace(/"/g,'&quot;')}" onchange="prSet('informes',${i},'dest',this.value)">${orgListaHTML()}`;
+    } else {
+      const espSel=tipo==='peritos'?`<select class="fi" style="width:auto;font-size:12px" onchange="prSet('peritos',${i},'espec',this.value)"><option value="">— Esp. —</option>${ESPECIALIDADES.map(x=>`<option value="${x}" ${((it.espec||'').toLowerCase()===x.toLowerCase())?'selected':''}>${x}</option>`).join('')}</select>`:'';
+      entrada=`${espSel}<input class="fi" style="flex:1;min-width:140px;font-size:12px" placeholder="Apellido y nombre" value="${(it.nombre||'').replace(/"/g,'&quot;')}" onchange="prSet('${tipo}',${i},'nombre',this.value)">`;
     }
-    return `<div style="border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:7px;background:var(--bg)">
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-        <input class="fi" style="flex:1;font-size:12px" placeholder="Nombre y apellido" value="${(it.nombre||'').replace(/"/g,'&quot;')}" onchange="prSet('${tipo}',${i},'nombre',this.value)">
-        ${prAviso(tipo,it,i)}
-        <span onclick="prDel('${tipo}',${i})" style="cursor:pointer;color:#ccc;font-size:14px">✕</span>
-      </div>
-      <input class="fi" style="width:100%;font-size:12px" placeholder="Domicilio donde notificar" value="${(it.dom||'').replace(/"/g,'&quot;')}" onchange="prSet('${tipo}',${i},'dom',this.value)">
-      ${tipo==='peritos'?`<div style="display:flex;gap:6px;margin-top:6px">
-        <select class="fi" style="flex:1;font-size:12px" onchange="prSet('peritos',${i},'espec',this.value)"><option value="">— Especialidad —</option>${ESPECIALIDADES.map(x=>`<option value="${x}" ${((it.espec||'').toLowerCase()===x.toLowerCase())?'selected':''}>${x}</option>`).join('')}</select>
-      </div>`:''}
-      <button class="btn" style="margin-top:6px;font-size:11px;background:var(--navy);color:#fff;border-color:var(--navy)" onclick="prGenerar('${tipo}',${i})">📄 Generar cédula</button>
+    const nd=it.plazoDias!=null?it.plazoDias:(PLAZO_DILIG[tipo]||0);
+    const dias=it.venc?_faltan(it.venc):null;
+    const paraMi=it.plazoPara!=='notif';
+    const estSel=`<select onchange="prCambiarEstado(${_prCid},'${tipo}',${i},this.value)" style="font-size:11px;padding:3px 6px;border:1px solid ${pend?'var(--red)':_estColor(est_k,it)};border-radius:6px;background:${pend?'#FCEBEB':'#fff'};color:${pend?'#A32D2D':'var(--text2)'};font-weight:600">${ESTS.map(e=>`<option value="${e.k}"${e.k===est_k?' selected':''}>${e.n}</option>`).join('')}</select>`;
+    let extra='';
+    if(est_k==='dilig'){
+      extra=`<input type="date" value="${it.dilig||''}" onchange="prDiligFecha(${_prCid},'${tipo}',${i},this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--border2);border-radius:5px;width:130px">
+      <select onchange="prDiligDias(${_prCid},'${tipo}',${i},this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--border2);border-radius:5px">${_plazoOpts(nd)}</select>
+      <span data-dvenc="${_prCid}-${tipo}-${i}">${nd>0?_vencHTML(it.venc,'vence'):''}</span>`;
+    }
+    let acc=est_k==='cumplida'?`<span style="color:var(--green);font-weight:700;font-size:13px">✓ cumplida</span>`:'';
+    let estadoLinea=estSel+extra+acc, bordFinal=bordC;
+    if(tipo==='peritos'){
+      const fase=it.fase||'notif';
+      const faseSel=`<select onchange="prFaseSet(${_prCid},${i},this.value)" title="Estado de la pericia" style="font-size:11px;padding:3px 6px;border:1px solid var(--border-strong,var(--border2));border-radius:6px;background:#fff;color:var(--navy);font-weight:700">${PERITO_FASES.map(f=>`<option value="${f.k}"${f.k===fase?' selected':''}>${f.n}</option>`).join('')}</select>`;
+      const fechaBox=(fa,val,lbl)=>`<span style="font-size:11px;color:#666">${lbl}</span><input type="date" value="${val||''}" onchange="prPerFecha(${_prCid},${i},'${fa}',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--border2);border-radius:5px;width:120px">`;
+      const plazoBox=(fa,np)=>`<select onchange="prPerPlazo(${_prCid},${i},'${fa}',this.value)" style="font-size:11px;padding:2px 4px;border:1px solid var(--border2);border-radius:5px">${_plazoOpts(np)}</select>`;
+      if(fase==='notif'){
+        bordFinal=pend?'var(--red)':_estColor(est_k,it);
+        estadoLinea=faseSel+estSel+extra+acc;
+      } else if(fase==='acepto'){
+        bordFinal='var(--border2)';
+        const np=it.acPlazo!=null?it.acPlazo:10;
+        estadoLinea=faseSel+fechaBox('acepto',it.acFecha,'aceptó el')+plazoBox('acepto',np)+`<span id="pervenc-${i}">${_perVencHTML(it,'acepto')}</span>`;
+      } else {
+        bordFinal='var(--border2)';
+        const np=it.dcPlazo!=null?it.dcPlazo:5;
+        estadoLinea=faseSel+fechaBox('dictamen',it.dcFecha,'presentó el')+plazoBox('dictamen',np)+`<span id="pervenc-${i}">${_perVencHTML(it,'dictamen')}</span>`;
+      }
+    }
+    const pedido=esInf?`<textarea class="fi" style="width:100%;font-size:12px;height:46px;resize:vertical;margin-top:6px" placeholder="¿Qué se le requiere al organismo? Ej: informe la titularidad del vehículo al tiempo del accidente" onchange="prSet('informes',${i},'pedido',this.value)">${it.pedido||''}</textarea>`:'';
+    return `<div style="border:1px solid var(--border);border-left:3px solid ${bordFinal};border-radius:8px;padding:9px 11px;margin-bottom:7px;background:var(--bg)">
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${entrada}${prAviso(tipo,it,i)}<span onclick="prDel('${tipo}',${i})" style="cursor:pointer;color:#ccc;font-size:14px;margin-left:auto">✕</span></div>
+      ${pedido}
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:7px">${estadoLinea}</div>
     </div>`;
   }).join('');
   return `<div style="margin-bottom:10px;border:1px solid var(--border);border-radius:10px;overflow:hidden">
@@ -4535,9 +4622,10 @@ function pruebaInline(c){
     {k:'peritos', t:'Pericial',    ico:'🔬'},
     {k:'testigos',t:'Testimonial', ico:'👤'},
     {k:'informes',t:'Informes',    ico:'📨'},
+    {k:'inspeccion',t:'Inspección ocular', ico:'📷'},
   ].filter(s=>p[s.k].length);
   let tot=0,ok=0;
-  ['peritos','testigos','informes'].forEach(k=>{(p[k]||[]).forEach(it=>{tot++;if(prEstado(it,k)==='cumplida')ok++;});});
+  ['peritos','testigos','informes','inspeccion'].forEach(k=>{(p[k]||[]).forEach(it=>{tot++;if(prEstado(it,k)==='cumplida')ok++;});});
   const todo=tot>0&&ok===tot;
   const abierto=_pruebaOpen.has(c.id);
   const col=todo?'var(--green)':'var(--text2)';
@@ -4546,6 +4634,27 @@ function pruebaInline(c){
   let h='<div style="margin-top:6px;border-top:1px dashed var(--border2);padding-top:7px">';
   h+=`<div onclick="togglePrueba(${c.id},event)" title="Ver / ocultar prueba" style="display:flex;align-items:center;gap:6px;font-size:10.5px;cursor:pointer;padding:2px 4px;user-select:none"><span style="font-size:11px;color:var(--text3)">${abierto?'▾':'▸'}</span><span style="font-weight:700;color:${col};text-transform:uppercase;letter-spacing:.4px">Prueba${tot?' · '+ok+'/'+tot+(todo?' ✓':''):''}</span>${audTxt}<span style="margin-left:auto;color:var(--text2);font-size:9px;padding:2px 8px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-weight:600">${abierto?'ocultar':'ver detalle'}</span></div>`;
   if(!abierto)return h+'</div>';
+
+  const simple=_pruebaSimple.has(c.id);
+  h+=`<div style="display:flex;justify-content:flex-end;margin:4px 0 2px"><span onclick="togglePruebaSimple(${c.id},event)" title="Cambiar entre vista simple y edición" style="cursor:pointer;user-select:none;font-size:9px;color:var(--text2);padding:2px 9px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-weight:600">${simple?'✎ vista de edición':'☰ vista simple'}</span></div>`;
+  if(simple){
+    if(p.audFinal){const d=_faltan(p.audFinal);const cA=d<0?'#999':d<=7?'var(--red)':'var(--navy)';h+=`<div style="font-size:10.5px;color:#9a9a9a;padding:1px 4px">📅 Audiencia final ${_dv(p.audFinal)} <b style="color:${cA}">${d<0?'ya pasó':d===0?'hoy':'faltan '+d+'d'}</b></div>`;}
+    if(!secs.length)h+=`<div style="font-size:10.5px;color:#bbb;padding:2px 4px">Sin diligencias cargadas.</div>`;
+    secs.forEach(s=>{
+      h+=`<div style="font-size:9.5px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.4px;margin:6px 0 1px">${s.ico} ${s.t}</div>`;
+      p[s.k].forEach(it=>{
+        const est_k=prEstado(it,s.k);
+        const nom=s.k==='informes'?(it.dest||'(sin organismo)'):(it.nombre||'(sin nombre)');
+        const etq=(s.k==='peritos'&&it.espec)?it.espec+' · ':'';
+        const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
+        const estTxt=(CED_ESTADOS.concat(OF_ESTADOS).find(e=>e.k===est_k)||{n:est_k}).n;
+        let plazo='';
+        if(est_k==='dilig'&&it.venc){plazo=' '+_vencHTML(it.venc,'vence');}
+        h+=`<div style="font-size:10.5px;line-height:1.35;padding:1px 4px;color:#9a9a9a">• ${etq}${nom} — <span style="color:${pend?'var(--red)':'#9a9a9a'}">${estTxt}</span>${plazo}</div>`;
+      });
+    });
+    return h+'</div>';
+  }
 
   // ── Cargar / analizar (plegado aparte) ──
   const cargAb=_cargOpen.has(c.id);
@@ -4558,6 +4667,7 @@ function pruebaInline(c){
         <button class="btn" style="font-size:10.5px" onclick="event.stopPropagation();prAddFila(${c.id},'peritos')">+ Perito</button>
         <button class="btn" style="font-size:10.5px" onclick="event.stopPropagation();prAddFila(${c.id},'testigos')">+ Testigo</button>
         <button class="btn" style="font-size:10.5px" onclick="event.stopPropagation();prAddFila(${c.id},'informes')">+ Oficio</button>
+        <button class="btn" style="font-size:10.5px" onclick="event.stopPropagation();prAddFila(${c.id},'inspeccion')">+ Inspección</button>
         <span id="pv-msg-${c.id}" style="font-size:10.5px;color:#888"></span>
       </div></div>`;
   }
@@ -4573,12 +4683,20 @@ function pruebaInline(c){
     const tot=p[s.k].length,ok=p[s.k].filter(x=>prEstado(x,s.k)==='cumplida').length;
     h+=`<div style="display:flex;align-items:center;gap:6px;margin:8px 0 4px"><span style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.4px">${s.ico} ${s.t}</span><span style="font-size:9.5px;color:${ok===tot?'var(--green)':'#bbb'};font-weight:600">${ok}/${tot}${ok===tot?' ✓':''}</span></div>`;
     p[s.k].forEach((it,i)=>{
+      if(s.k==='peritos'){
+        const fase=it.fase||'notif';
+        const est_k0=prEstado(it,'peritos');
+        const rojo=(fase==='notif'&&(est_k0==='pendiente'||est_k0==='carpeta'||est_k0==='despachada'));
+        h+=`<div style="display:flex;align-items:center;gap:6px;font-size:11px;padding:5px 8px;line-height:1.5;background:var(--bg);border:1px solid var(--border);border-left:3px solid ${rojo?'var(--red)':_estColor(est_k0,it)};border-radius:7px;margin-bottom:4px;flex-wrap:wrap"><span style="flex:1;min-width:130px;color:var(--text)">${_perLine(it)}</span><button class="btn-mini" onclick="event.stopPropagation();irAPrueba(${c.id})" title="Editar en el panel de prueba" style="font-size:10px">✎</button></div>`;
+        return;
+      }
       const nom=s.k==='informes'?(it.dest||'(sin organismo)'):(it.nombre||'(sin nombre)');
-      const falta=s.k==='informes'?(!it.dest||!it.pedido):(!it.nombre||!it.dom);
+      const falta=s.k==='informes'?(!it.dest||!it.pedido):(!it.nombre);
       const doc=s.k==='informes'?'oficio':'cédula';
       const est_k=prEstado(it,s.k);
+      const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
       const ESTS=s.k==='informes'?OF_ESTADOS:CED_ESTADOS;
-      const sel=`<select onchange="prCambiarEstado(${c.id},'${s.k}',${i},this.value)" onclick="event.stopPropagation()" style="font-size:10.5px;padding:2px 4px;border:1px solid ${_estColor(est_k,it)};border-radius:6px;background:#fff;color:var(--text2);font-weight:600;max-width:190px">${ESTS.map(e=>`<option value="${e.k}"${e.k===est_k?' selected':''}>${e.n}</option>`).join('')}</select>`;
+      const sel=`<select onchange="prCambiarEstado(${c.id},'${s.k}',${i},this.value)" onclick="event.stopPropagation()" style="font-size:10.5px;padding:2px 4px;border:1px solid ${pend?'var(--red)':_estColor(est_k,it)};border-radius:6px;background:${pend?'#FCEBEB':'#fff'};color:${pend?'#A32D2D':'var(--text2)'};font-weight:600;max-width:190px">${ESTS.map(e=>`<option value="${e.k}"${e.k===est_k?' selected':''}>${e.n}</option>`).join('')}</select>`;
       let est='',btn='';
       if(est_k==='cumplida'){
         btn='';
@@ -4586,28 +4704,24 @@ function pruebaInline(c){
       } else if(est_k==='dilig'){
         const nd=it.plazoDias!=null?it.plazoDias:(PLAZO_DILIG[s.k]||0);
         const dias=it.venc?_faltan(it.venc):null;
-        const paraMi=it.plazoPara!=='notif';
         est=`<span style="display:inline-flex;align-items:center;gap:4px;color:#666;flex-wrap:wrap">
-          <input type="date" value="${it.dilig||''}" onchange="prDiligFecha(${c.id},'${s.k}',${i},this.value)" onclick="event.stopPropagation()" style="font-size:10px;padding:0 2px;border:1px solid var(--border2);border-radius:4px;width:104px">
-          <select onchange="prDiligDias(${c.id},'${s.k}',${i},this.value)" onclick="event.stopPropagation()" style="font-size:10px;padding:0 2px;border:1px solid var(--border2);border-radius:4px">${[0,3,5,10,15,20,30].map(n=>`<option value="${n}"${n===nd?' selected':''}>${n===0?'sin plazo':'+'+n+'d háb.'}</option>`).join('')}</select>
-          ${s.k!=='informes'&&nd>0?`<select onchange="prPlazoPara(${c.id},'${s.k}',${i},this.value)" onclick="event.stopPropagation()" style="font-size:10px;padding:0 2px;border:1px solid ${paraMi?'var(--red)':'var(--border2)'};border-radius:4px;color:${paraMi?'var(--red)':'#666'};font-weight:${paraMi?'700':'400'}"><option value="mi"${paraMi?' selected':''}>plazo MÍO</option><option value="notif"${!paraMi?' selected':''}>del notificado</option></select>`:''}
-          ${it.venc&&nd>0?`<b style="color:${(s.k==='informes'||paraMi)?(dias<0?'var(--red)':dias<=2?'#B45309':'var(--navy)'):'#8a94a6'}">vence ${_dv(it.venc)} ${dias!==null?'('+(dias<0?'vencido':dias===0?'HOY':'faltan '+dias+'d')+')':''}</b>`:''}</span>`;
+          <input type="date" value="${it.dilig||''}" onchange="prDiligFecha(${c.id},'${s.k}',${i},this.value)" onclick="event.stopPropagation()" style="font-size:10px;padding:0 2px;border:1px solid var(--border2);border-radius:4px;width:120px">
+          <select onchange="prDiligDias(${c.id},'${s.k}',${i},this.value)" onclick="event.stopPropagation()" style="font-size:10px;padding:0 2px;border:1px solid var(--border2);border-radius:4px">${_plazoOpts(nd)}</select>
+          <span data-dvenc="${c.id}-${s.k}-${i}">${nd>0?_vencHTML(it.venc,'vence'):''}</span></span>`;
         const vencido=it.venc&&dias!==null&&dias<0;
-        const esLabAct=/laboral/i.test(c.juz||'')&&_ladoDeCausa(c)==='actora';
-        btn=(s.k==='informes'&&vencido?`<button class="btn-mini" onclick="event.stopPropagation();prReiterar(${c.id},${i})" style="font-size:10px;background:#FEF3C7;border-color:#FCD34D;color:#92400E;font-weight:700">↻ Reiterar</button> `:'')
-           +(esLabAct?'':`<button class="btn-mini" onclick="event.stopPropagation();prAdjuntar(${c.id},'${s.k}',${i})" title="Generar el escrito que la adjunta al expediente" style="font-size:10px;background:var(--navy);color:#fff;font-weight:700">📎 Adjuntar</button>`);
+        btn=(s.k==='informes'&&vencido?`<button class="btn-mini" onclick="event.stopPropagation();prReiterar(${c.id},${i})" style="font-size:10px;background:#FEF3C7;border-color:#FCD34D;color:#92400E;font-weight:700">↻ Reiterar</button> `:'');
       } else if(est_k==='carpeta'){
         est=s.k==='informes'?'':`<span style="color:#7a5c10;font-size:10.5px">lista para que la lleve Ramiro</span>`;
         btn=`<button class="btn-mini" onclick="event.stopPropagation();prGenDesdeFila(${c.id},'${s.k}',${i})" title="Volver a abrir en el generador" style="font-size:10px">📄</button>`;
       } else if(est_k==='despachada'){
         est='';btn='';
       } else {
-        est=falta?`<span style="color:#B45309">falta ${s.k==='informes'?'completar qué se pide':'el domicilio'}</span>`:'';
+        est=falta?`<span style="color:#B45309">falta ${s.k==='informes'?'completar qué se pide':'el nombre'}</span>`:'';
         btn=`<button class="btn-mini" onclick="event.stopPropagation();prGenDesdeFila(${c.id},'${s.k}',${i})" style="font-size:10px;font-weight:700">📄 Confeccionar ${doc}</button>`;
       }
       est=sel+' '+est;
             const etq=(s.k==='peritos'&&it.espec)?`<strong style="color:var(--navy);text-transform:capitalize">${it.espec}:</strong> `:'';
-      const bordC=_estColor(est_k,it);
+      const bordC=pend?'var(--red)':_estColor(est_k,it);
       h+=`<div style="display:flex;align-items:center;gap:6px;font-size:11px;padding:5px 8px;line-height:1.5;background:var(--bg);border:1px solid var(--border);border-left:3px solid ${bordC};border-radius:7px;margin-bottom:4px;flex-wrap:wrap">
         <span style="flex:1;min-width:130px;color:var(--text)">${etq}${nom}</span>
         <span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${est}${btn}</span></div>`;
@@ -4625,6 +4739,13 @@ function togglePrueba(cid,e){
   cid=parseInt(cid);
   if(_pruebaOpen.has(cid))_pruebaOpen.delete(cid);else _pruebaOpen.add(cid);
   svl('ga_propen',[..._pruebaOpen]);
+  if(typeof renderR==='function')renderR();
+}
+function togglePruebaSimple(cid,e){
+  if(e)e.stopPropagation();
+  cid=parseInt(cid);
+  if(_pruebaSimple.has(cid))_pruebaSimple.delete(cid);else _pruebaSimple.add(cid);
+  svl('ga_prsimple',[..._pruebaSimple]);
   if(typeof renderR==='function')renderR();
 }
 function toggleCargador(cid,e){
@@ -4664,6 +4785,7 @@ function _estColor(k,it){
   if(k==='carpeta')return '#D4A017';
   return 'var(--border2)';
 }
+function _prRefreshPanel(){const b=document.getElementById('pr-body');if(b&&b.offsetParent!==null&&typeof renderPrueba==='function')renderPrueba();}
 function prCambiarEstado(cid,tipo,i,k){
   const c=causas.find(x=>x.id===cid);if(!c)return;
   const it=getPrueba(c)[tipo][i];if(!it)return;
@@ -4684,12 +4806,12 @@ function prCambiarEstado(cid,tipo,i,k){
   else it.cerrada='';
   if(antes!==k)logC(c,(tipo==='informes'?'Oficio':'Cédula')+' '+nom+' → '+EST.n);
   c.lastTouch=Date.now();touchCausa(cid);sC();
-  if(typeof renderR==='function')renderR();updBadges();
+  if(typeof renderR==='function')renderR();updBadges();_prRefreshPanel();
 }
 function prPlazoPara(cid,tipo,i,v){
   const c=causas.find(x=>x.id===cid);if(!c)return;
   const it=getPrueba(c)[tipo][i];if(!it)return;
-  it.plazoPara=v;sC();if(typeof renderR==='function')renderR();
+  it.plazoPara=v;sC();if(typeof renderR==='function')renderR();_prRefreshPanel();
 }
 function _prRecalcVenc(it){
   const n=it.plazoDias!=null?it.plazoDias:0;
@@ -4700,6 +4822,7 @@ function prDiligFecha(cid,tipo,i,v){
   const it=getPrueba(c)[tipo][i];if(!it||!v)return;
   it.dilig=v;_prRecalcVenc(it);
   sC();if(typeof renderR==='function')renderR();updBadges();
+  document.querySelectorAll('[data-dvenc="'+cid+'-'+tipo+'-'+i+'"]').forEach(el=>el.innerHTML=(it.plazoDias>0?_vencHTML(it.venc,'vence'):''));
 }
 function prDiligDias(cid,tipo,i,v){
   const c=causas.find(x=>x.id===cid);if(!c)return;
@@ -4707,6 +4830,7 @@ function prDiligDias(cid,tipo,i,v){
   const n=parseInt(v,10);it.plazoDias=isNaN(n)?0:Math.max(0,Math.min(60,n));
   _prRecalcVenc(it);
   sC();if(typeof renderR==='function')renderR();updBadges();
+  document.querySelectorAll('[data-dvenc="'+cid+'-'+tipo+'-'+i+'"]').forEach(el=>el.innerHTML=(it.plazoDias>0?_vencHTML(it.venc,'vence'):''));
 }
 function prAdjuntar(cid,tipo,i){
   const c=causas.find(x=>x.id===cid);if(!c)return;
@@ -4840,12 +4964,14 @@ function prAudFila(cid,k,v){
   c.lastTouch=Date.now();touchCausa(cid);sC();
   if(typeof renderR==='function')renderR();updBadges();
 }
+function irAPrueba(cid){_prCid=cid;goP('prueba');setTimeout(renderPrueba,40);}
 function prAddFila(cid,tipo){
   const c=causas.find(x=>x.id===cid);if(!c)return;
   const p=getPrueba(c);
   if(tipo==='peritos')p.peritos.push({nombre:'',dom:'',espec:''});
   if(tipo==='testigos')p.testigos.push({nombre:'',dom:''});
   if(tipo==='informes')p.informes.push({dest:'',pedido:''});
+  if(tipo==='inspeccion')p.inspeccion.push({nombre:'',dom:''});
   sC();_prCid=cid;goP('prueba');setTimeout(renderPrueba,40);
 }
 function prPegarProv(cid){
