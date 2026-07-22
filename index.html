@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v292</title>
+<title>Gudiño Cabrera y Asociados v294</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -471,6 +471,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
     <div class="ni" id="ni-pend" onclick="goP('pendientes')">📝 Anotador <span class="nb" id="cnt-pend" style="display:none">0</span></div>
     <div class="ni" id="ni-nue" onclick="goP('nueva')">➕ Nueva causa</div>
     <div class="ni" id="ni-her" onclick="goP('herramientas')" style="color:#2980b9">🔧 Herramientas</div>
+    <div class="ni" id="ni-arch" onclick="goP('archivo')">🗄 Archivo</div>
     <div class="ni" id="ni-cfg" onclick="goP('config')">⚙ Config. / Online</div>
   </nav>
   <div class="prog">
@@ -889,6 +890,11 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
       </div>
       <div class="fa"><button class="btn p" onclick="addCausa()">+ Agregar causa</button><button class="btn" onclick="goR()">Cancelar</button></div>
       <div class="ok" id="form-ok">✓ Causa agregada correctamente.</div>
+    </div>
+
+    <div class="ct panel" id="panel-archivo">
+      <div style="margin-bottom:10px"><input class="fi" id="archivo-buscar" placeholder="🔍 Buscar en el archivo (carátula, expediente, juzgado)..." style="width:100%;font-size:12px" oninput="renderArchivo()"></div>
+      <div id="archivo-body"></div>
     </div>
 
     <div class="ct panel" id="panel-config">
@@ -1367,17 +1373,17 @@ function showRegLayout(v){
 }
 function showOtherPanel(id){
   document.getElementById('panel-reg-wrap').style.display='none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes','mev','escritos','prueba'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes','mev','escritos','prueba','archivo'].forEach(p=>{
     document.getElementById('panel-'+p).classList.toggle('on',p===id);
   });
 }
 function goR(){filtroF=null;showRegLayout(true);niOn('reg');document.getElementById('ptitle').textContent='Registro de causas';renderBan();renderR();}
 function goF(f){filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas'};
   document.getElementById('ptitle').textContent=t[p]||p;
   showOtherPanel(p);
-  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her',escgen:'her'}[p]||p);
+  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her',escgen:'her',archivo:'arch'}[p]||p);
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
   if(p==='audiencias'){sincTodasAudiencias();renderCal();}
@@ -1387,6 +1393,7 @@ function goP(p){
   if(p==='escritos'){escInit();}
   if(p==='prueba'){renderPrueba();}
   if(p==='escgen'){renderEscGen();}
+  if(p==='archivo'){renderArchivo();}
   if(p==='extrajudiciales')renderExt();
   if(p==='vencemañana')renderVMP();
   if(p==='turnero')renderTurnos();
@@ -1786,7 +1793,7 @@ function openCP(id,e){
   const recTxt=document.getElementById('gcp-rec-txt');
   if(recWrap)recWrap.style.display=c.tipo_aud==='recordatorio'?'block':'none';
   if(recTxt)recTxt.value=c.tv||c.tv_plazo||'';
-  const bbrr=document.getElementById('gcp-btn-borrar');if(bbrr){bbrr.dataset.confirm='';bbrr.textContent='✕ Borrar';bbrr.style.background='';bbrr.style.color='#c00';}
+  const bbrr=document.getElementById('gcp-btn-borrar');if(bbrr){bbrr.dataset.confirm='';bbrr.textContent='🗄 Archivar';bbrr.style.background='';bbrr.style.color='#c00';}
   // Historial Ramiro
   const histWrap=document.getElementById('gcp-ram-hist-wrap');
   const histList=document.getElementById('gcp-ram-hist-list');
@@ -2147,21 +2154,50 @@ function limpiarCausa(id,e){
   updBadges();renderVencPanel();
 }
 function borrarCausa(id){
-  causas=causas.filter(x=>x.id!==id);
+  const c=causas.find(x=>x.id===id);
+  if(c){c._estAntes=c.est;c.est='archivada';c.archAt=Date.now();}
   movidas.delete(id);
   closeCP();
   sC();renderR();updBadges();renderVencPanel();
+}
+function restaurarCausa(id){
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  c.est=(c._estAntes&&c._estAntes!=='archivada')?c._estAntes:'activa';
+  c.archAt=null;
+  sC();renderR();updBadges();if(typeof renderArchivo==='function')renderArchivo();
+}
+function borrarDefinitivo(id,btn){
+  if(btn&&btn.dataset.confirm!=='1'){
+    btn.dataset.confirm='1';btn.textContent='¿Borrar definitivo?';btn.style.background='#c00';btn.style.color='#fff';
+    setTimeout(()=>{if(btn){btn.dataset.confirm='';btn.textContent='🗑 Borrar definitivo';btn.style.background='';btn.style.color='';}},3000);
+    return;
+  }
+  causas=causas.filter(x=>x.id!==id);
+  sC();updBadges();if(typeof renderArchivo==='function')renderArchivo();
+}
+function renderArchivo(){
+  const el=document.getElementById('archivo-body');if(!el)return;
+  const arch=causas.filter(c=>c.est==='archivada').sort((a,b)=>(b.archAt||0)-(a.archAt||0));
+  const q=(document.getElementById('archivo-buscar')?.value||'').toLowerCase().trim();
+  const lista=q?arch.filter(c=>((c.car||'')+' '+(c.ex||'')+' '+(c.juz||'')).toLowerCase().includes(q)):arch;
+  let h=`<div style="font-size:11px;color:#aaa;margin-bottom:10px">${arch.length} causa${arch.length!==1?'s':''} archivada${arch.length!==1?'s':''}. Salen de la tabla general; podés consultarlas, restaurarlas o borrarlas definitivamente.</div>`;
+  if(!lista.length){h+=`<div style="color:#aaa;text-align:center;padding:30px">${arch.length?'Sin resultados para la búsqueda.':'No hay causas archivadas.'}</div>`;}
+  else lista.forEach(c=>{
+    const fArch=c.archAt?new Date(c.archAt).toLocaleDateString('es-AR'):'';
+    h+=`<div class="r-card" style="border-left:3px solid #9aa"><div class="r-info"><div class="r-car">${c.car}</div><div class="r-meta">${c.fue||''}${c.juz?' · '+c.juz:''} · ${c.ex||'s/n'}${fArch?' · archivada '+fArch:''}</div>${c.not?`<div class="r-task" style="color:#999">${c.not}</div>`:''}</div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="restaurarCausa(${c.id})">↩ Restaurar</button><button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="borrarDefinitivo(${c.id},this)">🗑 Borrar definitivo</button></div></div>`;
+  });
+  el.innerHTML=h;
 }
 function confirmarBorrar(id,btn){
   if(btn.dataset.confirm==='1'){
     borrarCausa(id);
   } else {
     btn.dataset.confirm='1';
-    btn.textContent='¿Seguro?';
+    btn.textContent='¿Archivar?';
     btn.style.background='#c00';
     btn.style.color='#fff';
     setTimeout(()=>{
-      if(btn){btn.dataset.confirm='';btn.textContent='✕ Borrar';btn.style.background='';btn.style.color='#c00';}
+      if(btn){btn.dataset.confirm='';btn.textContent='🗄 Archivar';btn.style.background='';btn.style.color='#c00';}
     },3000);
   }
 }
@@ -4503,17 +4539,26 @@ function prFaseSet(cid,i,v){
   if(typeof renderR==='function')renderR();_prRefreshPanel();
 }
 function _recPer(it,pre){const f=it[pre+'Fecha'],n=it[pre+'Plazo']||0;const y=f?parseInt(f.split('-')[0],10):0;it[pre+'Venc']=(f&&y>=1000&&n>0)?sumarDiasHabiles(f,n):'';}
-function _vencHTML(venc,pre){
+function restarDiasHabiles(fechaISO,dias){
+  let d=new Date(fechaISO+'T12:00:00');let count=0;
+  while(count<dias){d.setDate(d.getDate()-1);if(esHabil(d))count++;}
+  return d.toISOString().split('T')[0];
+}
+function _vencHTML(venc,pre,redAt){
   if(!venc)return '';
   const d=_faltan(venc);
-  const col=(d<=1)?'#e24b4a':(d<=3?'#B45309':'var(--navy)');
-  const anim=(d<=1)?';animation:vence-hoy-pulse 1.5s ease-in-out infinite':'';
-  return `<b style="font-size:11px;font-weight:700;color:${col}${anim}">${pre||'vence'} ${_dv(venc)} (${d<0?'vencido':d===0?'HOY':'faltan '+d+'d'})</b>`;
+  redAt=(redAt==null)?0:redAt;
+  const critico=d<=redAt;
+  const blink=critico&&d<=1;
+  const faltanTxt=d<0?'vencido':d===0?'hoy':'faltan '+d+'d';
+  const col=critico?'#e24b4a':'#c4c4c4';
+  const anim=blink?';animation:vence-hoy-pulse 1.5s ease-in-out infinite':'';
+  return `${pre?pre+' ':''}<b style="font-weight:600;color:var(--text)">${_dv(venc)}</b> <span style="color:${col};font-weight:${critico?'700':'400'}${anim}">(${faltanTxt})</span>`;
 }
 function _plazoOpts(sel){return [0,3,5,10,15,20,30].map(n=>`<option value="${n}"${n===sel?' selected':''}>${n===0?'sin plazo':n+' días'}</option>`).join('');}
 function _perVencHTML(it,fase){
   const v=fase==='acepto'?it.acVenc:it.dcVenc;
-  return _vencHTML(v,fase==='acepto'?'presenta antes del':'impugnar antes del');
+  return _vencHTML(v,fase==='acepto'?'tiene que presentar la pericia antes del':'puede impugnar hasta el',2);
 }
 function prPerFecha(cid,i,fase,v){
   const c=causas.find(x=>x.id===cid);if(!c)return;
@@ -4534,16 +4579,15 @@ function prPerPlazo(cid,i,fase,v){
 }
 function _perLine(it){
   const fase=it.fase||'notif';
-  const esp=it.espec?it.espec+' · ':'';
+  const esp=it.espec?'<b>'+it.espec+'</b> · ':'';
   const nom=it.nombre||'(sin nombre)';
-  const vB=(v,txt)=>v?' · '+_vencHTML(v,txt):'';
-  if(fase==='acepto')return `${esp}${nom} — Aceptó el cargo${it.acFecha?' '+_dv(it.acFecha):''}${vB(it.acVenc,'presenta antes del')}`;
-  if(fase==='dictamen')return `${esp}${nom} — Presentó el dictamen${it.dcFecha?' '+_dv(it.dcFecha):''}${vB(it.dcVenc,'impugnar antes del')}`;
+  if(fase==='acepto')return `${esp}${nom} — Aceptó el cargo${it.acFecha?' el '+_dv(it.acFecha):''}${it.acVenc?', '+_vencHTML(it.acVenc,'tiene que presentar la pericia antes del',2):''}`;
+  if(fase==='dictamen')return `${esp}${nom} — Presentó el dictamen${it.dcFecha?' el '+_dv(it.dcFecha):''}${it.dcVenc?', '+_vencHTML(it.dcVenc,'puede impugnar hasta el',2):''}`;
   const est_k=prEstado(it,'peritos');
   const estN=(CED_ESTADOS.find(e=>e.k===est_k)||{n:est_k}).n;
   const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
   const dil=(est_k==='dilig'&&it.dilig)?' el '+_dv(it.dilig):'';
-  const vtxt=(est_k==='dilig'&&it.venc)?' · '+_vencHTML(it.venc,'vence'):'';
+  const vtxt=(est_k==='dilig'&&it.venc)?', '+_vencHTML(it.venc,'vence',2):'';
   const star=est_k==='carpeta'?' · <span style="color:#E6A817;font-weight:700">⭐ Ramiro</span>':'';
   return `${esp}${nom} — Notificación: <span style="color:${pend?'var(--red)':'inherit'};font-weight:${pend?'600':'400'}">${estN}${dil}</span>${vtxt}${star}`;
 }
@@ -4553,22 +4597,33 @@ function _incorpLbl(tipo,k){if(!k)return '';const L=(tipo==='informes'?INCORP_OF
 function prIncorp(cid,tipo,i,v){const c=causas.find(x=>x.id===cid);if(!c)return;const it=getPrueba(c)[tipo][i];if(!it)return;it.incorp=v;c.lastTouch=Date.now();touchCausa(cid);sC();if(typeof renderR==='function')renderR();_prRefreshPanel();}
 function prGuardar(cid,tipo,i){const c=causas.find(x=>x.id===cid);if(!c)return;const it=getPrueba(c)[tipo][i];if(!it)return;it.saved=true;sC();if(typeof renderR==='function')renderR();_prRefreshPanel();}
 function prEditar(cid,tipo,i){const c=causas.find(x=>x.id===cid);if(!c)return;const it=getPrueba(c)[tipo][i];if(!it)return;it.saved=false;_prRefreshPanel();}
-function _prResumen(tipo,it){
+function _prResumen(tipo,it,audFinal){
   if(tipo==='peritos'){const base=_perLine(it);const inc=(((it.fase||'notif')==='notif')&&it.incorp)?' · '+_incorpLbl('peritos',it.incorp):'';return base+inc;}
   const nom=tipo==='informes'?(it.dest||'(sin organismo)'):(it.nombre||'(sin nombre)');
   const est_k=prEstado(it,tipo);
   const estN=((tipo==='informes'?OF_ESTADOS:CED_ESTADOS).find(e=>e.k===est_k)||{n:est_k}).n;
   const pend=(est_k==='pendiente'||est_k==='carpeta'||est_k==='despachada');
   const dilig=(est_k==='dilig'||est_k==='reiterado');
-  const dil=(dilig&&it.dilig)?' el '+_dv(it.dilig):'';
-  const vtxt=(dilig&&it.venc)?' · '+_vencHTML(it.venc,'vence'):'';
   const inc=it.incorp?' · '+_incorpLbl(tipo,it.incorp):'';
   const star=est_k==='carpeta'?' · <span style="color:#E6A817;font-weight:700">⭐ Ramiro</span>':'';
-  const lbl=tipo==='informes'?'Oficio':'Notificación';
-  return `${nom} — ${lbl}: <span style="color:${pend?'var(--red)':'inherit'};font-weight:${pend?'600':'400'}">${estN}${dil}</span>${vtxt}${inc}${star}`;
+  if(tipo==='informes'){
+    let base;
+    if(dilig){
+      base=`${nom} — Oficio diligenciado${it.dilig?' el '+_dv(it.dilig):''}. Tiene plazo para contestar hasta el ${it.venc?_vencHTML(it.venc,'',0):'—'}`;
+    } else {
+      base=`${nom} — Oficio: <span style="color:${pend?'var(--red)':'inherit'};font-weight:${pend?'600':'400'}">${estN}</span>`;
+    }
+    return base+inc+star;
+  }
+  let dl='';
+  if(tipo==='testigos'&&audFinal&&est_k!=='dilig'&&est_k!=='cumplida'){const dlDate=restarDiasHabiles(audFinal,10);dl=` · notificar antes del ${_vencHTML(dlDate,'',3)}`;}
+  const dil=(dilig&&it.dilig)?' el '+_dv(it.dilig):'';
+  const vtxt=(dilig&&it.venc)?', '+_vencHTML(it.venc,'vence',2):'';
+  return `${nom} — Notificación: <span style="color:${pend?'var(--red)':'inherit'};font-weight:${pend?'600':'400'}">${estN}${dil}</span>${vtxt}${inc}${dl}${star}`;
 }
 function prSeccion(tipo,titulo,sub,items){
   const esInf=tipo==='informes';
+  const _pc=causas.find(x=>x.id===_prCid);const _audF=(_pc&&_pc.prueba)?_pc.prueba.audFinal:'';
   const listos=items.filter(it=>esInf?(it.dest):(it.nombre)).length;
   const filas=items.map((it,i)=>{
     const est_k=prEstado(it,tipo);
@@ -4622,7 +4677,7 @@ function prSeccion(tipo,titulo,sub,items){
     if(it.saved){
       return `<div style="border:1px solid var(--border);border-left:3px solid ${bordFinal};border-radius:8px;padding:7px 11px;margin-bottom:6px;background:var(--bg);display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px">
         ${_prChk(_prCid,tipo,i,done)}
-        <span style="flex:1;min-width:150px;color:var(--text);${done?'opacity:.65':''}">${_prResumen(tipo,it)}</span>
+        <span style="flex:1;min-width:150px;color:var(--text);${done?'opacity:.65':''}">${_prResumen(tipo,it,_audF)}</span>
         <button class="btn-mini" onclick="prEditar(${_prCid},'${tipo}',${i})" style="font-size:11px">✎ editar</button>
         <span onclick="prDel('${tipo}',${i})" style="cursor:pointer;color:#ccc;font-size:14px">✕</span>
       </div>`;
@@ -4696,7 +4751,7 @@ function pruebaInline(c){
   const abierto=_pruebaOpen.has(c.id);
   const col=todo?'var(--green)':'var(--text2)';
   let audTxt='';
-  if(p.audFinal){const d=_faltan(p.audFinal);const cA=d<0?'#999':d<=7?'var(--red)':'var(--text2)';audTxt=`<span style="color:${cA};font-weight:600;margin-left:2px">· 📅 ${_dv(p.audFinal)}${d<0?'':d===0?' HOY':' ('+d+'d)'}</span>`;}
+  if(p.audFinal){audTxt=`<span style="margin-left:4px;font-weight:600;color:var(--text2)">· 📅 aud. final ${_vencHTML(p.audFinal,'',7)}</span>`;}
   let h='<div style="margin-top:2px;border-top:1px dashed var(--border2);padding-top:4px">';
   const rightCtrls=`<span style="color:var(--text2);font-size:9px;padding:2px 8px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-weight:600">${abierto?'ocultar':'ver detalle'}</span>`;
   h+=`<div onclick="togglePrueba(${c.id},event)" title="Ver / ocultar prueba" style="display:flex;align-items:center;gap:6px;font-size:10.5px;cursor:pointer;padding:1px 4px;user-select:none"><span style="font-size:11px;color:var(--text3)">${abierto?'▾':'▸'}</span><span style="font-weight:700;color:${col};text-transform:uppercase;letter-spacing:.4px">📋 Prueba${tot?' · '+ok+'/'+tot+(todo?' ✓':''):''}</span>${audTxt}<span style="margin-left:auto;display:flex;gap:5px;align-items:center">${rightCtrls}</span></div>`;
@@ -4715,7 +4770,7 @@ function pruebaInline(c){
       const bordC=done?'var(--green)':pend?'var(--red)':_estColor(est_k,it);
       h+=`<div style="display:flex;align-items:center;gap:7px;font-size:11px;padding:4px 8px;line-height:1.4;background:var(--bg);border:1px solid var(--border);border-left:3px solid ${bordC};border-radius:7px;margin-bottom:4px">
         <span onclick="event.stopPropagation();prToggleDone(${c.id},'${s.k}',${i})" title="Marcar terminada" style="cursor:pointer;width:16px;height:16px;border:1.5px solid ${done?'var(--green)':'var(--border-strong,#bbb)'};border-radius:4px;display:inline-flex;align-items:center;justify-content:center;color:var(--green);font-size:12px;font-weight:800;flex-shrink:0;background:${done?'#EAF7EE':'transparent'}">${done?'✓':''}</span>
-        <span onclick="event.stopPropagation();irAPrueba(${c.id})" style="flex:1;min-width:120px;color:var(--text);cursor:pointer;${done?'opacity:.65':''}">${_prResumen(s.k,it)}</span>
+        <span onclick="event.stopPropagation();irAPrueba(${c.id})" style="flex:1;min-width:120px;color:var(--text);cursor:pointer;${done?'opacity:.65':''}">${_prResumen(s.k,it,p.audFinal)}</span>
         <span onclick="event.stopPropagation();irAPrueba(${c.id})" style="color:var(--text3);font-size:10px;cursor:pointer">✎</span></div>`;
     });
   });
@@ -5332,7 +5387,7 @@ try{updToolsCounts();}catch(e){}
   <div style="display:flex;gap:5px">
     <button class="cp-cl" id="gcp-btn-avances" onclick="event.stopPropagation();toggleAvancesModal()" style="flex:1;font-size:10px">📋 Avances</button>
     <button class="cp-cl" id="gcp-btn-limpiar" onclick="event.stopPropagation();toggleLimpiarConfirm(this)" style="flex:1;font-size:10px;color:#888">🧹 Limpiar</button>
-    <button class="cp-cl" id="gcp-btn-borrar" onclick="event.stopPropagation();gcpConfirmarBorrar(this)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0;font-weight:700">✕ Borrar</button>
+    <button class="cp-cl" id="gcp-btn-borrar" onclick="event.stopPropagation();gcpConfirmarBorrar(this)" style="flex:1;font-size:10px;color:#c00;border-color:#f5c0c0;font-weight:700">🗄 Archivar</button>
   </div>
   <div id="gcp-ram-hist-wrap" style="display:none;margin-top:6px;padding:7px 8px;background:var(--bg2);border-radius:6px">
     <div style="font-size:9px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Últimos movimientos</div>
