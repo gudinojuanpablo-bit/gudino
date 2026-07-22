@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v294</title>
+<title>Gudiño Cabrera y Asociados v295</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1428,14 +1428,15 @@ function updBadges(){
   const hoy5=isoD(HOY);
   const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
   const vmpProx=causas.filter(c=>c.ven&&c.ven>=hoy5&&c.ven<=en5&&c.est!=='archivada'&&c.pl&&c.tipo_aud!=='recordatorio');
-  const vmp=vmpProx.length;
+  const miosUrg=(typeof _vencUrgentesMios==='function')?_vencUrgentesMios(5):[];
+  const vmp=vmpProx.length+miosUrg.length;
   const vmpEl=document.getElementById('cnt-vmp');
   if(vmpEl){vmpEl.textContent=vmp;vmpEl.style.display=vmp?'':'none';}
   // pulse si alguno vence hoy o mañana
   const hayUrgente=vmpProx.some(c=>{
     const d=Math.round((new Date(c.ven+' 12:00')-new Date(hoy5+' 12:00'))/(1000*60*60*24));
     return d<=1 && !movidas.has(c.id);
-  });
+  })||miosUrg.some(v=>_faltan(v.f)<=1);
   const btn=document.getElementById('vmp-btn-inner');
   if(btn)btn.classList.toggle('vmp-urgente',hayUrgente);
   renderBannerAlertas();
@@ -2360,11 +2361,88 @@ function renderAle(){
   el.innerHTML=html||'<div style="color:#aaa;text-align:center;padding:30px">Sin alertas urgentes ✓</div>';
 }
 
+const VENC_CATS=[
+  {k:'mio',       n:'Plazo mío',            c:'#e24b4a', o:0},
+  {k:'audiencia', n:'Audiencia',            c:'#185FA5', o:1},
+  {k:'diligencia',n:'Oficio/cédula/pericia',c:'#BA7517', o:2},
+  {k:'saber',     n:'Para saber',           c:'#6b7280', o:3},
+  {k:'otro',      n:'Otro',                 c:'#8a8a86', o:4},
+];
+function _catMeta(k){return VENC_CATS.find(x=>x.k===k)||{n:k,c:'#8a8a86',o:5};}
+function _gatherVenc(){
+  const out=[];
+  causas.filter(c=>c.est!=='archivada').forEach(c=>{
+    (c.vencs||[]).forEach(v=>{if(v.f)out.push({c,f:v.f,h:v.h||'',txt:v.txt||'Vencimiento',cat:v.cat||'otro',src:'manual',vid:v.id});});
+    if(c.ven){const cat=c.tipo_venc==='info'?'saber':(c.pl?'mio':'otro');out.push({c,f:c.ven,h:'',txt:c.tv||'Vencimiento principal',cat,src:'legacy'});}
+    const p=c.prueba;
+    if(p){
+      if(p.audFinal)out.push({c,f:p.audFinal,h:p.audHora||'',txt:'Audiencia final',cat:'audiencia',src:'prueba'});
+      (p.informes||[]).forEach(it=>{if(it.venc&&(prEstado(it,'informes')==='dilig'||prEstado(it,'informes')==='reiterado'))out.push({c,f:it.venc,txt:'Contestación oficio — '+(it.dest||''),cat:'diligencia',src:'prueba'});});
+      (p.peritos||[]).forEach(it=>{const fa=it.fase||'notif';
+        if(fa==='acepto'&&it.acVenc)out.push({c,f:it.acVenc,txt:'Presentar pericia '+(it.espec||''),cat:'mio',src:'prueba'});
+        else if(fa==='dictamen'&&it.dcVenc)out.push({c,f:it.dcVenc,txt:'Impugnar pericia '+(it.espec||''),cat:'mio',src:'prueba'});
+        else if(fa==='notif'&&it.venc&&prEstado(it,'peritos')==='dilig')out.push({c,f:it.venc,txt:'Notif. perito '+(it.espec||''),cat:'diligencia',src:'prueba'});
+      });
+      if(p.audFinal)(p.testigos||[]).forEach(it=>{const e=prEstado(it,'testigos');if(e!=='dilig'&&e!=='cumplida')out.push({c,f:restarDiasHabiles(p.audFinal,10),txt:'Notificar testigo '+(it.nombre||''),cat:'mio',src:'prueba'});});
+    }
+  });
+  return out;
+}
+function _vencUrgentesMios(dias){const lim=dias||5;return _gatherVenc().filter(v=>v.cat==='mio'&&_faltan(v.f)>=0&&_faltan(v.f)<=lim);}
+let vencFiltro='todos';
+function setVencFiltro(k){vencFiltro=k;renderVen();}
 function renderVen(){
-  const s=causas.filter(c=>c.ven&&c.est!=='archivada').sort((a,b)=>dLeft(a.ven)-dLeft(b.ven));
-  const el=document.getElementById('ven-body');
-  if(!s.length){el.innerHTML='<div style="color:#aaa;text-align:center;padding:24px">No hay vencimientos.</div>';return;}
-  el.innerHTML=`<table class="vtbl"><thead><tr><th>Causa</th><th>Juzgado</th><th>Tipo</th><th>Fecha</th></tr></thead><tbody>${s.map(c=>{const d=dLeft(c.ven),lab=d<0?'Venció':d===0?'Hoy':d===1?'Mañana':`${d}d`;const pc=d<=0?'vp-hoy':d<=2?'vp-2d':d<=7?'vp-7':'vp-ok';const er=(d>=0&&d<=2)&&!movidas.has(c.id);return`<tr><td><strong>${c.car}</strong>${c.pl?'<span class="pdot"></span>':''}<br><span style="font-size:10px;font-family:monospace;color:${er?'#c0392b':'#bbb'};font-weight:${er?700:400}">${c.ex}</span></td><td style="font-size:11px;color:#888">${c.juz}</td><td style="font-size:11px">${c.tv||'—'}</td><td><span class="vpill ${pc}">${lab} (${fmtS(c.ven)})</span></td></tr>`;}).join('')}</tbody></table>`;
+  const el=document.getElementById('ven-body');if(!el)return;
+  let all=_gatherVenc().sort((a,b)=>{const oa=_catMeta(a.cat).o,ob=_catMeta(b.cat).o;if(oa!==ob)return oa-ob;return a.f<b.f?-1:a.f>b.f?1:0;});
+  const counts={};VENC_CATS.forEach(c=>counts[c.k]=0);all.forEach(v=>counts[v.cat]=(counts[v.cat]||0)+1);
+  const chips=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+    <span onclick="setVencFiltro('todos')" style="cursor:pointer;font-size:11px;padding:4px 11px;border-radius:11px;border:1px solid ${vencFiltro==='todos'?'var(--navy)':'var(--border)'};background:${vencFiltro==='todos'?'var(--navy)':'var(--bg)'};color:${vencFiltro==='todos'?'#fff':'var(--text2)'};font-weight:600">Todos (${all.length})</span>
+    ${VENC_CATS.map(cat=>`<span onclick="setVencFiltro('${cat.k}')" style="cursor:pointer;font-size:11px;padding:4px 11px;border-radius:11px;border:1px solid ${vencFiltro===cat.k?cat.c:'var(--border)'};background:${vencFiltro===cat.k?cat.c:'var(--bg)'};color:${vencFiltro===cat.k?'#fff':'var(--text2)'};font-weight:600">${cat.n} (${counts[cat.k]||0})</span>`).join('')}
+  </div>`;
+  const addForm=`<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:9px 11px;margin-bottom:12px">
+    <span style="font-size:11px;font-weight:700;color:#888">➕ Nuevo vencimiento:</span>
+    <select id="nv-causa" class="fi" style="width:auto;font-size:11px;max-width:200px"><option value="">— Causa —</option>${causas.filter(c=>c.est!=='archivada').sort((a,b)=>a.car.localeCompare(b.car)).map(c=>`<option value="${c.id}">${c.car} (${c.ex})</option>`).join('')}</select>
+    <select id="nv-cat" class="fi" style="width:auto;font-size:11px">${VENC_CATS.map(c=>`<option value="${c.k}">${c.n}</option>`).join('')}</select>
+    <input id="nv-txt" class="fi" placeholder="Detalle (ej: contestar traslado)" style="flex:1;min-width:150px;font-size:11px">
+    <input type="date" id="nv-f" class="fi" style="width:auto;font-size:11px">
+    <input type="time" id="nv-h" class="fi" style="width:auto;font-size:11px">
+    <button class="btn p" style="font-size:11px" onclick="addVencManual()">Agregar</button>
+  </div>`;
+  if(vencFiltro!=='todos')all=all.filter(v=>v.cat===vencFiltro);
+  let body;
+  if(!all.length){body='<div style="color:#aaa;text-align:center;padding:24px">No hay vencimientos en esta categoría.</div>';}
+  else{
+    body=all.map(v=>{
+      const d=_faltan(v.f);const m=_catMeta(v.cat);
+      const esMio=v.cat==='mio';
+      const critico=esMio?(d<=2):(v.cat==='audiencia'?d<=7:d<=0);
+      const blink=esMio&&d>=0&&d<=2;
+      const faltanTxt=d<0?'venció':d===0?'HOY':d===1?'mañana':'faltan '+d+'d';
+      const faltanCol=critico?'#e24b4a':'#bbb';
+      const del=v.src==='manual'?`<button class="ib" onclick="delVencManual(${v.c.id},${v.vid})" style="opacity:.4">🗑</button>`:'';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid var(--border);border-left:4px solid ${m.c};border-radius:8px;margin-bottom:6px;background:var(--bg)">
+        <span style="font-size:9px;font-weight:700;color:#fff;background:${m.c};padding:2px 7px;border-radius:8px;white-space:nowrap">${m.n}</span>
+        <div style="flex:1;min-width:120px"><div style="font-size:12px;font-weight:600;color:var(--text)">${v.c.car}</div><div style="font-size:11px;color:#888">${v.txt}${v.h?' · '+v.h+' hs':''} · ${v.c.juz||''}</div></div>
+        <div style="text-align:right;white-space:nowrap"><div style="font-size:12px;font-weight:700;color:var(--text)">${_dv(v.f)}</div><div style="font-size:11px;font-weight:${critico?'700':'400'};color:${faltanCol}${blink?';animation:vence-hoy-pulse 1.5s ease-in-out infinite':''}">${faltanTxt}</div></div>
+        ${del}
+      </div>`;
+    }).join('');
+  }
+  el.innerHTML=chips+addForm+body;
+}
+function addVencManual(){
+  const cid=parseInt(document.getElementById('nv-causa').value);
+  const f=document.getElementById('nv-f').value;
+  if(!cid||!f){alert('Elegí la causa y la fecha.');return;}
+  const c=causas.find(x=>x.id===cid);if(!c)return;
+  c.vencs=c.vencs||[];
+  c.vencs.push({id:Date.now(),f,h:document.getElementById('nv-h').value,txt:document.getElementById('nv-txt').value.trim()||'Vencimiento',cat:document.getElementById('nv-cat').value});
+  sC();renderVen();updBadges();
+}
+function delVencManual(cid,vid){
+  const c=causas.find(x=>x.id===cid);if(!c||!c.vencs)return;
+  c.vencs=c.vencs.filter(v=>v.id!==vid);
+  sC();renderVen();updBadges();
 }
 
 function showHist(id,e){
@@ -3121,16 +3199,24 @@ function calcGuardar(tipo){
   if(!calcCausaId||!calcFechaResult)return;
   const c=causas.find(x=>x.id===calcCausaId);if(!c)return;
   const para=document.getElementById('calc-para').value.trim();
-  // Para saber: sumar 1 día hábil extra (plazo de gracia)
-  c.ven=(tipo==='info')?sumarDiasHabiles(calcFechaResult,1):calcFechaResult;
-  c.tipo_venc=tipo;
-  c.tv=para||'plazo';
-  c.tv_plazo=para||'plazo';
-  c.tv_accion='';
-  c.pl=(tipo==='vencimiento');
-  c.tipo_aud='';
-  c.aud_h='';
-  c.aud_mod='';
+  const fecha=(tipo==='info')?sumarDiasHabiles(calcFechaResult,1):calcFechaResult;
+  const AUDS=['final','inicial','mediac','concil','recursiva','resolver'];
+  const tieneAud=c.ven&&AUDS.includes(c.tipo_aud);
+  if(tieneAud){
+    // La causa ya tiene una audiencia en el vencimiento principal: no la piso, guardo el plazo aparte
+    c.vencs=c.vencs||[];
+    c.vencs.push({id:Date.now(),f:fecha,h:'',txt:para||'plazo',cat:tipo==='info'?'saber':'mio'});
+  } else {
+    c.ven=fecha;
+    c.tipo_venc=tipo;
+    c.tv=para||'plazo';
+    c.tv_plazo=para||'plazo';
+    c.tv_accion='';
+    c.pl=(tipo==='vencimiento');
+    c.tipo_aud='';
+    c.aud_h='';
+    c.aud_mod='';
+  }
   sC();
   refRow(calcCausaId);
   updBadges();
@@ -3981,7 +4067,14 @@ function escArmarAperc(){
     if(oa!==ob)return oa-ob;
     return parseInt(ARTS_TXT[a.value].lbl.match(/\d+/))-parseInt(ARTS_TXT[b.value].lbl.match(/\d+/));
   });
-  el.value=sel.map(x=>ARTS_TXT[x.value].txt).join(' ');
+  el.value=sel.map(x=>ARTS_TXT[x.value].txt).join('\n\n');
+}
+function _mailOfiLab(juz){
+  const m=(juz||'').match(/(\d+)\s*°?\s*Laboral/i);
+  const n=m?parseInt(m[1],10):0;
+  if([3,4,6].includes(n))return 'ofijulaboral2@jussanjuan.gov.ar';
+  if([1,2,5].includes(n))return 'ofijulaboral1@jussanjuan.gov.ar';
+  return '';
 }
 function numALetras(n){
   n=parseInt(n);if(isNaN(n)||n<0)return '';
@@ -4190,17 +4283,17 @@ function escHTML(){
     const S='text-indent:1.25cm;';
     const esLab=def.fuero==='lab';
     return `<p style="text-align:center;font-weight:bold;font-size:14pt;margin-bottom:6pt">${reit?'REITERACIÓN - ':''}OFICIO JUDICIAL</p>
-    <p style="text-align:right;margin-bottom:16pt">San Juan, _____ de ${mesActual} de ${anio}.-</p>
+    <p style="text-align:right;margin-bottom:16pt">San Juan,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; de ${mesActual} de ${anio}.-</p>
     <p style="font-weight:bold">${(d.dest||'________________').toUpperCase()}</p>
-    <p>S_____/_____D</p>
+    <p>S&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;D</p>
     <div style="font-size:${fit.fs}pt;line-height:${fit.lh}">
     <p style="margin-top:12pt;text-align:justify;${S}">Tengo el agrado de dirigirme a Ud. a fin de comunicarle que en los <b>Autos N° ${c.ex||'____'}</b>, caratulados <b>"${c.car}"</b>, que se tramitan por ante el <b>${jz.nombre.toUpperCase()}</b>, se ha ${reit?'dispuesto <b>REITERAR</b> el presente oficio':'ordenado librar el presente'} a los fines de que ${d.pedido||'________________'}.-</p>
     ${esLab?`<p style="font-weight:bold">PLAZO PARA CONTESTAR OFICIO: 10 DÍAS</p>
-    <p style="font-weight:bold">MAIL OFICIAL DEL JUZGADO: ${mailJuz}</p>`
+    <p style="font-weight:bold">REMITIR CONTESTACIÓN A: ${_mailOfiLab(c.juz)||mailJuz}</p>`
     :`<p style="text-align:justify;${S}">Responder dentro de los diez días hábiles, presencialmente en soporte papel en ${dirJuz}, o al correo oficial del Juzgado: <b>${mailJuz}</b>.-</p>`}
     ${d.prov?`<p style="text-align:justify;${S}">Para mayores recaudos se transcribe la providencia que así lo ordena y que, en su parte pertinente, dice: <i>"${d.prov}"</i>.-</p>`:''}
     ${esLab?'':`<p style="${S}">Cumplido, sírvalo devolver con todo lo actuado.-</p>`}
-    ${d.aperc?`<p style="font-size:${fit.ap||8}pt;line-height:1.25;text-align:justify;margin-top:8pt">${d.aperc}</p>`:''}
+    ${d.aperc?d.aperc.split('\n').filter(x=>x.trim()).map(a=>`<p style="font-size:${fit.ap||8}pt;line-height:1.25;text-align:justify;margin-top:6pt">${a.trim()}</p>`).join(''):''}
     </div>
     <p style="text-align:center;font-weight:bold;margin-top:16pt">${esLab?'SALUDO A UD. MUY ATENTAMENTE':'Sin otro particular, lo saludo atentamente.-'}</p>`;
   }
@@ -4243,13 +4336,14 @@ function escToggleForm(){
   b.textContent=oc?'⬍ Contraer formulario':'⬍ Mostrar formulario';
   if(!oc){const pv=document.getElementById('esc-preview');if(pv&&pv.style.display==='none')escVistaPrevia();}
 }
+function escCerrarPreview(){const pv=document.getElementById('esc-preview');if(pv){pv.style.display='none';pv.innerHTML='';}}
 function escVistaPrevia(){
   escCalcularFit();
   const h=escHTML();if(!h)return;
   const pv=document.getElementById('esc-preview');
   pv.style.cssText='margin-top:14px;display:block;background:#4a4d52;padding:22px 0;border-radius:10px;max-height:640px;overflow:auto';
   const maxPag=document.getElementById('esc-maxpag')?parseInt(document.getElementById('esc-maxpag').value):1;
-  pv.innerHTML=`<div id="esc-wrap" style="margin:0 auto"><div id="esc-sheet" style="width:210mm;min-height:297mm;background:#fff;box-shadow:0 8px 34px rgba(0,0,0,.55);padding:45mm 20mm 45mm 45mm;font-family:Arial,sans-serif;font-size:12pt;line-height:2;box-sizing:border-box;transform-origin:top left;color:#000">${h}</div></div>
+  pv.innerHTML=`<div style="text-align:right;padding:0 16px 10px"><button onclick="escCerrarPreview()" style="background:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;color:#333;cursor:pointer">✕ Cerrar vista previa</button></div><div id="esc-wrap" style="margin:0 auto"><div id="esc-sheet" style="width:210mm;min-height:297mm;background:#fff;box-shadow:0 8px 34px rgba(0,0,0,.55);padding:45mm 20mm 45mm 45mm;font-family:Arial,sans-serif;font-size:12pt;line-height:2;box-sizing:border-box;transform-origin:top left;color:#000">${h}</div></div>
   ${_escFit&&_escFit.fs<12?`<div style="text-align:center;color:#ddd;font-size:11px;margin-top:10px">Contenido ajustado a ${_escFit.fs}pt para caber en ${maxPag} página${maxPag>1?'s':''}</div>`:''}`;
   // Escalar la hoja A4 para que entre completa en el panel (vista de impresión)
   const wrap=document.getElementById('esc-wrap'),sheet=document.getElementById('esc-sheet');
@@ -4748,13 +4842,15 @@ function pruebaInline(c){
   let tot=0,ok=0;
   ['peritos','testigos','informes','inspeccion'].forEach(k=>{(p[k]||[]).forEach(it=>{tot++;if(prEstado(it,k)==='cumplida')ok++;});});
   const todo=tot>0&&ok===tot;
+  const hayCarpeta=['peritos','testigos','informes','inspeccion'].some(k=>(p[k]||[]).some(it=>prEstado(it,k)==='carpeta'));
+  const ramTag=hayCarpeta?`<span title="Hay diligencias en carpeta para Ramiro" style="margin-left:4px;color:#E6A817;font-weight:700">⭐ Ramiro</span>`:'';
   const abierto=_pruebaOpen.has(c.id);
   const col=todo?'var(--green)':'var(--text2)';
   let audTxt='';
   if(p.audFinal){audTxt=`<span style="margin-left:4px;font-weight:600;color:var(--text2)">· 📅 aud. final ${_vencHTML(p.audFinal,'',7)}</span>`;}
   let h='<div style="margin-top:2px;border-top:1px dashed var(--border2);padding-top:4px">';
   const rightCtrls=`<span style="color:var(--text2);font-size:9px;padding:2px 8px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-weight:600">${abierto?'ocultar':'ver detalle'}</span>`;
-  h+=`<div onclick="togglePrueba(${c.id},event)" title="Ver / ocultar prueba" style="display:flex;align-items:center;gap:6px;font-size:10.5px;cursor:pointer;padding:1px 4px;user-select:none"><span style="font-size:11px;color:var(--text3)">${abierto?'▾':'▸'}</span><span style="font-weight:700;color:${col};text-transform:uppercase;letter-spacing:.4px">📋 Prueba${tot?' · '+ok+'/'+tot+(todo?' ✓':''):''}</span>${audTxt}<span style="margin-left:auto;display:flex;gap:5px;align-items:center">${rightCtrls}</span></div>`;
+  h+=`<div onclick="togglePrueba(${c.id},event)" title="Ver / ocultar prueba" style="display:flex;align-items:center;gap:6px;font-size:10.5px;cursor:pointer;padding:1px 4px;user-select:none"><span style="font-size:11px;color:var(--text3)">${abierto?'▾':'▸'}</span><span style="font-weight:700;color:${col};text-transform:uppercase;letter-spacing:.4px">📋 Prueba${tot?' · '+ok+'/'+tot+(todo?' ✓':''):''}</span>${ramTag}${audTxt}<span style="margin-left:auto;display:flex;gap:5px;align-items:center">${rightCtrls}</span></div>`;
   if(!abierto)return h+'</div>';
 
   // ── Diligencias (resumen; se carga/edita en el panel) ──
