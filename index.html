@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v295</title>
+<title>Gudiño Cabrera y Asociados v298</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -471,7 +471,6 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
     <div class="ni" id="ni-pend" onclick="goP('pendientes')">📝 Anotador <span class="nb" id="cnt-pend" style="display:none">0</span></div>
     <div class="ni" id="ni-nue" onclick="goP('nueva')">➕ Nueva causa</div>
     <div class="ni" id="ni-her" onclick="goP('herramientas')" style="color:#2980b9">🔧 Herramientas</div>
-    <div class="ni" id="ni-arch" onclick="goP('archivo')">🗄 Archivo</div>
     <div class="ni" id="ni-cfg" onclick="goP('config')">⚙ Config. / Online</div>
   </nav>
   <div class="prog">
@@ -691,6 +690,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
           <div><div style="font-size:13px;font-weight:700">Extrajudiciales</div><div style="font-size:11px;color:#aaa">Gestión de expedientes extrajudiciales</div></div>
           <span class="nb" id="cnt-ext" style="margin-left:auto">0</span>
         </div>
+        <div onclick="goP('archivo')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
+          <span style="font-size:24px">🗄</span>
+          <div><div style="font-size:13px;font-weight:700">Archivo</div><div style="font-size:11px;color:#aaa">Causas archivadas (consultar, restaurar o borrar)</div></div>
+        </div>
         <div onclick="goP('turnero')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
           <span style="font-size:24px">🗓</span>
           <div><div style="font-size:13px;font-weight:700">Turnos</div><div style="font-size:11px;color:#aaa">Agenda de consultas y turnos</div></div>
@@ -739,19 +742,18 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
       <div style="font-size:14px;font-weight:700;margin-bottom:4px">✍️ Generador de escritos</div>
       <div style="font-size:11px;color:#aaa;margin-bottom:14px">Escritos de mero trámite: elegí la causa, el tipo, completá y listo</div>
 
-      <div style="border:1px solid #c5d0f0;background:#f0f4ff;border-radius:10px;padding:11px 13px;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:#2a3a8a;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Pegar la providencia completa y generar todo</div>
-        <textarea id="esc-lote-txt" placeholder="Pegá acá la resolución entera (MEV) y detecta peritos, testigos y oficios..." style="width:100%;height:62px;font-size:11px;border:1px solid var(--border);border-radius:8px;padding:8px 10px;resize:vertical;font-family:inherit;background:var(--bg)"></textarea>
-        <div style="display:flex;gap:7px;margin-top:7px;align-items:center;flex-wrap:wrap">
-          <button class="btn" style="font-size:11px;background:var(--navy);color:#fff;border-color:var(--navy)" onclick="escLoteAnalizar()">🔎 Analizar providencia</button>
-          <span id="esc-lote-msg" style="font-size:11px;color:#7a8cb0"></span>
-        </div>
-        <div id="esc-lote-res" style="margin-top:9px"></div>
+      <div style="border:1px solid #c5d0f0;background:#f0f4ff;border-radius:10px;padding:11px 13px;margin-bottom:12px;display:none">
+        <div id="esc-lote-res"></div>
       </div>
 
       <div id="esc-aviso" style="display:none;margin-bottom:10px;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600"></div>
       <div id="esc-armado">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div style="margin-bottom:10px">
+        <label class="fl">Causa</label>
+        <div id="esc-causa-lbl" style="font-size:13px;font-weight:700;color:var(--navy);margin-top:3px">—</div>
+        <select class="fi" id="esc-causa" style="display:none"></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;margin-bottom:10px">
         <div>
           <label class="fl">1 — Tipo de escrito</label>
           <select class="fi" id="esc-tipo" style="width:100%;margin-top:3px" onchange="escActualizar()">
@@ -782,14 +784,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
               <option value="const_oficio">Constancia de diligenciamiento de oficio</option>
             </optgroup>
           </select>
-          <div style="margin-top:8px;display:flex;gap:12px;align-items:center">
-            <label style="font-size:11px;display:flex;gap:4px;align-items:center"><input type="radio" name="esc-rol" value="apoderado" checked> Apoderado</label>
-            <label style="font-size:11px;display:flex;gap:4px;align-items:center"><input type="radio" name="esc-rol" value="patrocinante"> Patrocinante</label>
-          </div>
         </div>
-        <div>
-          <label class="fl">2 — Causa</label>
-          <select class="fi" id="esc-causa" style="width:100%;margin-top:3px"></select>
+        <div style="display:flex;gap:12px;align-items:center;padding-bottom:6px">
+          <label style="font-size:11px;display:flex;gap:4px;align-items:center"><input type="radio" name="esc-rol" value="apoderado" checked> Apoderado</label>
+          <label style="font-size:11px;display:flex;gap:4px;align-items:center"><input type="radio" name="esc-rol" value="patrocinante"> Patrocinante</label>
         </div>
       </div>
 
@@ -798,7 +796,6 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button class="btn p" onclick="escVistaPrevia()">👁 Vista previa</button>
-        <button class="btn" id="esc-toggle-form" onclick="escToggleForm()" style="font-size:11px" title="Ocultar el formulario para ver la cédula más grande">⬍ Contraer formulario</button>
         <button class="btn" onclick="escImprimir()" style="background:var(--navy);color:#fff;border-color:var(--navy)">🖨 Imprimir</button>
         <button class="btn" onclick="escDescargarWord()" style="background:var(--oro);color:#fff;border-color:var(--oro)">⬇ Word</button>
         <button class="btn" onclick="escDescargarPDF()" style="background:#8b2c2c;color:#fff;border-color:#8b2c2c">⬇ PDF</button>
@@ -1161,6 +1158,7 @@ let historial=JSON.parse(localStorage.getItem('ga_h')||'{}');
 let gastos=JSON.parse(localStorage.getItem('ga_g')||'null')||G0;
 let audiencias=JSON.parse(localStorage.getItem('ga_a')||'null')||A0;
 let extraj=JSON.parse(localStorage.getItem('ga_e')||'null')||EXT0;
+let vglob=JSON.parse(localStorage.getItem('ga_vglob')||'[]');
 let feriados=JSON.parse(localStorage.getItem('ga_f')||'null')||F0;
 let mailCfg=JSON.parse(localStorage.getItem('ga_mc')||'{}');
 let filtroF=null,curView='reg',openCID=null,calM_map={},activeEd=null;
@@ -1271,7 +1269,7 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes};}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob};}
 function applyPayload(d){
   if(!d)return;
   if(d.causas){
@@ -1289,7 +1287,7 @@ function applyPayload(d){
     else movidas=new Set();
   }
   if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;if(d.pendientes)pendientes=d.pendientes;
-  if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;
+  if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;if(d.vglob)vglob=d.vglob;
   if(d.mailCfg)mailCfg=d.mailCfg;
   if(d.tareasRam)tareasRam=d.tareasRam;
   svl('ga_c',causas);svl('ga_m_'+SK,[...movidas]);svl('ga_g',gastos);
@@ -2364,13 +2362,15 @@ function renderAle(){
 const VENC_CATS=[
   {k:'mio',       n:'Plazo mío',            c:'#e24b4a', o:0},
   {k:'audiencia', n:'Audiencia',            c:'#185FA5', o:1},
-  {k:'diligencia',n:'Oficio/cédula/pericia',c:'#BA7517', o:2},
-  {k:'saber',     n:'Para saber',           c:'#6b7280', o:3},
-  {k:'otro',      n:'Otro',                 c:'#8a8a86', o:4},
+  {k:'recordatorio',n:'Recordatorio',       c:'#B8860B', o:2},
+  {k:'diligencia',n:'Oficio/cédula/pericia',c:'#BA7517', o:3},
+  {k:'saber',     n:'Para saber',           c:'#6b7280', o:4},
+  {k:'otro',      n:'Otro',                 c:'#8a8a86', o:5},
 ];
 function _catMeta(k){return VENC_CATS.find(x=>x.k===k)||{n:k,c:'#8a8a86',o:5};}
 function _gatherVenc(){
   const out=[];
+  (vglob||[]).forEach(v=>{if(v.f)out.push({c:{id:0,car:'(personal)',juz:'',ex:''},f:v.f,h:v.h||'',txt:v.txt||'Recordatorio',cat:v.cat||'recordatorio',src:'global',vid:v.id});});
   causas.filter(c=>c.est!=='archivada').forEach(c=>{
     (c.vencs||[]).forEach(v=>{if(v.f)out.push({c,f:v.f,h:v.h||'',txt:v.txt||'Vencimiento',cat:v.cat||'otro',src:'manual',vid:v.id});});
     if(c.ven){const cat=c.tipo_venc==='info'?'saber':(c.pl?'mio':'otro');out.push({c,f:c.ven,h:'',txt:c.tv||'Vencimiento principal',cat,src:'legacy'});}
@@ -2388,7 +2388,7 @@ function _gatherVenc(){
   });
   return out;
 }
-function _vencUrgentesMios(dias){const lim=dias||5;return _gatherVenc().filter(v=>v.cat==='mio'&&_faltan(v.f)>=0&&_faltan(v.f)<=lim);}
+function _vencUrgentesMios(dias){const lim=dias||5;return _gatherVenc().filter(v=>(v.cat==='mio'||v.cat==='recordatorio')&&_faltan(v.f)>=0&&_faltan(v.f)<=lim);}
 let vencFiltro='todos';
 function setVencFiltro(k){vencFiltro=k;renderVen();}
 function renderVen(){
@@ -2414,15 +2414,15 @@ function renderVen(){
   else{
     body=all.map(v=>{
       const d=_faltan(v.f);const m=_catMeta(v.cat);
-      const esMio=v.cat==='mio';
-      const critico=esMio?(d<=2):(v.cat==='audiencia'?d<=7:d<=0);
-      const blink=esMio&&d>=0&&d<=2;
+      const esMio=v.cat==='mio';const esRec=v.cat==='recordatorio';
+      const critico=esMio?(d<=2):esRec?(d<=1):(v.cat==='audiencia'?d<=7:d<=0);
+      const blink=(esMio&&d>=0&&d<=2)||(esRec&&d>=0&&d<=1);
       const faltanTxt=d<0?'venció':d===0?'HOY':d===1?'mañana':'faltan '+d+'d';
       const faltanCol=critico?'#e24b4a':'#bbb';
-      const del=v.src==='manual'?`<button class="ib" onclick="delVencManual(${v.c.id},${v.vid})" style="opacity:.4">🗑</button>`:'';
+      const del=(v.src==='manual'||v.src==='global')?`<button class="ib" onclick="delVencManual(${v.c.id},${v.vid})" style="opacity:.4">🗑</button>`:'';
       return `<div style="display:flex;align-items:center;gap:10px;padding:8px 11px;border:1px solid var(--border);border-left:4px solid ${m.c};border-radius:8px;margin-bottom:6px;background:var(--bg)">
         <span style="font-size:9px;font-weight:700;color:#fff;background:${m.c};padding:2px 7px;border-radius:8px;white-space:nowrap">${m.n}</span>
-        <div style="flex:1;min-width:120px"><div style="font-size:12px;font-weight:600;color:var(--text)">${v.c.car}</div><div style="font-size:11px;color:#888">${v.txt}${v.h?' · '+v.h+' hs':''} · ${v.c.juz||''}</div></div>
+        <div style="flex:1;min-width:120px"><div style="font-size:12px;font-weight:600;color:var(--text)">${v.c.car}</div><div style="font-size:11px;color:#888">${v.cat==='recordatorio'?v.txt.replace(/^Recordatorio:\s*/,''):v.txt+(v.h?' · '+v.h+' hs':'')} · ${v.c.juz||''}</div></div>
         <div style="text-align:right;white-space:nowrap"><div style="font-size:12px;font-weight:700;color:var(--text)">${_dv(v.f)}</div><div style="font-size:11px;font-weight:${critico?'700':'400'};color:${faltanCol}${blink?';animation:vence-hoy-pulse 1.5s ease-in-out infinite':''}">${faltanTxt}</div></div>
         ${del}
       </div>`;
@@ -2440,6 +2440,7 @@ function addVencManual(){
   sC();renderVen();updBadges();
 }
 function delVencManual(cid,vid){
+  if(cid===0){vglob=vglob.filter(v=>v.id!==vid);svl('ga_vglob',vglob);sC();renderVen();updBadges();return;}
   const c=causas.find(x=>x.id===cid);if(!c||!c.vencs)return;
   c.vencs=c.vencs.filter(v=>v.id!==vid);
   sC();renderVen();updBadges();
@@ -2557,6 +2558,7 @@ function delEFd(id){if(!confirm('¿Eliminar?'))return;extraj=extraj.filter(e=>e.
 function selT(t){document.getElementById('af-tipo').value=t;document.querySelectorAll('.tbt').forEach(b=>b.classList.toggle('on',b.dataset.t===t));}
 function resetT(){document.getElementById('af-tipo').value='';document.querySelectorAll('.tbt').forEach(b=>b.classList.remove('on'));}
 function renderCal(){
+  audiencias=(audiencias||[]).filter(a=>a&&typeof a.f==='string'&&a.f.length===10);
   const{y,m}=audMes;
   const meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   document.getElementById('cal-mes').textContent=meses[m]+' '+y;
@@ -3194,6 +3196,19 @@ function calcActualizarPara(){
   // Solo actualiza la vista en tiempo real si ya hay fecha
   if(!calcFechaResult)return;
   document.getElementById('calc-fecha-txt').textContent=fmtS(calcFechaResult);
+}
+function calcGuardarRecordatorio(){
+  const f=document.getElementById('calc-desde').value;
+  if(!f){alert('Elegí la fecha del recordatorio en el campo "Desde".');return;}
+  const hora=document.getElementById('calc-rec-hora').value;
+  const det=document.getElementById('calc-rec-txt').value.trim()||'Recordatorio';
+  const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const dt=new Date(f+'T12:00:00');
+  const txt=`Recordatorio: El día ${DIAS[dt.getDay()]} ${_dv(f)}${hora?' a las '+hora+' hs':''} - ${det}`;
+  const rec={id:Date.now(),f,h:hora,txt,cat:'recordatorio'};
+  if(calcCausaId){const c=causas.find(x=>x.id===calcCausaId);if(c){c.vencs=c.vencs||[];c.vencs.push(rec);}}
+  else{vglob.push(rec);svl('ga_vglob',vglob);}
+  sC();updBadges();renderVencPanel();if(typeof renderVen==='function')renderVen();cerrarCalcPlazo();
 }
 function calcGuardar(tipo){
   if(!calcCausaId||!calcFechaResult)return;
@@ -4183,13 +4198,15 @@ function escPoblarCausas(){
   if(prev)sel.value=prev;
 }
 function escActualizar(){
+  const _cs=document.getElementById('esc-causa');const _lbl=document.getElementById('esc-causa-lbl');
+  if(_cs&&_lbl){const _cc=causas.find(x=>x.id===parseInt(_cs.value));_lbl.textContent=_cc?_cc.car+' ('+(_cc.ex||'s/n')+')':'—';}
   const _av=document.getElementById('esc-aviso');if(_av&&!_av._hold)_av.style.display='none';
   const tipo=document.getElementById('esc-tipo').value;
   const def=ESC_TIPOS[tipo];
   const cont=document.getElementById('esc-campos');
   _escFit=null;
   if(!def.campos.length){cont.innerHTML='<div style="font-size:11px;color:#aaa;padding:6px 2px">Este escrito no requiere datos adicionales.</div>';return;}
-  cont.innerHTML='<label class="fl">3 — Datos del escrito</label>'+def.campos.map(c=>
+  cont.innerHTML='<label class="fl">2 — Datos del escrito</label>'+def.campos.map(c=>
     `<div style="font-size:10px;color:#8a94a6;margin:6px 0 1px;font-weight:600">${c.l}${c.op?' <span style="font-weight:400">(opcional)</span>':''}</div>`+
     (c.ta?`<textarea class="fi" id="esc-f-${c.k}" placeholder="${c.ph}" style="width:100%;height:${c.k==='aperc'?'46':'70'}px;resize:vertical;font-size:${c.k==='aperc'?'10':'12'}px"></textarea>`
        :`<input class="fi" id="esc-f-${c.k}" placeholder="${c.ph}" style="width:100%;font-size:12px">`)
@@ -4282,14 +4299,15 @@ function escHTML(){
     const reit=document.getElementById('esc-reiter')&&document.getElementById('esc-reiter').checked;
     const S='text-indent:1.25cm;';
     const esLab=def.fuero==='lab';
+    const ofiLab=_mailOfiLab(c.juz);
     return `<p style="text-align:center;font-weight:bold;font-size:14pt;margin-bottom:6pt">${reit?'REITERACIÓN - ':''}OFICIO JUDICIAL</p>
     <p style="text-align:right;margin-bottom:16pt">San Juan,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; de ${mesActual} de ${anio}.-</p>
     <p style="font-weight:bold">${(d.dest||'________________').toUpperCase()}</p>
     <p>S&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;D</p>
     <div style="font-size:${fit.fs}pt;line-height:${fit.lh}">
     <p style="margin-top:12pt;text-align:justify;${S}">Tengo el agrado de dirigirme a Ud. a fin de comunicarle que en los <b>Autos N° ${c.ex||'____'}</b>, caratulados <b>"${c.car}"</b>, que se tramitan por ante el <b>${jz.nombre.toUpperCase()}</b>, se ha ${reit?'dispuesto <b>REITERAR</b> el presente oficio':'ordenado librar el presente'} a los fines de que ${d.pedido||'________________'}.-</p>
-    ${esLab?`<p style="font-weight:bold">PLAZO PARA CONTESTAR OFICIO: 10 DÍAS</p>
-    <p style="font-weight:bold">REMITIR CONTESTACIÓN A: ${_mailOfiLab(c.juz)||mailJuz}</p>`
+    ${(esLab||ofiLab)?`<p style="font-weight:bold">PLAZO PARA CONTESTAR OFICIO: 10 DÍAS</p>
+    <p style="font-weight:bold">REMITIR CONTESTACIÓN A: ${ofiLab||mailJuz}</p>`
     :`<p style="text-align:justify;${S}">Responder dentro de los diez días hábiles, presencialmente en soporte papel en ${dirJuz}, o al correo oficial del Juzgado: <b>${mailJuz}</b>.-</p>`}
     ${d.prov?`<p style="text-align:justify;${S}">Para mayores recaudos se transcribe la providencia que así lo ordena y que, en su parte pertinente, dice: <i>"${d.prov}"</i>.-</p>`:''}
     ${esLab?'':`<p style="${S}">Cumplido, sírvalo devolver con todo lo actuado.-</p>`}
@@ -4847,7 +4865,6 @@ function pruebaInline(c){
   const abierto=_pruebaOpen.has(c.id);
   const col=todo?'var(--green)':'var(--text2)';
   let audTxt='';
-  if(p.audFinal){audTxt=`<span style="margin-left:4px;font-weight:600;color:var(--text2)">· 📅 aud. final ${_vencHTML(p.audFinal,'',7)}</span>`;}
   let h='<div style="margin-top:2px;border-top:1px dashed var(--border2);padding-top:4px">';
   const rightCtrls=`<span style="color:var(--text2);font-size:9px;padding:2px 8px;border:1px solid var(--border);border-radius:9px;background:var(--bg);font-weight:600">${abierto?'ocultar':'ver detalle'}</span>`;
   h+=`<div onclick="togglePrueba(${c.id},event)" title="Ver / ocultar prueba" style="display:flex;align-items:center;gap:6px;font-size:10.5px;cursor:pointer;padding:1px 4px;user-select:none"><span style="font-size:11px;color:var(--text3)">${abierto?'▾':'▸'}</span><span style="font-weight:700;color:${col};text-transform:uppercase;letter-spacing:.4px">📋 Prueba${tot?' · '+ok+'/'+tot+(todo?' ✓':''):''}</span>${ramTag}${audTxt}<span style="margin-left:auto;display:flex;gap:5px;align-items:center">${rightCtrls}</span></div>`;
@@ -5524,6 +5541,14 @@ try{updToolsCounts();}catch(e){}
       <button onclick="calcGuardar('vencimiento')" style="width:100%;padding:9px;border-radius:6px;border:2px solid var(--red-b);background:var(--red-l);color:#a00;font-size:12px;font-weight:700;cursor:pointer">⏰ Guardar en Vencimientos</button>
       <button onclick="calcGuardar('info')" style="width:100%;padding:7px;border-radius:6px;border:1px solid #ccc;background:#f2f1ef;color:#666;font-size:11px;cursor:pointer;margin-top:5px">📎 Solo para saber</button>
     </div>
+  </div>
+  <div style="margin-bottom:12px;border-top:1px dashed var(--border);padding-top:10px">
+    <div style="font-size:11px;font-weight:700;color:#8a6d1a;margin-bottom:6px">🔔 O crear un recordatorio (turno médico, pericia, etc.)</div>
+    <div style="display:flex;gap:6px;margin-bottom:6px">
+      <input type="text" id="calc-rec-txt" placeholder="Ej: Turno médico" style="flex:1;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);box-sizing:border-box">
+      <input type="time" id="calc-rec-hora" style="width:auto;font-size:12px;padding:5px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text)">
+    </div>
+    <button onclick="calcGuardarRecordatorio()" style="width:100%;padding:8px;border-radius:6px;border:1px solid #e6c04d;background:#fdf6e3;color:#8a6d1a;font-size:12px;font-weight:700;cursor:pointer">🔔 Guardar recordatorio (usa la fecha de "Desde")</button>
   </div>
 </div>
 
