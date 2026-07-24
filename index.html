@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v298</title>
+<title>Gudiño Cabrera y Asociados v299</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1739,6 +1739,7 @@ function rowHTML(c){
       </div>`:`<div class="ci-not" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))?'style="display:none"':''}></div>`}
 
       ${c.aud_obs?`<div class="ci-aud-obs-show" onclick="editAudObs(${c.id},event)">${c.aud_obs}</div>`:''}
+      ${_vencsChips(c)}
       ${c.etapa==='prueba'?pruebaInline(c):''}
       ${rNotaHTML(c,false)}
       ${c.ramNotif?`<div style="margin-top:5px;padding:6px 8px;background:#e8f8ee;border-radius:5px;border:1px solid #a3d9b1">
@@ -2368,6 +2369,16 @@ const VENC_CATS=[
   {k:'otro',      n:'Otro',                 c:'#8a8a86', o:5},
 ];
 function _catMeta(k){return VENC_CATS.find(x=>x.k===k)||{n:k,c:'#8a8a86',o:5};}
+function _vencsChips(c){
+  if(!c.vencs||!c.vencs.length)return '';
+  return '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">'+c.vencs.slice().sort((a,b)=>(a.f<b.f?-1:1)).map(v=>{
+    const m=_catMeta(v.cat);const d=_faltan(v.f);
+    const nombre=v.cat==='recordatorio'?('🔔 '+v.txt.replace(/^Recordatorio:\s*/,'')):(v.txt+' · '+_dv(v.f));
+    const crit=(v.cat==='mio'&&d<=2)||(v.cat==='recordatorio'&&d<=1)||d<0;
+    const faltan=d<0?'venció':d===0?'hoy':'faltan '+d+'d';
+    return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:9.5px;padding:2px 8px;border-radius:9px;background:${m.c}18;border:1px solid ${m.c}55;color:${m.c}"><b>${nombre}</b> <span style="color:${crit?'#e24b4a':'#9a9a9a'};font-weight:${crit?'700':'400'}${(crit&&d>=0&&d<=1)?';animation:vence-hoy-pulse 1.5s ease-in-out infinite':''}">(${faltan})</span> <span onclick="event.stopPropagation();delVencManual(${c.id},${v.id})" title="Borrar este vencimiento" style="cursor:pointer;color:#bbb;font-weight:700">✕</span></span>`;
+  }).join('')+'</div>';
+}
 function _gatherVenc(){
   const out=[];
   (vglob||[]).forEach(v=>{if(v.f)out.push({c:{id:0,car:'(personal)',juz:'',ex:''},f:v.f,h:v.h||'',txt:v.txt||'Recordatorio',cat:v.cat||'recordatorio',src:'global',vid:v.id});});
@@ -2440,10 +2451,10 @@ function addVencManual(){
   sC();renderVen();updBadges();
 }
 function delVencManual(cid,vid){
-  if(cid===0){vglob=vglob.filter(v=>v.id!==vid);svl('ga_vglob',vglob);sC();renderVen();updBadges();return;}
+  if(cid===0){vglob=vglob.filter(v=>v.id!==vid);svl('ga_vglob',vglob);sC();if(typeof renderVen==='function')renderVen();updBadges();return;}
   const c=causas.find(x=>x.id===cid);if(!c||!c.vencs)return;
   c.vencs=c.vencs.filter(v=>v.id!==vid);
-  sC();renderVen();updBadges();
+  sC();if(typeof renderR==='function')renderR();if(typeof renderVen==='function')renderVen();updBadges();renderVencPanel();
 }
 
 function showHist(id,e){
@@ -3208,7 +3219,7 @@ function calcGuardarRecordatorio(){
   const rec={id:Date.now(),f,h:hora,txt,cat:'recordatorio'};
   if(calcCausaId){const c=causas.find(x=>x.id===calcCausaId);if(c){c.vencs=c.vencs||[];c.vencs.push(rec);}}
   else{vglob.push(rec);svl('ga_vglob',vglob);}
-  sC();updBadges();renderVencPanel();if(typeof renderVen==='function')renderVen();cerrarCalcPlazo();
+  sC();updBadges();renderVencPanel();if(typeof renderR==='function')renderR();if(typeof renderVen==='function')renderVen();cerrarCalcPlazo();
 }
 function calcGuardar(tipo){
   if(!calcCausaId||!calcFechaResult)return;
@@ -3233,7 +3244,7 @@ function calcGuardar(tipo){
     c.aud_mod='';
   }
   sC();
-  refRow(calcCausaId);
+  if(typeof renderR==="function")renderR();else refRow(calcCausaId);
   updBadges();
   renderVencPanel();
   cerrarCalcPlazo();
