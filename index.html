@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v300</title>
+<title>Gudiño Cabrera y Asociados v302</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1690,7 +1690,7 @@ function rowHTML(c){
       <div class="ci-tv-tag">${(()=>{
         if(c.tipo_aud&&TIPOS[c.tipo_aud]){
           const t=TIPOS[c.tipo_aud];
-          let info=c.tipo_aud==='resolver'?'A resolver':c.tipo_aud==='recordatorio'?'Recordar: '+(c.tv||'...'):'Audiencia '+t.lbl;
+          let info=c.tipo_aud==='resolver'?'A resolver':c.tipo_aud==='recordatorio'?(c.tv?'Recordar: '+c.tv:'Recordatorio'):'Audiencia '+t.lbl;
           if(c.ven){
             info+=' · '+fmtS(c.ven);
             if(c.tipo_aud==='recordatorio'){const d=dLeft(c.ven);if(d>0)info+=` <span style="color:#bbb;font-size:10px">· faltan ${d}d</span>`;else if(d===0)info+=' <span style="color:#e24b4a;font-size:10px">· hoy</span>';else info+=' <span style="color:#bbb;font-size:10px">· vencido</span>';}
@@ -1919,6 +1919,7 @@ function gcpGuardarAdicional(){
   const audVal=document.getElementById('gcp-aud').value||'';
   const recTxtEl=document.getElementById('gcp-rec-txt');
   const recTxt=(audVal==='recordatorio'&&recTxtEl)?recTxtEl.value.trim():'';
+  if(audVal==='recordatorio'&&!recTxt){alert('Escribí de qué es el recordatorio (ej: Pericia H y S).');if(recTxtEl)recTxtEl.focus();return;}
   const AUD_LBL={final:'Audiencia final',inicial:'Audiencia inicial',mediac:'Mediación',concil:'Conciliación',recursiva:'Audiencia recursiva',resolver:'Audiencia a resolver'};
   let cat='otro',txt='Vencimiento';
   if(audVal==='recordatorio'){cat='recordatorio';txt=recTxt||'Recordatorio';}
@@ -1942,6 +1943,7 @@ function gcpGuardar(){if(openCID)touchCausa(openCID);
   const recTxt=audVal==='recordatorio'&&recTxtEl?recTxtEl.value.trim():'';
   const venFinal=pendingVen[id]!==undefined?pendingVen[id]:c.ven||'';
   if(!audVal&&!venFinal)return;
+  if(audVal==='recordatorio'&&!recTxt){alert('Escribí de qué es el recordatorio (ej: Pericia H y S).');if(recTxtEl)recTxtEl.focus();return;}
   c.ven=venFinal;
   c.aud_h=horaVal;
   c.aud_mod=modVal;
@@ -2394,20 +2396,34 @@ const VENC_CATS=[
 ];
 function _catMeta(k){return VENC_CATS.find(x=>x.k===k)||{n:k,c:'#8a8a86',o:5};}
 function _vencsChips(c){
-  if(!c.vencs||!c.vencs.length)return '';
-  return '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">'+c.vencs.slice().sort((a,b)=>(a.f<b.f?-1:1)).map(v=>{
+  const auds=(audiencias||[]).filter(a=>String(a.causaId)===String(c.id)&&a.f&&a.f!==c.ven);
+  const extras=(c.vencs||[]).filter(v=>v.f&&v.f!==c.ven);
+  if(!auds.length&&!extras.length)return '';
+  const chip=(color,nombre,fecha,crit,faltan,onDel)=>`<span style="display:inline-flex;align-items:center;gap:5px;font-size:9.5px;padding:2px 8px;border-radius:9px;background:${color}18;border:1px solid ${color}55;color:${color}"><b>${nombre}</b> <span style="color:#8a8a86">${_dv(fecha)}</span> <span style="color:${crit?'#e24b4a':'#9a9a9a'};font-weight:${crit?'700':'400'}${crit?';animation:vence-hoy-pulse 1.5s ease-in-out infinite':''}">(${faltan})</span> <span onclick="event.stopPropagation();${onDel}" title="Quitar" style="cursor:pointer;color:#bbb;font-weight:700">✕</span></span>`;
+  let h='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">';
+  auds.sort((a,b)=>a.f<b.f?-1:1).forEach(a=>{
+    const d=_faltan(a.f);const lbl=tInfo(a.t||'otro').lbl;const col=tInfo(a.t||'otro').col||'#185FA5';
+    h+=chip(col,'📅 '+lbl+(a.h?' '+a.h+'hs':''),a.f,d>=0&&d<=1,d<0?'ya pasó':d===0?'hoy':'faltan '+d+'d',`delAudChip('${a.id}')`);
+  });
+  extras.slice().sort((a,b)=>(a.f<b.f?-1:1)).forEach(v=>{
     const m=_catMeta(v.cat);const d=_faltan(v.f);
-    const nombre=v.cat==='recordatorio'?('🔔 '+v.txt.replace(/^Recordatorio:\s*/,'')):(v.txt+' · '+_dv(v.f));
-    const crit=(v.cat==='mio'&&d<=2)||(v.cat==='recordatorio'&&d<=1)||d<0;
-    const faltan=d<0?'venció':d===0?'hoy':'faltan '+d+'d';
-    return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:9.5px;padding:2px 8px;border-radius:9px;background:${m.c}18;border:1px solid ${m.c}55;color:${m.c}"><b>${nombre}</b> <span style="color:${crit?'#e24b4a':'#9a9a9a'};font-weight:${crit?'700':'400'}${(crit&&d>=0&&d<=1)?';animation:vence-hoy-pulse 1.5s ease-in-out infinite':''}">(${faltan})</span> <span onclick="event.stopPropagation();delVencManual(${c.id},${v.id})" title="Borrar este vencimiento" style="cursor:pointer;color:#bbb;font-weight:700">✕</span></span>`;
-  }).join('')+'</div>';
+    const nombre=v.cat==='recordatorio'?('🔔 '+v.txt.replace(/^Recordatorio:\s*/,'')):v.txt;
+    const crit=((v.cat==='mio'&&d<=2)||(v.cat==='recordatorio'&&d<=1)||d<0)&&d<=1;
+    h+=chip(m.c,nombre,v.f,crit,d<0?'venció':d===0?'hoy':'faltan '+d+'d',`delVencManual(${c.id},${v.id})`);
+  });
+  return h+'</div>';
+}
+function delAudChip(id){
+  audiencias=(audiencias||[]).filter(a=>String(a.id)!==String(id));
+  sA();if(typeof renderR==='function')renderR();updBadges();renderVencPanel();
+  const pa=document.getElementById('panel-audiencias');if(pa&&pa.classList.contains('on'))renderCal();
 }
 function _gatherVenc(){
   const out=[];
   (vglob||[]).forEach(v=>{if(v.f)out.push({c:{id:0,car:'(personal)',juz:'',ex:''},f:v.f,h:v.h||'',txt:v.txt||'Recordatorio',cat:v.cat||'recordatorio',src:'global',vid:v.id});});
   causas.filter(c=>c.est!=='archivada').forEach(c=>{
     (c.vencs||[]).forEach(v=>{if(v.f)out.push({c,f:v.f,h:v.h||'',txt:v.txt||'Vencimiento',cat:v.cat||'otro',src:'manual',vid:v.id});});
+    (audiencias||[]).filter(a=>String(a.causaId)===String(c.id)&&a.f&&a.f!==c.ven).forEach(a=>{out.push({c,f:a.f,h:a.h||'',txt:tInfo(a.t||'otro').lbl,cat:'audiencia',src:'cal'});});
     if(c.ven){const cat=c.tipo_venc==='info'?'saber':(c.pl?'mio':'otro');out.push({c,f:c.ven,h:'',txt:c.tv||'Vencimiento principal',cat,src:'legacy'});}
     const p=c.prueba;
     if(p){
