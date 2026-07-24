@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v299</title>
+<title>Gudiño Cabrera y Asociados v300</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1787,6 +1787,8 @@ function openCP(id,e){
   document.getElementById('gcp-car').textContent=c.car;
   document.getElementById('gcp-car').title=c.car;
   document.getElementById('gcp-aud').value=c.tipo_aud||'';
+  const addWrap=document.getElementById('gcp-add-wrap');
+  if(addWrap)addWrap.style.display=c.ven?'block':'none';
   document.getElementById('gcp-hora').value=c.aud_h||'';
   document.getElementById('gcp-mod').value=c.aud_mod||'';
   const recWrap=document.getElementById('gcp-rec-wrap');
@@ -1906,6 +1908,28 @@ function sincAudiencia(c){
   sA();
   const panelAud=document.getElementById('panel-audiencias');
   if(panelAud&&panelAud.classList.contains('on'))renderCal();
+}
+function gcpGuardarAdicional(){
+  if(!openCID)return;
+  const id=openCID;
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  const fecha=pendingVen[id]!==undefined?pendingVen[id]:'';
+  if(!fecha){alert('Elegí primero la fecha nueva en el calendario del panel.');return;}
+  const horaVal=document.getElementById('gcp-hora').value||'';
+  const audVal=document.getElementById('gcp-aud').value||'';
+  const recTxtEl=document.getElementById('gcp-rec-txt');
+  const recTxt=(audVal==='recordatorio'&&recTxtEl)?recTxtEl.value.trim():'';
+  const AUD_LBL={final:'Audiencia final',inicial:'Audiencia inicial',mediac:'Mediación',concil:'Conciliación',recursiva:'Audiencia recursiva',resolver:'Audiencia a resolver'};
+  let cat='otro',txt='Vencimiento';
+  if(audVal==='recordatorio'){cat='recordatorio';txt=recTxt||'Recordatorio';}
+  else if(AUD_LBL[audVal]){cat='audiencia';txt=AUD_LBL[audVal];}
+  else{cat='mio';txt=recTxt||'Plazo';}
+  c.vencs=c.vencs||[];
+  c.vencs.push({id:Date.now(),f:fecha,h:horaVal,txt,cat});
+  delete pendingVen[id];
+  sC();closeCP();
+  if(typeof renderR==='function')renderR();
+  updBadges();renderVencPanel();if(typeof renderVen==='function')renderVen();
 }
 function gcpGuardar(){if(openCID)touchCausa(openCID);
   if(!openCID)return;
@@ -5506,6 +5530,9 @@ try{updToolsCounts();}catch(e){}
   <div class="cp-btns">
     <button class="cp-save" onclick="event.stopPropagation();gcpGuardar()">✓ Guardar</button>
     <button class="cp-cl" onclick="event.stopPropagation();gcpLimpiarFecha()">Sin fecha</button>
+  </div>
+  <div id="gcp-add-wrap" style="display:none;margin-top:5px">
+    <button class="cp-cl" onclick="event.stopPropagation();gcpGuardarAdicional()" style="width:100%;font-size:10px;font-weight:700;color:#8a6d1a;border-color:#e6c04d;background:#fdf6e3">➕ Guardar como plazo adicional (sin borrar el actual)</button>
   </div>
   <hr class="cp-sep">
   <div style="display:flex;gap:5px">
