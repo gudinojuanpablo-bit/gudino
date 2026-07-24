@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v304</title>
+<title>Gudiño Cabrera y Asociados v305</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -4250,9 +4250,10 @@ function abrirEscritos(id,e){
   if(e)e.stopPropagation();
   goP('escritos');
   setTimeout(()=>{
-    escInit();
+    escPoblarCausas();
     const sel=document.getElementById('esc-causa');
     if(sel)sel.value=String(id);
+    escActualizar();
   },50);
 }
 function escInit(){
@@ -4267,8 +4268,7 @@ function escPoblarCausas(){
   if(prev)sel.value=prev;
 }
 function escActualizar(){
-  const _cs=document.getElementById('esc-causa');const _lbl=document.getElementById('esc-causa-lbl');
-  if(_cs&&_lbl){const _cc=causas.find(x=>x.id===parseInt(_cs.value));_lbl.textContent=_cc?_cc.car+' ('+(_cc.ex||'s/n')+')':'—';}
+  _escLbl();
   const _av=document.getElementById('esc-aviso');if(_av&&!_av._hold)_av.style.display='none';
   const tipo=document.getElementById('esc-tipo').value;
   const def=ESC_TIPOS[tipo];
@@ -4808,15 +4808,23 @@ function prGenerar(tipo,i){
     irAEscrito(c.id,esLab?'oficio_lab':'oficio_civ',{dest:it.dest||'',pedido:it.pedido||'',_fromFila:true},faltan);
   }
 }
+function _escLbl(){
+  const cs=document.getElementById('esc-causa'),lbl=document.getElementById('esc-causa-lbl');
+  if(!cs||!lbl)return;
+  const cc=causas.find(x=>x.id===parseInt(cs.value));
+  lbl.textContent=cc?cc.car+' ('+(cc.ex||'s/n')+')':'—';
+}
 function irAEscrito(cid,tipo,campos,faltan){
   if(!campos||!campos._fromFila)_escOrigen=null;
   goP('escritos');
   setTimeout(()=>{
-    escInit();
+    escPoblarCausas();
+    const cs=document.getElementById('esc-causa');if(cs)cs.value=String(cid);
     document.getElementById('esc-tipo').value=tipo;
     escActualizar();
     setTimeout(()=>{
       document.getElementById('esc-causa').value=String(cid);
+      _escLbl();
       Object.keys(campos||{}).forEach(k=>{
         if(k==='_fromFila')return;
         if(k==='_reiter'){const r=document.getElementById('esc-reiter');if(r)r.checked=true;return;}
