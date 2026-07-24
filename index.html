@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v302</title>
+<title>Gudiño Cabrera y Asociados v303</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -798,6 +798,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
         <button class="btn p" onclick="escVistaPrevia()">👁 Vista previa</button>
         <button class="btn" onclick="escImprimir()" style="background:var(--navy);color:#fff;border-color:var(--navy)">🖨 Imprimir</button>
         <button class="btn" onclick="escDescargarWord()" style="background:var(--oro);color:#fff;border-color:var(--oro)">⬇ Word</button>
+        <button class="btn" id="btn-drive" onclick="escAbrirEnDrive()" style="background:#0F9D58;color:#fff;border-color:#0F9D58">📤 Abrir en Drive</button>
         <button class="btn" onclick="escDescargarPDF()" style="background:#8b2c2c;color:#fff;border-color:#8b2c2c">⬇ PDF</button>
         <button class="btn" onclick="escGuardarArchivo()" style="background:var(--green);color:#fff;border-color:var(--green)" title="Guardar en la lista de Escritos generados (Herramientas) sin imprimir ni descargar">💾 Guardar en archivo</button>
       </div>
@@ -895,6 +896,16 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
     </div>
 
     <div class="ct panel" id="panel-config">
+      <div style="background:#eaf6ee;border:1.5px solid #b5ddc4;border-radius:8px;padding:14px;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">📤 Google Drive (escritos)</div>
+        <div style="font-size:11px;color:#666;line-height:1.5;margin-bottom:8px">Cada persona autoriza con <b>su propia cuenta</b> y los escritos van a <b>su</b> Drive. El permiso es solo sobre los archivos que crea esta app.</div>
+        <input class="fi" id="drive-clientid" placeholder="ID de cliente de Google (termina en .apps.googleusercontent.com)" style="width:100%;font-size:11px;margin-bottom:6px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <button class="btn" style="font-size:11px" onclick="driveGuardarId()">Guardar ID</button>
+          <button class="btn" style="font-size:11px" onclick="driveCambiarCuenta()">Cambiar de cuenta</button>
+          <span id="drive-estado" style="font-size:11px;color:#666"></span>
+        </div>
+      </div>
       <!-- NUEVO LUNES -->
       <div style="background:#f5f5f5;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
         <div>
@@ -1392,6 +1403,7 @@ function goP(p){
   if(p==='prueba'){renderPrueba();}
   if(p==='escgen'){renderEscGen();}
   if(p==='archivo'){renderArchivo();}
+  if(p==='config'){try{driveRenderCfg();}catch(e){}}
   if(p==='extrajudiciales')renderExt();
   if(p==='vencemañana')renderVMP();
   if(p==='turnero')renderTurnos();
@@ -4500,18 +4512,168 @@ function escGuardarGenerado(){
   logC(c,'Escrito guardado: '+def.titulo+(dest?' — '+dest:''));
   sC();updToolsCounts&&updToolsCounts();
 }
+// ═══════════════════════════════════════════════
+// DOCX REAL (ZIP store-only + OOXML) — conserva márgenes e interlineado
+// ═══════════════════════════════════════════════
+const _crcT=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function _crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=_crcT[(c^u8[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function _zipStore(files){
+  const enc=new TextEncoder();const parts=[],central=[];let offset=0,cSize=0;
+  files.forEach(f=>{
+    const nameB=enc.encode(f.name),data=f.data,crc=_crc32(data);
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint32(14,crc,true);
+    lh.setUint32(18,data.length,true);lh.setUint32(22,data.length,true);lh.setUint16(26,nameB.length,true);
+    parts.push(new Uint8Array(lh.buffer),nameB,data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);
+    ch.setUint32(16,crc,true);ch.setUint32(20,data.length,true);ch.setUint32(24,data.length,true);
+    ch.setUint16(28,nameB.length,true);ch.setUint32(42,offset,true);
+    central.push(new Uint8Array(ch.buffer),nameB);
+    offset+=30+nameB.length+data.length;cSize+=46+nameB.length;
+  });
+  const eo=new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true);eo.setUint16(8,files.length,true);eo.setUint16(10,files.length,true);
+  eo.setUint32(12,cSize,true);eo.setUint32(16,offset,true);
+  return new Blob([...parts,...central,new Uint8Array(eo.buffer)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+}
+function _xesc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function _runsDe(nodo,bold,ital){
+  let out=[];
+  nodo.childNodes.forEach(n=>{
+    if(n.nodeType===3){
+      const t=n.textContent.replace(/\s+/g,' ');
+      if(t)out.push({t,b:bold,i:ital});
+    } else if(n.nodeType===1){
+      const tag=n.tagName.toLowerCase();
+      const st=(n.getAttribute('style')||'');
+      const b=bold||tag==='b'||tag==='strong'||/font-weight:\s*(bold|700)/.test(st);
+      const i=ital||tag==='i'||tag==='em';
+      out=out.concat(_runsDe(n,b,i));
+    }
+  });
+  return out;
+}
+function _htmlADocx(html){
+  const doc=new DOMParser().parseFromString('<div>'+html+'</div>','text/html');
+  const bloques=[...doc.querySelectorAll('p,div')].filter(el=>!el.querySelector('p,div'));
+  let cuerpo='';
+  bloques.forEach(el=>{
+    const st=el.getAttribute('style')||'';
+    const txt=(el.textContent||'').trim();
+    if(!txt){cuerpo+='<w:p/>';return;}
+    let jc='both';
+    if(/text-align:\s*center/.test(st))jc='center';
+    else if(/text-align:\s*right/.test(st))jc='right';
+    else if(/text-align:\s*left/.test(st))jc='left';
+    const ind=/text-indent:\s*1\.25cm/.test(st)?'<w:ind w:firstLine="709"/>':'';
+    const boldBloque=/font-weight:\s*bold/.test(st);
+    const mFs=st.match(/font-size:\s*([\d.]+)pt/);
+    const sz=mFs?Math.round(parseFloat(mFs[1])*2):24;
+    const runs=_runsDe(el,boldBloque,false);
+    let rs='';
+    runs.forEach(r=>{
+      rs+=`<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:color w:val="000000"/><w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>${r.b?'<w:b/>':''}${r.i?'<w:i/>':''}</w:rPr><w:t xml:space="preserve">${_xesc(r.t)}</w:t></w:r>`;
+    });
+    cuerpo+=`<w:p><w:pPr><w:jc w:val="${jc}"/><w:spacing w:after="120" w:line="480" w:lineRule="auto"/>${ind}</w:pPr>${rs}</w:p>`;
+  });
+  const documentXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${cuerpo}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="2552" w:right="1134" w:bottom="2552" w:left="2552" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const contentTypes=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>`;
+  const rels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`;
+  const enc=new TextEncoder();
+  return _zipStore([
+    {name:'[Content_Types].xml',data:enc.encode(contentTypes)},
+    {name:'_rels/.rels',data:enc.encode(rels)},
+    {name:'word/document.xml',data:enc.encode(documentXml)},
+  ]);
+}
+function _escNombreArchivo(){
+  const cid=parseInt(document.getElementById('esc-causa').value);
+  const c=causas.find(x=>x.id===cid);
+  const tipo=document.getElementById('esc-tipo').value;
+  return `${ESC_TIPOS[tipo].titulo} - ${c?c.car.split(' ')[0]:''} ${c&&c.ex?c.ex.replace('/','-'):''}`.trim();
+}
+// ═══════════════════════════════════════════════
+// GOOGLE DRIVE — cada usuario con su propia cuenta
+// ═══════════════════════════════════════════════
+let _driveTok=null;
+function driveCfg(){try{return JSON.parse(localStorage.getItem('ga_drive')||'{}');}catch(e){return {};}}
+function driveCfgSet(o){localStorage.setItem('ga_drive',JSON.stringify(o));}
+function driveGuardarId(){
+  const v=(document.getElementById('drive-clientid')||{}).value||'';
+  const cfg=driveCfg();cfg.clientId=v.trim();driveCfgSet(cfg);
+  driveRenderCfg();
+}
+function driveCambiarCuenta(){const cfg=driveCfg();delete cfg.email;driveCfgSet(cfg);_driveTok=null;driveRenderCfg();alert('Listo. La próxima vez que subas un escrito vas a poder elegir la cuenta de Drive.');}
+function driveRenderCfg(){
+  const cfg=driveCfg();
+  const inp=document.getElementById('drive-clientid');if(inp&&!inp.value)inp.value=cfg.clientId||'';
+  const est=document.getElementById('drive-estado');
+  if(est)est.innerHTML=cfg.clientId?(cfg.email?`✅ Conectado como <b>${cfg.email}</b>`:'🔑 ID guardado. Al subir el primer escrito vas a elegir tu cuenta.'):'⚠ Falta pegar el ID de cliente de Google.';
+}
+function _gisReady(){
+  return new Promise((res,rej)=>{
+    if(window.google&&google.accounts&&google.accounts.oauth2)return res();
+    const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';
+    s.onload=()=>res();s.onerror=()=>rej(new Error('No se pudo cargar Google'));
+    document.head.appendChild(s);
+  });
+}
+async function _driveToken(){
+  const cfg=driveCfg();
+  if(!cfg.clientId){alert('Primero pegá el ID de cliente de Google en Config. / Online.');goP('config');return null;}
+  if(_driveTok)return _driveTok;
+  await _gisReady();
+  return new Promise(res=>{
+    const tc=google.accounts.oauth2.initTokenClient({
+      client_id:cfg.clientId,
+      scope:'https://www.googleapis.com/auth/drive.file',
+      prompt:cfg.email?'':'select_account',
+      callback:r=>{if(r&&r.access_token){_driveTok=r.access_token;res(r.access_token);}else res(null);}
+    });
+    tc.requestAccessToken();
+  });
+}
+async function escAbrirEnDrive(){
+  const btn=document.getElementById('btn-drive');
+  try{
+    escGuardarGenerado();_escMarcarOrigen();
+    const h=escHTML();if(!h)return;
+    const tok=await _driveToken();if(!tok)return;
+    if(btn){btn._t=btn.textContent;btn.textContent='⏳ Subiendo...';}
+    const blob=_htmlADocx(h);
+    const meta={name:_escNombreArchivo(),mimeType:'application/vnd.google-apps.document'};
+    const fd=new FormData();
+    fd.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
+    fd.append('file',blob);
+    const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink',{method:'POST',headers:{Authorization:'Bearer '+tok},body:fd});
+    const d=await r.json();
+    if(d&&d.webViewLink){
+      try{
+        const ab=await fetch('https://www.googleapis.com/drive/v3/about?fields=user',{headers:{Authorization:'Bearer '+tok}});
+        const aj=await ab.json();
+        if(aj&&aj.user&&aj.user.emailAddress){const cfg=driveCfg();cfg.email=aj.user.emailAddress;driveCfgSet(cfg);driveRenderCfg();}
+      }catch(e){}
+      window.open(d.webViewLink,'_blank');
+    } else {
+      alert('No se pudo subir a Drive'+(d&&d.error&&d.error.message?': '+d.error.message:'.'));
+      _driveTok=null;
+    }
+  }catch(e){alert('Error al subir a Drive: '+(e.message||e));}
+  finally{if(btn&&btn._t)btn.textContent=btn._t;}
+}
 function escDescargarWord(){
   escGuardarGenerado();
   _escMarcarOrigen();
   try{etapaPorEscrito(parseInt(document.getElementById('esc-causa').value),document.getElementById('esc-tipo').value);}catch(e){}
-  const doc=_escDocCompleto();if(!doc)return;
-  const cid=parseInt(document.getElementById('esc-causa').value);
-  const c=causas.find(x=>x.id===cid);
-  const tipo=document.getElementById('esc-tipo').value;
-  const blob=new Blob(['\ufeff'+doc],{type:'application/msword'});
+  const h=escHTML();if(!h)return;
+  const blob=_htmlADocx(h);
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=`${ESC_TIPOS[tipo].titulo} - ${c?c.car.split(' ')[0]:''} ${c&&c.ex?c.ex.replace('/','-'):''}.doc`;
+  a.download=_escNombreArchivo()+'.docx';
   a.click();URL.revokeObjectURL(a.href);
 }
 
