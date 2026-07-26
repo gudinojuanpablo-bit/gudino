@@ -334,6 +334,9 @@ function renderAgenda(){
 function eventosDelDia(iso){
   const out=[];
   causasActivas().forEach(c=>eventosDeCausa(c).forEach(e=>{if(e.f===iso)out.push({...e,c});}));
+  (DB.audiencias||[]).forEach(a=>{if(a&&a.f===iso){const link=(DB.causas||[]).find(x=>String(x.id)===String(a.causaId));
+    if(link&&a.f===link.ven)return;
+    out.push({f:a.f,h:a.h||'',label:(link?audInfo(a.t||'otro').lbl:(a.c||'Audiencia')),color:audInfo(a.t||'otro').col,kind:'aud',aid:a.id,c:link||{id:0,car:(a.c||'Audiencia'),juz:a.j||''}});}});
   (DB.vglob||[]).forEach(v=>{if(v.f===iso)out.push({f:v.f,h:v.h,label:'🔔 '+(v.txt||'').replace(/^Recordatorio:\s*/,''),color:'#B8860B',c:null,gid:v.id});});
   return out;
 }
@@ -341,8 +344,17 @@ let CALVISTA='cal'; // 'cal' | 'lista'
 function setCalVista(v){CALVISTA=v;renderCal();}
 function todasAudiencias(){
   const out=[];
-  causasActivas().forEach(c=>eventosDeCausa(c).forEach(e=>{if(e.kind==='aud')out.push({...e,c});}));
-  return out;
+  causasActivas().forEach(c=>eventosDeCausa(c).forEach(e=>{if(e.kind==='aud')out.push({...e,tlbl:e.label,c});}));
+  (DB.audiencias||[]).forEach(a=>{
+    if(!a||!a.f)return;
+    const link=(DB.causas||[]).find(x=>String(x.id)===String(a.causaId));
+    if(link&&a.f===link.ven)return;
+    out.push({f:a.f,h:a.h||'',tlbl:audInfo(a.t||'otro').lbl,color:audInfo(a.t||'otro').col,kind:'aud',aid:a.id,
+      c:link||{id:0,car:(a.c||a.txt||'Audiencia'),juz:a.j||''}});
+  });
+  const seen=new Set();
+  return out.filter(o=>{const k=o.f+'|'+(o.h||'')+'|'+(o.c?o.c.car:'');if(seen.has(k))return false;seen.add(k);return true;})
+    .sort((a,b)=>a.f<b.f?-1:1);
 }
 function renderCal(){
   const toggle=`<div class="chips" style="margin-bottom:12px">
@@ -398,13 +410,14 @@ function renderCal(){
 }
 function audCard(a){
   const d=faltan(a.f);const urg=d!=null&&d>=0&&d<=7;
-  return `<div class="card" onclick="abrir(${a.c.id})">
+  const clickable=a.c&&a.c.id;
+  return `<div class="card" ${clickable?`onclick="abrir(${a.c.id})"`:'style="cursor:default"'}>
     <div class="row" style="margin:0">
       <span class="et" style="background:${a.color}">${dv(a.f)}${a.h?' · '+a.h+' hs':''}</span>
       <span class="faltan ${urg?'urg':''} ${(d!=null&&d>=0&&d<=1)?'blink':''}">${faltanTxt(d)}</span>
     </div>
-    <div class="car" style="font-size:14px;margin-top:7px">${esc(a.label)}</div>
-    <div class="meta">${esc(a.c.car)} · ${esc(a.c.juz||'')}</div>
+    <div class="car" style="font-size:14px;margin-top:7px">${esc(a.c?a.c.car:'Audiencia')}</div>
+    <div class="meta">${esc(a.tlbl||'Audiencia')}${a.c&&a.c.juz?' · '+esc(a.c.juz):''}</div>
   </div>`;
 }
 function mesNav(n){CALREF=new Date(CALREF.getFullYear(),CALREF.getMonth()+n,1);renderCal();}
