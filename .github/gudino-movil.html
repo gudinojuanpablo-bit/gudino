@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#14213D">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Gudiño · Móvil</title>
+<style>
+  :root{
+    --navy:#14213D; --navy2:#1e2f52; --oro:#C0912F; --oro-l:#F5EBD6; --marfil:#F7F4EC;
+    --bg:#F7F4EC; --card:#ffffff; --line:#E0D9C8; --line2:#CFC5AE;
+    --txt:#2A2E38; --txt2:#5A6472; --txt3:#9AA1AC; --red:#C0392B; --green:#3B6D11;
+    --serif:'Gelasio',Georgia,serif; --sans:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --shadow:0 1px 3px rgba(20,33,61,.07),0 1px 2px rgba(20,33,61,.04);
+    --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--txt);
+    font-family:var(--sans);font-size:15px;line-height:1.4;overscroll-behavior-y:none;-webkit-font-smoothing:antialiased}
+  body{padding-bottom:calc(66px + var(--safe-b))}
+  .hd{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;
+    padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 12px;display:flex;align-items:center;gap:10px}
+  .hd .iso{width:34px;height:34px;object-fit:contain;filter:brightness(0) invert(1);opacity:.95}
+  .brand{font-family:var(--serif);font-weight:700;font-size:17px;line-height:1.05;letter-spacing:.2px}
+  .brand-sub{font-family:var(--serif);font-size:11px;color:var(--oro);font-weight:600;letter-spacing:.3px}
+  .hd .sub{font-family:var(--sans);font-size:10px;color:#aab4c8;font-weight:500}
+  .icbtn{background:rgba(255,255,255,.12);border:none;color:#fff;width:38px;height:38px;
+    border-radius:11px;font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .icbtn:active{background:rgba(255,255,255,.25)}
+  .wrap{padding:12px}
+  .search{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px 14px;font-size:15px;
+    background:var(--card);color:var(--txt);margin-bottom:10px;outline:none}
+  .chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:9px;margin-bottom:4px;-webkit-overflow-scrolling:touch}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:0 0 auto;padding:7px 14px;border-radius:20px;border:1px solid var(--line);background:var(--card);
+    color:var(--txt2);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .card{background:var(--card);border-radius:14px;padding:13px 15px;margin-bottom:10px;box-shadow:var(--shadow);
+    border:1px solid var(--line);cursor:pointer;transition:transform .08s}
+  .card:active{transform:scale(.985)}
+  .car{font-weight:750;font-size:15px;letter-spacing:-.2px;line-height:1.25}
+  .meta{font-size:12px;color:var(--txt2);margin-top:3px}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+  .et{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:8px;color:#fff;white-space:nowrap}
+  .ev{display:flex;align-items:center;gap:7px;font-size:13px;margin-top:8px;padding:7px 10px;
+    border-radius:9px;background:var(--bg);border-left:3px solid var(--oro)}
+  .ev .d{margin-left:auto;font-weight:700;font-size:12px;white-space:nowrap}
+  .faltan{font-size:11px;color:var(--txt3);font-weight:600}
+  .faltan.urg{color:var(--red)}
+  .blink{animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .empty{text-align:center;color:var(--txt3);padding:44px 20px;font-size:14px}
+  /* Bottom nav */
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);
+    display:flex;padding-bottom:var(--safe-b)}
+  .nav button{flex:1;background:none;border:none;padding:9px 0 8px;color:var(--txt3);font-size:10.5px;
+    font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+  .nav button.on{color:var(--navy)}
+  .nav .ni{font-size:21px;line-height:1}
+  .nav .dot{position:absolute;top:6px;margin-left:16px;background:var(--red);color:#fff;font-size:9px;
+    font-weight:700;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px}
+  /* Sheet */
+  .ov{position:fixed;inset:0;background:rgba(10,15,30,.5);z-index:40;opacity:0;pointer-events:none;transition:opacity .22s}
+  .ov.on{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--bg);border-radius:20px 20px 0 0;
+    max-height:92vh;overflow-y:auto;transform:translateY(100%);transition:transform .28s cubic-bezier(.3,.9,.3,1);
+    padding-bottom:calc(24px + var(--safe-b));-webkit-overflow-scrolling:touch}
+  .sheet.on{transform:translateY(0)}
+  .grab{width:40px;height:4px;background:#cfd4de;border-radius:3px;margin:9px auto 4px}
+  .sh-hd{padding:6px 18px 12px;position:sticky;top:0;background:var(--bg);z-index:2}
+  .sh-hd .car{font-size:17px}
+  .sh-body{padding:0 16px}
+  .fld{margin-bottom:14px}
+  .lbl{font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .inp,select.inp{width:100%;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:15px;
+    background:var(--card);color:var(--txt);outline:none;-webkit-appearance:none;appearance:none}
+  select.inp{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%236b7385' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+  .two{display:flex;gap:9px}.two>*{flex:1}
+  .btn{width:100%;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:700;cursor:pointer}
+  .btn.pri{background:var(--navy);color:#fff}
+  .btn.oro{background:var(--oro);color:#fff}
+  .btn.gho{background:var(--card);color:var(--txt2);border:1px solid var(--line)}
+  .btn.red{background:#fff;color:var(--red);border:1px solid #f0c9c9}
+  .btn:active{opacity:.85}
+  .evrow{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);
+    border-radius:11px;padding:10px 12px;margin-bottom:7px}
+  .evrow .x{margin-left:auto;color:var(--txt3);font-size:19px;padding:2px 6px;cursor:pointer}
+  .sec-t{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px}
+  /* Calendar */
+  .cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .cal-hd .m{font-weight:800;font-size:16px;text-transform:capitalize}
+  .cal-nav{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);
+    font-size:17px;cursor:pointer;color:var(--navy)}
+  .cal{background:var(--card);border-radius:14px;padding:10px;box-shadow:var(--shadow);border:1px solid var(--line)}
+  .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10px;
+    font-weight:700;color:var(--txt3);padding-bottom:6px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+  .cd{aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-size:13px;position:relative;cursor:pointer;color:var(--txt)}
+  .cd.out{color:var(--txt3);opacity:.4}
+  .cd.today{background:var(--navy);color:#fff;font-weight:800}
+  .cd.sel{outline:2px solid var(--oro);outline-offset:-2px}
+  .cd .dots{display:flex;gap:2px;position:absolute;bottom:5px}
+  .cd .dt{width:5px;height:5px;border-radius:50%}
+  .toast{position:fixed;left:50%;bottom:calc(80px + var(--safe-b));transform:translateX(-50%) translateY(20px);
+    background:var(--navy);color:#fff;padding:10px 18px;border-radius:22px;font-size:13px;font-weight:600;
+    z-index:60;opacity:0;transition:all .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--navy);border-radius:50%;
+    animation:sp .7s linear infinite;margin:60px auto}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .notarow{display:flex;align-items:flex-start;gap:11px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:13px 14px;margin-bottom:8px;box-shadow:var(--shadow)}
+  .notarow.done{opacity:.6;background:var(--marfil)}
+  .notarow .cbx{width:22px;height:22px;border:2px solid var(--line2);border-radius:7px;flex:0 0 auto;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;margin-top:1px}
+  .notarow .cbx.on{background:var(--green);border-color:var(--green)}
+  .notarow .ntxt{flex:1;font-size:15px;line-height:1.45;word-break:break-word}
+  .notarow.done .ntxt{text-decoration:line-through;color:var(--txt3)}
+  .notarow .x{color:var(--txt3);font-size:21px;padding:0 4px;cursor:pointer;flex:0 0 auto}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAEUUlEQVR42u2bS28cRRDHf9WPfS/BYW0ryYE4oJBEIJA4JnAJCmc48i34DIgDnwBxROKOOCBOKAdOiUQEKBKEkENeOE5k+bH2rndmuovDbDZOshYvO2tnu6XZGc20Rlu/+ld1Va9WOgvvKFM8DFM+EoAEIAFIABKABCABSAASgAQgAUgApnK4fzN58ffvD4RRR06eTwpIABKABOAAAdAIOpmtSbcvvOCqAMSQT58CBFi9c5m1P68gIoBOFwDVwPriL3SXrqIah0ieuxDQbScd+Vi1wPs6vj6D9XWsteT5ABE7UgfI8EIOKAARBANiSonLI1OUKgK4ahvr64hYXKWx7Xn5oaqgsUS3y8nS7bXnY5ERiy1C1iPkPULeJ+Y9QtEnZJsQc1ZuX0JshXzzARiPrTSwvoH1dYx/eN3AuCrG+l1Vg9ujwMa4CpvLf1AMurTnzwCCcTVcNSeGHI05MQwwIvRWb2FcjdbcaaJGjK1hrEOMR6wvlVFtsb74M5XmLI2Z48QiA5F9CkCEWGSoRqyvozHi6zPbQqJ0oipYge6Da1jfpD13mqBDu/RhCJQ3QraBq7bRUALcDeP3aBVQxDiy/jKu0qbSmmewsQQiaMjQkBFDRswzYtYHVULeJ+Q9UCXm/fLZcK6GDIBBd4lq+yjG18j7q4hxu7Jkmr1K+MXWGr52CFdtE/M+GnIQM4xfKT348FAdeXp0jOZZYjEghgxXbeNrL5JvrQwltA8VIMaS95bLa+tBy0ov27i/o9dUw7AGGKcmS7axhPUNNAaMq6GxoNhaAWP3WQ5QRZxFjKM1ewozDNPmSycYbC4jRtBRkD/ZC8Tx7zOC9Q1qrc7odqtziiLrYowlFuF/5QO3q8Zby72rX7N290dcrY0YP7SvIAy61A+f4NhbH43pheIjBSijwkc1cuvSF2yt38VWWiMFlQpYZ+bls8ydfJ8QwrCMniQAETQqnVfPU2nOsrl8nWJrDVBc/TCHjr3NC0feRMQ+VfLqWAVEjPXMn/mA9cWf6K/epBh0EbFUWh0OH3+X9vwbxBj/s/F7sAwq1jfpLJyjs3Duqachlt57vJBR0IBqeCI/CKpKpTnL/MkLY3NtCGF86EyyDlCN5HnxdMkqMvSUPB77yDazS9kLdtuUnDzoDu8z+ywJjr6b+QfVqmJ8gxgG5TJnLDFkZbYP26s8GfUQz82GiGrE+yq3r3zFrcufl82OCHeufMnC2Y85+vqHw65w77t1Mwnjna9y77dvufHDZ4S8j8YCDTlFtsH1i5/w4MZFnK/uUBscZAWoYqyjt3KT+9e+o/PKe4ixI0NFDDEULP36Da3ZU1Rac2gIu1b3Tx6ACBojleYcr134dJgQdcwmWdkRatQ9NX5iOUCsx7nqzrW8lMXRs9gfnMyusCqqxd80VM9mb3CC2+LCfhjpl6EEIAGY7iHpDxMpBBKABCABSAASgAQgAUgAEoAEIAFIAKZv/AXBs+f3L7YQdgAAAABJRU5ErkJggg==" class="iso" alt="">
+  <div style="flex:1;min-width:0">
+    <div class="brand">Gudiño Cabrera</div>
+    <div class="brand-sub">y asociados <span class="sub" id="syncTxt">· cargando…</span></div>
+  </div>
+  <button class="icbtn" onclick="recargar()" id="reBtn" title="Actualizar">⟳</button>
+</div>
+
+<div id="app"><div class="spin"></div></div>
+
+<div class="nav">
+  <button id="nav-causas" class="on" onclick="tab('causas')"><span class="ni">📋</span>Causas</button>
+  <button id="nav-agenda" onclick="tab('agenda')"><span class="ni">🔔</span>Agenda<span class="dot" id="agBadge" style="display:none">0</span></button>
+  <button id="nav-cal" onclick="tab('cal')"><span class="ni">📅</span>Calendario</button>
+  <button id="nav-nota" onclick="tab('nota')"><span class="ni">📝</span>Anotador<span class="dot" id="notaBadge" style="display:none">0</span></button>
+</div>
+
+<div class="ov" id="ov" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet"><div class="grab"></div><div id="sheetContent"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const FB_URL='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoza40/datos.json';
+const ETAPAS=[
+  {k:'preparatoria',n:'Medida preparatoria',c:'#6D7A8C'},
+  {k:'especiales',n:'Procesos especiales',c:'#7A6A9C'},
+  {k:'litis',n:'Traba de litis',c:'#888780'},
+  {k:'inicial',n:'Audiencia inicial',c:'#185FA5'},
+  {k:'prueba',n:'Etapa de prueba',c:'#BA7517'},
+  {k:'alegatos',n:'Alegatos',c:'#534AB7'},
+  {k:'resolver',n:'A resolver primera instancia',c:'#5F5E5A'},
+  {k:'recursiva',n:'Etapa recursiva',c:'#D85A30'},
+  {k:'resolver2',n:'A resolver en definitiva',c:'#0F6E56'},
+  {k:'ejecucion',n:'Ejecución',c:'#922B4E'},
+];
+function etInfo(k){return ETAPAS.find(e=>e.k===k)||{k:'',n:'Sin etapa',c:'#a3a9b8'};}
+const AUDT={
+  mediac:{lbl:'Mediación / Conciliación',col:'#e91e8c'},
+  inicial:{lbl:'Audiencia inicial',col:'#2980b9'},
+  final:{lbl:'Audiencia final',col:'#d1a000'},
+  recursiva:{lbl:'Vista recursiva',col:'#d35400'},
+  resolver:{lbl:'A resolver',col:'#7f8c8d'},
+  otro:{lbl:'Audiencia',col:'#8e44ad'},
+};
+function audInfo(t){return AUDT[t]||AUDT.otro;}
+const FUEROS=['Laboral','Civil','Familia','Juzgado de Paz'];
+const FUE_ICO={'Laboral':'👷','Civil':'⚖','Familia':'👨‍👩‍👧','Juzgado de Paz':'📜'};
+
+let DB={causas:[],audiencias:[],vglob:[]};
+let CURTAB='causas', FILTRO='', BUSQ='', CALREF=new Date(), CALSEL=null, OPENID=null;
+
+/* ---------- utilidades de fecha ---------- */
+function hoyISO(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function dv(iso){if(!iso)return '';const[y,m,d]=iso.split('-');return d+'/'+m+'/'+y;}
+function faltan(iso){if(!iso)return null;const a=new Date(iso+'T12:00:00'),b=new Date(hoyISO()+'T12:00:00');return Math.round((a-b)/86400000);}
+function faltanTxt(d){return d==null?'':d<0?'venció':d===0?'hoy':d===1?'mañana':'faltan '+d+'d';}
+const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const DOW=['D','L','M','M','J','V','S'];
+
+/* ---------- carga / guardado Firebase ---------- */
+async function cargar(){
+  try{
+    const r=await fetch(FB_URL,{cache:'no-store'});
+    const d=await r.json();
+    DB=d||{};DB.causas=DB.causas||[];DB.audiencias=DB.audiencias||[];DB.vglob=DB.vglob||[];DB.pendientes=DB.pendientes||[];
+    setSync('✓ al día');
+    return true;
+  }catch(e){setSync('⚠ sin conexión');return false;}
+}
+async function guardar(mutar){
+  setSync('· guardando…');
+  try{
+    const r=await fetch(FB_URL,{cache:'no-store'});
+    const rem=await r.json()||{};
+    rem.causas=rem.causas||[];rem.audiencias=rem.audiencias||[];rem.vglob=rem.vglob||[];
+    mutar(rem);
+    rem.v=Date.now();
+    await fetch(FB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(rem)});
+    DB=rem;
+    setSync('✓ guardado');
+    return true;
+  }catch(e){setSync('⚠ error al guardar');toast('No se pudo guardar (sin conexión)');return false;}
+}
+function setSync(t){const el=document.getElementById('syncTxt');if(el)el.textContent='· '+t;}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),1900);}
+
+async function recargar(){const b=document.getElementById('reBtn');b.style.transition='transform .6s';b.style.transform='rotate(360deg)';setTimeout(()=>{b.style.transition='';b.style.transform='';},600);await cargar();render();}
+
+/* ---------- eventos (unifica todo lo que tiene fecha) ---------- */
+function eventosDeCausa(c){
+  const ev=[];
+  if(c.ven){
+    const isAud=c.tipo_aud&&c.tipo_aud!=='recordatorio';
+    const isRec=c.tipo_aud==='recordatorio';
+    ev.push({f:c.ven,h:c.aud_h||'',
+      label:isAud?audInfo(c.tipo_aud).lbl:isRec?('🔔 '+(c.tv||'Recordatorio')):(c.tv||'Vencimiento'),
+      color:isAud?audInfo(c.tipo_aud).col:isRec?'#B8860B':'#e24b4a',
+      kind:isAud?'aud':isRec?'rec':'venc', principal:true});
+  }
+  (c.vencs||[]).forEach(v=>{if(v.f&&v.f!==c.ven)ev.push({f:v.f,h:v.h||'',
+    label:v.cat==='recordatorio'?('🔔 '+(v.txt||'').replace(/^Recordatorio:\s*/,'')):(v.txt||'Vencimiento'),
+    color:v.cat==='audiencia'?'#2980b9':v.cat==='recordatorio'?'#B8860B':v.cat==='mio'?'#e24b4a':'#8a8a86',
+    kind:v.cat, vid:v.id});});
+  (DB.audiencias||[]).forEach(a=>{if(String(a.causaId)===String(c.id)&&a.f&&a.f!==c.ven)
+    ev.push({f:a.f,h:a.h||'',label:audInfo(a.t||'otro').lbl,color:audInfo(a.t||'otro').col,kind:'aud',aid:a.id});});
+  return ev.sort((x,y)=>x.f<y.f?-1:1);
+}
+function proximoEvento(c){const e=eventosDeCausa(c).filter(x=>faltan(x.f)>=0);return e.length?e[0]:eventosDeCausa(c)[0]||null;}
+function causasActivas(){return (DB.causas||[]).filter(c=>c.est!=='archivada');}
+
+/* ---------- navegación ---------- */
+function tab(t){CURTAB=t;['causas','agenda','cal','nota'].forEach(x=>document.getElementById('nav-'+x).classList.toggle('on',x===t));window.scrollTo(0,0);render();}
+
+function render(){
+  updBadge();
+  if(CURTAB==='causas')renderCausas();
+  else if(CURTAB==='agenda')renderAgenda();
+  else if(CURTAB==='nota')renderNota();
+  else renderCal();
+}
+function updBadge(){
+  const n=causasActivas().reduce((s,c)=>{const e=proximoEvento(c);return s+(e&&faltan(e.f)!=null&&faltan(e.f)>=0&&faltan(e.f)<=3?1:0);},0);
+  const b=document.getElementById('agBadge');b.textContent=n;b.style.display=n?'flex':'none';
+  const pend=(DB.pendientes||[]).filter(p=>!p.done).length;
+  const nb=document.getElementById('notaBadge');if(nb){nb.textContent=pend;nb.style.display=pend?'flex':'none';}
+}
+
+/* ---------- CAUSAS ---------- */
+function renderCausas(){
+  const q=BUSQ.toLowerCase();
+  let cs=causasActivas();
+  if(FILTRO)cs=cs.filter(c=>(c.fue||'')===FILTRO);
+  if(q)cs=cs.filter(c=>((c.car||'')+' '+(c.ex||'')+' '+(c.juz||'')).toLowerCase().includes(q));
+  cs.sort((a,b)=>{const ea=proximoEvento(a),eb=proximoEvento(b);
+    if(ea&&eb)return ea.f<eb.f?-1:1; if(ea)return -1; if(eb)return 1; return (a.car||'').localeCompare(b.car||'');});
+  const chips=`<div class="chips">
+    <div class="chip ${!FILTRO?'on':''}" onclick="setFiltro('')">Todas (${causasActivas().length})</div>
+    ${FUEROS.map(f=>{const n=causasActivas().filter(c=>c.fue===f).length;return `<div class="chip ${FILTRO===f?'on':''}" onclick="setFiltro('${f}')">${FUE_ICO[f]} ${f} (${n})</div>`;}).join('')}
+  </div>`;
+  const list=cs.length?cs.map(cardCausa).join(''):'<div class="empty">No hay causas para este filtro.</div>';
+  document.getElementById('app').innerHTML=`<div class="wrap">
+    <input class="search" placeholder="🔍 Buscar carátula, expediente, juzgado…" value="${BUSQ.replace(/"/g,'&quot;')}" oninput="BUSQ=this.value;renderCausas()">
+    ${chips}${list}</div>`;
+}
+function setFiltro(f){FILTRO=f;renderCausas();}
+function cardCausa(c){
+  const et=etInfo(c.etapa);
+  const e=proximoEvento(c);
+  let evH='';
+  if(e){const d=faltan(e.f);const urg=d!=null&&d<=3;
+    evH=`<div class="ev" style="border-left-color:${e.color}"><span>${e.label}${e.h?' · '+e.h+'hs':''}</span>
+      <span class="d">${dv(e.f)} <span class="faltan ${urg?'urg':''} ${(d!=null&&d>=0&&d<=1)?'blink':''}">· ${faltanTxt(d)}</span></span></div>`;}
+  return `<div class="card" onclick="abrir(${c.id})">
+    <div class="car">${esc(c.car)}</div>
+    <div class="meta">${c.ex?esc(c.ex)+' · ':''}${esc(c.juz||'')}</div>
+    <div class="row"><span class="et" style="background:${et.c}">${et.n}</span></div>
+    ${evH}</div>`;
+}
+
+/* ---------- AGENDA ---------- */
+function renderAgenda(){
+  const evs=[];
+  causasActivas().forEach(c=>eventosDeCausa(c).forEach(e=>evs.push({...e,c})));
+  (DB.vglob||[]).forEach(v=>{if(v.f)evs.push({f:v.f,h:v.h||'',label:'🔔 '+(v.txt||'').replace(/^Recordatorio:\s*/,''),color:'#B8860B',kind:'rec',c:null,gid:v.id});});
+  const fut=evs.filter(e=>faltan(e.f)>=0).sort((a,b)=>a.f<b.f?-1:1);
+  const grupos={'Hoy':[],'Mañana':[],'Esta semana':[],'Más adelante':[]};
+  fut.forEach(e=>{const d=faltan(e.f);if(d===0)grupos['Hoy'].push(e);else if(d===1)grupos['Mañana'].push(e);else if(d<=7)grupos['Esta semana'].push(e);else grupos['Más adelante'].push(e);});
+  let h='<div class="wrap">';
+  let any=false;
+  Object.keys(grupos).forEach(g=>{
+    if(!grupos[g].length)return;any=true;
+    h+=`<div class="sec-t">${g}</div>`;
+    h+=grupos[g].map(e=>{const d=faltan(e.f);const urg=d<=3;
+      return `<div class="card" onclick="${e.c?`abrir(${e.c.id})`:'void 0'}" style="cursor:${e.c?'pointer':'default'}">
+        <div class="row" style="margin:0">
+          <span class="et" style="background:${e.color};font-size:11px">${dv(e.f)}${e.h?' '+e.h+'hs':''}</span>
+          <span class="faltan ${urg?'urg':''} ${(d>=0&&d<=1)?'blink':''}">${faltanTxt(d)}</span>
+        </div>
+        <div class="car" style="font-size:14px;margin-top:7px">${esc(e.label)}</div>
+        <div class="meta">${e.c?esc(e.c.car):'Recordatorio personal'}</div>
+      </div>`;}).join('');
+  });
+  if(!any)h+='<div class="empty">No tenés vencimientos ni audiencias próximas. 🎉</div>';
+  h+='</div>';
+  document.getElementById('app').innerHTML=h;
+}
+
+/* ---------- CALENDARIO ---------- */
+function eventosDelDia(iso){
+  const out=[];
+  causasActivas().forEach(c=>eventosDeCausa(c).forEach(e=>{if(e.f===iso)out.push({...e,c});}));
+  (DB.vglob||[]).forEach(v=>{if(v.f===iso)out.push({f:v.f,h:v.h,label:'🔔 '+(v.txt||'').replace(/^Recordatorio:\s*/,''),color:'#B8860B',c:null,gid:v.id});});
+  return out;
+}
+function renderCal(){
+  const y=CALREF.getFullYear(),m=CALREF.getMonth();
+  const first=new Date(y,m,1),start=first.getDay(),dim=new Date(y,m+1,0).getDate();
+  const prevDim=new Date(y,m,0).getDate();
+  let cells=[];
+  for(let i=start-1;i>=0;i--)cells.push({d:prevDim-i,out:true,y,m:m-1});
+  for(let d=1;d<=dim;d++)cells.push({d,out:false,y,m});
+  while(cells.length%7)cells.push({d:cells.length-(start+dim)+1,out:true,y,m:m+1});
+  const iso=(cc)=>{const dt=new Date(cc.y,cc.m,cc.d);return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');};
+  const today=hoyISO();
+  const grid=cells.map(cc=>{const is=iso(cc);const evs=eventosDelDia(is);
+    const dots=evs.slice(0,3).map(e=>`<span class="dt" style="background:${e.color}"></span>`).join('');
+    return `<div class="cd ${cc.out?'out':''} ${is===today?'today':''} ${is===CALSEL?'sel':''}" onclick="selDia('${is}')">
+      ${cc.d}${dots?`<span class="dots">${dots}</span>`:''}</div>`;}).join('');
+  let selH='';
+  if(CALSEL){
+    const evs=eventosDelDia(CALSEL).sort((a,b)=>(a.h||'')<(b.h||'')?-1:1);
+    selH=`<div class="sec-t">${dv(CALSEL)}</div>`+
+      (evs.length?evs.map(e=>`<div class="card" onclick="${e.c?`abrir(${e.c.id})`:'void 0'}">
+        <div class="row" style="margin:0"><span class="et" style="background:${e.color}">${e.h?e.h+' hs':'Todo el día'}</span></div>
+        <div class="car" style="font-size:14px;margin-top:6px">${esc(e.label)}</div>
+        <div class="meta">${e.c?esc(e.c.car):'Recordatorio personal'}</div></div>`).join('')
+      :'<div class="empty" style="padding:24px">Sin eventos este día.</div>');
+  }
+  document.getElementById('app').innerHTML=`<div class="wrap">
+    <div class="cal-hd">
+      <button class="cal-nav" onclick="mesNav(-1)">‹</button>
+      <div class="m">${MESES[m]} ${y}</div>
+      <button class="cal-nav" onclick="mesNav(1)">›</button>
+    </div>
+    <div class="cal">
+      <div class="cal-dow">${DOW.map(x=>`<div>${x}</div>`).join('')}</div>
+      <div class="cal-grid">${grid}</div>
+    </div>
+    ${selH}</div>`;
+}
+function mesNav(n){CALREF=new Date(CALREF.getFullYear(),CALREF.getMonth()+n,1);renderCal();}
+function selDia(is){CALSEL=(CALSEL===is?null:is);renderCal();}
+
+/* ---------- ANOTADOR ---------- */
+function renderNota(){
+  const ps=DB.pendientes||[];
+  const pend=ps.filter(p=>!p.done), hechas=ps.filter(p=>p.done);
+  let h=`<div class="wrap">
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input class="search" id="nota-in" placeholder="Escribí una nota o pendiente…" style="margin:0;flex:1"
+        onkeydown="if(event.key==='Enter')addNota()">
+      <button class="btn pri" style="width:auto;padding:0 20px" onclick="addNota()">+</button>
+    </div>`;
+  if(!ps.length){h+='<div class="empty">Anotá lo que no querés olvidarte.<br>Se sincroniza con la compu.</div>';}
+  else{
+    h+=pend.map(p=>`<div class="notarow">
+      <span class="cbx" onclick="toggleNota(${p.id})"></span>
+      <span class="ntxt">${esc(p.txt)}</span>
+      <span class="x" onclick="delNota(${p.id})">×</span></div>`).join('');
+    if(hechas.length){
+      h+=`<div class="sec-t">✓ Completadas (${hechas.length})</div>`;
+      h+=hechas.map(p=>`<div class="notarow done">
+        <span class="cbx on" onclick="toggleNota(${p.id})">✓</span>
+        <span class="ntxt">${esc(p.txt)}</span>
+        <span class="x" onclick="delNota(${p.id})">×</span></div>`).join('');
+    }
+  }
+  h+='</div>';
+  document.getElementById('app').innerHTML=h;
+}
+async function addNota(){
+  const inp=document.getElementById('nota-in');const t=(inp.value||'').trim();if(!t)return;
+  inp.value='';
+  const ok=await guardar(db=>{db.pendientes=db.pendientes||[];db.pendientes.push({id:Date.now(),txt:t,done:false});});
+  if(ok)renderNota();
+}
+async function toggleNota(id){
+  const ok=await guardar(db=>{const p=(db.pendientes||[]).find(x=>x.id===id);if(p)p.done=!p.done;});
+  if(ok)renderNota();
+}
+async function delNota(id){
+  const ok=await guardar(db=>{db.pendientes=(db.pendientes||[]).filter(x=>x.id!==id);});
+  if(ok)renderNota();
+}
+
+/* ---------- HOJA DE DETALLE / EDICIÓN ---------- */
+function abrir(id){OPENID=id;const c=DB.causas.find(x=>x.id===id);if(!c)return;renderSheet(c);openSheet();}
+function openSheet(){document.getElementById('ov').classList.add('on');document.getElementById('sheet').classList.add('on');}
+function closeSheet(){document.getElementById('ov').classList.remove('on');document.getElementById('sheet').classList.remove('on');OPENID=null;}
+function renderSheet(c){
+  const et=etInfo(c.etapa);
+  const evs=eventosDeCausa(c);
+  const tipoActual=c.ven?(c.tipo_aud||(c.tipo_aud===''&&c.pl!==false?'venc':'venc')):'venc';
+  const evList=evs.length?evs.map((e,i)=>`<div class="evrow">
+      <span style="width:10px;height:10px;border-radius:50%;background:${e.color};flex:0 0 auto"></span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;line-height:1.25">${esc(e.label)}</div>
+        <div style="font-size:12px;color:var(--txt2)">${dv(e.f)}${e.h?' · '+e.h+' hs':''} · ${faltanTxt(faltan(e.f))}</div>
+      </div>
+      <span class="x" onclick="borrarEvento(${c.id},${i})">×</span>
+    </div>`).join(''):'<div style="font-size:13px;color:var(--txt3);padding:4px 2px 10px">Sin vencimientos ni audiencias.</div>';
+  const opts=ETAPAS.map(e=>`<option value="${e.k}" ${c.etapa===e.k?'selected':''}>${e.n}</option>`).join('');
+  document.getElementById('sheetContent').innerHTML=`
+    <div class="sh-hd">
+      <div class="car">${esc(c.car)}</div>
+      <div class="meta">${c.ex?esc(c.ex)+' · ':''}${esc(c.juz||'')}${c.fue?' · '+esc(c.fue):''}</div>
+    </div>
+    <div class="sh-body">
+      <div class="fld">
+        <div class="lbl">Estado / Etapa</div>
+        <select class="inp" onchange="setEtapa(${c.id},this.value)">${opts}</select>
+      </div>
+
+      <div class="sec-t" style="margin-top:4px">Vencimientos y audiencias</div>
+      ${evList}
+
+      <div class="fld" style="background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px;margin-top:10px">
+        <div class="lbl">➕ Agregar / cargar</div>
+        <select class="inp" id="ns-tipo" style="margin-bottom:9px">
+          <option value="venc">Vencimiento / plazo mío</option>
+          <option value="inicial">Audiencia inicial</option>
+          <option value="final">Audiencia final</option>
+          <option value="mediac">Mediación / Conciliación</option>
+          <option value="recursiva">Vista recursiva</option>
+          <option value="resolver">A resolver</option>
+          <option value="rec">Recordatorio</option>
+        </select>
+        <input class="inp" id="ns-txt" placeholder="Detalle (ej: contestar traslado, turno…)" style="margin-bottom:9px">
+        <div class="two" style="margin-bottom:10px">
+          <input class="inp" id="ns-fecha" type="date">
+          <input class="inp" id="ns-hora" type="time">
+        </div>
+        <button class="btn pri" onclick="agregarEvento(${c.id})">Guardar</button>
+      </div>
+
+      <button class="btn gho" style="margin-top:14px" onclick="closeSheet()">Cerrar</button>
+    </div>`;
+}
+
+async function setEtapa(id,val){
+  const ok=await guardar(db=>{const c=db.causas.find(x=>x.id===id);if(c)c.etapa=val;});
+  if(ok){toast('Estado actualizado');render();const c=DB.causas.find(x=>x.id===id);if(c&&OPENID===id)renderSheet(c);}
+}
+async function agregarEvento(id){
+  const tipo=document.getElementById('ns-tipo').value;
+  const f=document.getElementById('ns-fecha').value;
+  const hora=document.getElementById('ns-hora').value;
+  const txt=document.getElementById('ns-txt').value.trim();
+  if(!f){toast('Elegí la fecha');return;}
+  if(tipo==='rec'&&!txt){toast('Escribí de qué es el recordatorio');return;}
+  const ok=await guardar(db=>{
+    const c=db.causas.find(x=>x.id===id);if(!c)return;
+    const librePrincipal=!c.ven;
+    if(tipo==='venc'){
+      if(librePrincipal){c.ven=f;c.tv=txt||'Vencimiento';c.tipo_aud='';c.pl=true;c.aud_h='';}
+      else{c.vencs=c.vencs||[];c.vencs.push({id:Date.now(),f,h:hora,txt:txt||'Vencimiento',cat:'mio'});}
+    } else if(tipo==='rec'){
+      const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+      const dt=new Date(f+'T12:00:00');
+      const full='Recordatorio: El día '+DIAS[dt.getDay()]+' '+dv(f)+(hora?' a las '+hora+' hs':'')+' - '+txt;
+      c.vencs=c.vencs||[];c.vencs.push({id:Date.now(),f,h:hora,txt:full,cat:'recordatorio'});
+    } else {
+      // audiencia
+      if(librePrincipal){c.ven=f;c.tipo_aud=tipo;c.tv=audInfo(tipo).lbl;c.aud_h=hora;c.pl=false;}
+      else{db.audiencias=db.audiencias||[];db.audiencias.push({id:Date.now(),f,h:hora,t:tipo,causaId:id});}
+    }
+  });
+  if(ok){toast('Guardado');const c=DB.causas.find(x=>x.id===id);if(c)renderSheet(c);render();}
+}
+async function borrarEvento(id,idx){
+  const c=DB.causas.find(x=>x.id===id);if(!c)return;
+  const e=eventosDeCausa(c)[idx];if(!e)return;
+  const ok=await guardar(db=>{
+    const cc=db.causas.find(x=>x.id===id);if(!cc)return;
+    if(e.principal){cc.ven='';cc.tv='';cc.tipo_aud='';cc.aud_h='';cc.pl=false;}
+    else if(e.vid){cc.vencs=(cc.vencs||[]).filter(v=>v.id!==e.vid);}
+    else if(e.aid){db.audiencias=(db.audiencias||[]).filter(a=>a.id!==e.aid);}
+  });
+  if(ok){toast('Eliminado');const c2=DB.causas.find(x=>x.id===id);if(c2)renderSheet(c2);render();}
+}
+
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ---------- init ---------- */
+(async()=>{await cargar();render();})();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){cargar().then(render);}});
+</script>
+</body>
+</html>
