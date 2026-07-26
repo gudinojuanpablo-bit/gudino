@@ -24,7 +24,7 @@
   body{padding-bottom:calc(66px + var(--safe-b))}
   .hd{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;
     padding:calc(env(safe-area-inset-top,0px) + 12px) 16px 12px;display:flex;align-items:center;gap:10px}
-  .hd .iso{width:34px;height:34px;object-fit:contain;filter:brightness(0) invert(1);opacity:.95}
+  .hd .iso{width:32px;height:32px;flex:0 0 auto}
   .brand{font-family:var(--serif);font-weight:700;font-size:17px;line-height:1.05;letter-spacing:.2px}
   .brand-sub{font-family:var(--serif);font-size:11px;color:var(--oro);font-weight:600;letter-spacing:.3px}
   .hd .sub{font-family:var(--sans);font-size:10px;color:#aab4c8;font-weight:500}
@@ -57,10 +57,10 @@
   /* Bottom nav */
   .nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);
     display:flex;padding-bottom:var(--safe-b)}
-  .nav button{flex:1;background:none;border:none;padding:9px 0 8px;color:var(--txt3);font-size:10.5px;
-    font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+  .nav button{flex:1;background:none;border:none;padding:9px 0 8px;color:var(--txt3);font-size:9.5px;
+    font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;position:relative}
   .nav button.on{color:var(--navy)}
-  .nav .ni{font-size:21px;line-height:1}
+  .nav .ni{font-size:20px;line-height:1}
   .nav .dot{position:absolute;top:6px;margin-left:16px;background:var(--red);color:#fff;font-size:9px;
     font-weight:700;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px}
   /* Sheet */
@@ -128,7 +128,7 @@
 <body>
 
 <div class="hd">
-  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAEUUlEQVR42u2bS28cRRDHf9WPfS/BYW0ryYE4oJBEIJA4JnAJCmc48i34DIgDnwBxROKOOCBOKAdOiUQEKBKEkENeOE5k+bH2rndmuovDbDZOshYvO2tnu6XZGc20Rlu/+ld1Va9WOgvvKFM8DFM+EoAEIAFIABKABCABSAASgAQgAUgApnK4fzN58ffvD4RRR06eTwpIABKABOAAAdAIOpmtSbcvvOCqAMSQT58CBFi9c5m1P68gIoBOFwDVwPriL3SXrqIah0ieuxDQbScd+Vi1wPs6vj6D9XWsteT5ABE7UgfI8EIOKAARBANiSonLI1OUKgK4ahvr64hYXKWx7Xn5oaqgsUS3y8nS7bXnY5ERiy1C1iPkPULeJ+Y9QtEnZJsQc1ZuX0JshXzzARiPrTSwvoH1dYx/eN3AuCrG+l1Vg9ujwMa4CpvLf1AMurTnzwCCcTVcNSeGHI05MQwwIvRWb2FcjdbcaaJGjK1hrEOMR6wvlVFtsb74M5XmLI2Z48QiA5F9CkCEWGSoRqyvozHi6zPbQqJ0oipYge6Da1jfpD13mqBDu/RhCJQ3QraBq7bRUALcDeP3aBVQxDiy/jKu0qbSmmewsQQiaMjQkBFDRswzYtYHVULeJ+Q9UCXm/fLZcK6GDIBBd4lq+yjG18j7q4hxu7Jkmr1K+MXWGr52CFdtE/M+GnIQM4xfKT348FAdeXp0jOZZYjEghgxXbeNrL5JvrQwltA8VIMaS95bLa+tBy0ov27i/o9dUw7AGGKcmS7axhPUNNAaMq6GxoNhaAWP3WQ5QRZxFjKM1ewozDNPmSycYbC4jRtBRkD/ZC8Tx7zOC9Q1qrc7odqtziiLrYowlFuF/5QO3q8Zby72rX7N290dcrY0YP7SvIAy61A+f4NhbH43pheIjBSijwkc1cuvSF2yt38VWWiMFlQpYZ+bls8ydfJ8QwrCMniQAETQqnVfPU2nOsrl8nWJrDVBc/TCHjr3NC0feRMQ+VfLqWAVEjPXMn/mA9cWf6K/epBh0EbFUWh0OH3+X9vwbxBj/s/F7sAwq1jfpLJyjs3Duqachlt57vJBR0IBqeCI/CKpKpTnL/MkLY3NtCGF86EyyDlCN5HnxdMkqMvSUPB77yDazS9kLdtuUnDzoDu8z+ywJjr6b+QfVqmJ8gxgG5TJnLDFkZbYP26s8GfUQz82GiGrE+yq3r3zFrcufl82OCHeufMnC2Y85+vqHw65w77t1Mwnjna9y77dvufHDZ4S8j8YCDTlFtsH1i5/w4MZFnK/uUBscZAWoYqyjt3KT+9e+o/PKe4ixI0NFDDEULP36Da3ZU1Rac2gIu1b3Tx6ACBojleYcr134dJgQdcwmWdkRatQ9NX5iOUCsx7nqzrW8lMXRs9gfnMyusCqqxd80VM9mb3CC2+LCfhjpl6EEIAGY7iHpDxMpBBKABCABSAASgAQgAUgAEoAEIAFIAKZv/AXBs+f3L7YQdgAAAABJRU5ErkJggg==" class="iso" alt="">
+  <svg class="iso" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2v17.6M7.5 20.8h9M4.8 6.6l7.2-1.6 7.2 1.6"/><path d="M4.8 6.6 2 12.4a2.9 2.9 0 0 0 5.6 0L4.8 6.6z"/><path d="M19.2 6.6 16.4 12.4a2.9 2.9 0 0 0 5.6 0L19.2 6.6z"/></svg>
   <div style="flex:1;min-width:0">
     <div class="brand">Gudiño Cabrera</div>
     <div class="brand-sub">y asociados <span class="sub" id="syncTxt">· cargando…</span></div>
@@ -141,6 +141,7 @@
 <div class="nav">
   <button id="nav-causas" class="on" onclick="tab('causas')"><span class="ni">📋</span>Causas</button>
   <button id="nav-agenda" onclick="tab('agenda')"><span class="ni">🔔</span>Agenda<span class="dot" id="agBadge" style="display:none">0</span></button>
+  <button id="nav-ram" onclick="tab('ram')"><span class="ni">⭐</span>Ramiro<span class="dot" id="ramBadge" style="display:none">0</span></button>
   <button id="nav-cal" onclick="tab('cal')"><span class="ni">📅</span>Calendario</button>
   <button id="nav-nota" onclick="tab('nota')"><span class="ni">📝</span>Anotador<span class="dot" id="notaBadge" style="display:none">0</span></button>
 </div>
@@ -239,20 +240,32 @@ function proximoEvento(c){const e=eventosDeCausa(c).filter(x=>faltan(x.f)>=0);re
 function causasActivas(){return (DB.causas||[]).filter(c=>c.est!=='archivada');}
 
 /* ---------- navegación ---------- */
-function tab(t){CURTAB=t;['causas','agenda','cal','nota'].forEach(x=>document.getElementById('nav-'+x).classList.toggle('on',x===t));window.scrollTo(0,0);render();}
+function tab(t){CURTAB=t;['causas','agenda','ram','cal','nota'].forEach(x=>document.getElementById('nav-'+x).classList.toggle('on',x===t));window.scrollTo(0,0);render();}
 
 function render(){
   updBadge();
   if(CURTAB==='causas')renderCausas();
   else if(CURTAB==='agenda')renderAgenda();
+  else if(CURTAB==='ram')renderRam();
   else if(CURTAB==='nota')renderNota();
   else renderCal();
+}
+function rams(c){if(!c.rams)c.rams=c.ram?[{id:Date.now(),txt:c.ram,done:c.rdon||false}]:[];return c.rams;}
+function carpetaItems(c){
+  const p=c.prueba;if(!p)return [];
+  const out=[];
+  [['peritos','Cédula perito'],['testigos','Cédula testigo'],['informes','Oficio'],['inspeccion','Cédula inspección']].forEach(([k,lbl])=>{
+    (p[k]||[]).forEach(it=>{const e=it.est;if(e==='carpeta'||e==='emitida')out.push(lbl+' — '+(k==='informes'?(it.dest||'organismo'):(it.nombre||'s/nombre')));});
+  });
+  return out;
 }
 function updBadge(){
   const n=causasActivas().reduce((s,c)=>{const e=proximoEvento(c);return s+(e&&faltan(e.f)!=null&&faltan(e.f)>=0&&faltan(e.f)<=3?1:0);},0);
   const b=document.getElementById('agBadge');b.textContent=n;b.style.display=n?'flex':'none';
   const pend=(DB.pendientes||[]).filter(p=>!p.done).length;
   const nb=document.getElementById('notaBadge');if(nb){nb.textContent=pend;nb.style.display=pend?'flex':'none';}
+  let rc=0;causasActivas().forEach(c=>{rc+=rams(c).filter(t=>!t.done).length;rc+=carpetaItems(c).length;});
+  const rb=document.getElementById('ramBadge');if(rb){rb.textContent=rc;rb.style.display=rc?'flex':'none';}
 }
 
 /* ---------- CAUSAS ---------- */
@@ -276,6 +289,7 @@ function setFiltro(f){FILTRO=f;renderCausas();}
 function cardCausa(c){
   const et=etInfo(c.etapa);
   const e=proximoEvento(c);
+  const pr=rams(c).filter(t=>!t.done).length;
   let evH='';
   if(e){const d=faltan(e.f);const urg=d!=null&&d<=3;
     evH=`<div class="ev" style="border-left-color:${e.color}"><span>${e.label}${e.h?' · '+e.h+'hs':''}</span>
@@ -283,7 +297,8 @@ function cardCausa(c){
   return `<div class="card" onclick="abrir(${c.id})">
     <div class="car">${esc(c.car)}</div>
     <div class="meta">${c.ex?esc(c.ex)+' · ':''}${esc(c.juz||'')}</div>
-    <div class="row"><span class="et" style="background:${et.c}">${et.n}</span></div>
+    <div class="row"><span class="et" style="background:${et.c}">${et.n}</span>${pr?`<span class="et" style="background:var(--oro)">⭐ ${pr}</span>`:''}</div>
+    ${c.not?`<div style="font-size:12.5px;color:var(--txt2);margin-top:8px;white-space:pre-wrap;line-height:1.4">💬 ${esc(c.not)}</div>`:''}
     ${evH}</div>`;
 }
 
@@ -322,7 +337,30 @@ function eventosDelDia(iso){
   (DB.vglob||[]).forEach(v=>{if(v.f===iso)out.push({f:v.f,h:v.h,label:'🔔 '+(v.txt||'').replace(/^Recordatorio:\s*/,''),color:'#B8860B',c:null,gid:v.id});});
   return out;
 }
+let CALVISTA='cal'; // 'cal' | 'lista'
+function setCalVista(v){CALVISTA=v;renderCal();}
+function todasAudiencias(){
+  const out=[];
+  causasActivas().forEach(c=>eventosDeCausa(c).forEach(e=>{if(e.kind==='aud')out.push({...e,c});}));
+  return out;
+}
 function renderCal(){
+  const toggle=`<div class="chips" style="margin-bottom:12px">
+    <div class="chip ${CALVISTA==='cal'?'on':''}" onclick="setCalVista('cal')">📅 Calendario</div>
+    <div class="chip ${CALVISTA==='lista'?'on':''}" onclick="setCalVista('lista')">📋 Lista de audiencias</div>
+  </div>`;
+  if(CALVISTA==='lista'){
+    const auds=todasAudiencias();
+    const fut=auds.filter(a=>faltan(a.f)>=0).sort((a,b)=>a.f<b.f?-1:1);
+    const pas=auds.filter(a=>faltan(a.f)<0).sort((a,b)=>a.f>b.f?-1:1);
+    let h='<div class="wrap">'+toggle;
+    if(!auds.length)h+='<div class="empty">No hay audiencias cargadas.</div>';
+    if(fut.length){h+='<div class="sec-t">Próximas</div>'+fut.map(audCard).join('');}
+    if(pas.length){h+='<div class="sec-t">Pasadas</div>'+pas.map(audCard).join('');}
+    h+='</div>';
+    document.getElementById('app').innerHTML=h;
+    return;
+  }
   const y=CALREF.getFullYear(),m=CALREF.getMonth();
   const first=new Date(y,m,1),start=first.getDay(),dim=new Date(y,m+1,0).getDate();
   const prevDim=new Date(y,m,0).getDate();
@@ -346,7 +384,7 @@ function renderCal(){
         <div class="meta">${e.c?esc(e.c.car):'Recordatorio personal'}</div></div>`).join('')
       :'<div class="empty" style="padding:24px">Sin eventos este día.</div>');
   }
-  document.getElementById('app').innerHTML=`<div class="wrap">
+  document.getElementById('app').innerHTML=`<div class="wrap">${toggle}
     <div class="cal-hd">
       <button class="cal-nav" onclick="mesNav(-1)">‹</button>
       <div class="m">${MESES[m]} ${y}</div>
@@ -357,6 +395,17 @@ function renderCal(){
       <div class="cal-grid">${grid}</div>
     </div>
     ${selH}</div>`;
+}
+function audCard(a){
+  const d=faltan(a.f);const urg=d!=null&&d>=0&&d<=7;
+  return `<div class="card" onclick="abrir(${a.c.id})">
+    <div class="row" style="margin:0">
+      <span class="et" style="background:${a.color}">${dv(a.f)}${a.h?' · '+a.h+' hs':''}</span>
+      <span class="faltan ${urg?'urg':''} ${(d!=null&&d>=0&&d<=1)?'blink':''}">${faltanTxt(d)}</span>
+    </div>
+    <div class="car" style="font-size:14px;margin-top:7px">${esc(a.label)}</div>
+    <div class="meta">${esc(a.c.car)} · ${esc(a.c.juz||'')}</div>
+  </div>`;
 }
 function mesNav(n){CALREF=new Date(CALREF.getFullYear(),CALREF.getMonth()+n,1);renderCal();}
 function selDia(is){CALSEL=(CALSEL===is?null:is);renderCal();}
@@ -403,6 +452,62 @@ async function delNota(id){
   if(ok)renderNota();
 }
 
+/* ---------- RAMIRO ---------- */
+function renderRam(){
+  const cs=causasActivas();
+  const conTareas=cs.filter(c=>rams(c).some(t=>!t.done)||carpetaItems(c).length);
+  const hechas=[];cs.forEach(c=>rams(c).filter(t=>t.done).forEach(t=>hechas.push({c,t})));
+  let h='<div class="wrap">';
+  const carp=[];cs.forEach(c=>carpetaItems(c).forEach(x=>carp.push({c,x})));
+  if(carp.length){
+    h+='<div class="sec-t">⭐ A diligenciar — en carpeta</div>';
+    h+=carp.map(o=>`<div class="card" onclick="abrir(${o.c.id})">
+      <div class="car" style="font-size:14px">${esc(o.x)}</div>
+      <div class="meta">${esc(o.c.car)} · ${esc(o.c.juz||'')}</div></div>`).join('');
+  }
+  const pend=conTareas.filter(c=>rams(c).some(t=>!t.done));
+  if(pend.length){
+    h+='<div class="sec-t">Encargos pendientes</div>';
+    pend.forEach(c=>{
+      rams(c).filter(t=>!t.done).forEach(t=>{
+        h+=`<div class="notarow">
+          <span class="cbx" onclick="ramToggle(${c.id},${t.id})"></span>
+          <div style="flex:1;min-width:0">
+            <div class="ntxt" style="font-size:14px">${esc(t.txt)}</div>
+            <div class="meta" onclick="abrir(${c.id})" style="cursor:pointer">${esc(c.car)}</div>
+          </div>
+          <span class="x" onclick="ramDel(${c.id},${t.id})">×</span></div>`;
+      });
+    });
+  }
+  if(!carp.length&&!pend.length)h+='<div class="empty">Ramiro no tiene encargos pendientes.</div>';
+  if(hechas.length){
+    h+=`<div class="sec-t">✓ Cumplidos (${hechas.length})</div>`;
+    h+=hechas.map(o=>`<div class="notarow done">
+      <span class="cbx on" onclick="ramToggle(${o.c.id},${o.t.id})">✓</span>
+      <div style="flex:1;min-width:0"><div class="ntxt">${esc(o.t.txt)}</div><div class="meta">${esc(o.c.car)}</div></div>
+      <span class="x" onclick="ramDel(${o.c.id},${o.t.id})">×</span></div>`).join('');
+  }
+  h+='</div>';
+  document.getElementById('app').innerHTML=h;
+}
+async function ramToggle(cid,tid){
+  const ok=await guardar(db=>{const c=db.causas.find(x=>x.id===cid);if(!c)return;(c.rams||[]).forEach(t=>{if(t.id===tid)t.done=!t.done;});
+    if(c.rams&&c.rams.length){c.ram=c.rams[0].txt;c.rdon=c.rams[0].done;}});
+  if(ok){renderRam();if(OPENID===cid){const c=DB.causas.find(x=>x.id===cid);if(c)renderSheet(c);}}
+}
+async function ramDel(cid,tid){
+  const ok=await guardar(db=>{const c=db.causas.find(x=>x.id===cid);if(!c)return;c.rams=(c.rams||[]).filter(t=>t.id!==tid);
+    c.ram=c.rams.length?c.rams[0].txt:'';c.rdon=c.rams.length?c.rams[0].done:false;});
+  if(ok){renderRam();if(OPENID===cid){const c=DB.causas.find(x=>x.id===cid);if(c)renderSheet(c);}}
+}
+async function ramAdd(cid){
+  const inp=document.getElementById('ram-in');const t=(inp.value||'').trim();if(!t)return;
+  inp.value='';
+  const ok=await guardar(db=>{const c=db.causas.find(x=>x.id===cid);if(!c)return;c.rams=c.rams||[];c.rams.push({id:Date.now(),txt:t,done:false});c.ram=c.rams[0].txt;c.rdon=c.rams[0].done;});
+  if(ok){const c=DB.causas.find(x=>x.id===cid);if(c)renderSheet(c);toast('Encargo agregado');}
+}
+
 /* ---------- HOJA DE DETALLE / EDICIÓN ---------- */
 function abrir(id){OPENID=id;const c=DB.causas.find(x=>x.id===id);if(!c)return;renderSheet(c);openSheet();}
 function openSheet(){document.getElementById('ov').classList.add('on');document.getElementById('sheet').classList.add('on');}
@@ -420,6 +525,11 @@ function renderSheet(c){
       <span class="x" onclick="borrarEvento(${c.id},${i})">×</span>
     </div>`).join(''):'<div style="font-size:13px;color:var(--txt3);padding:4px 2px 10px">Sin vencimientos ni audiencias.</div>';
   const opts=ETAPAS.map(e=>`<option value="${e.k}" ${c.etapa===e.k?'selected':''}>${e.n}</option>`).join('');
+  const rlist=rams(c);
+  const ramHTML=(rlist.length?rlist.map(t=>`<div class="notarow" style="margin-bottom:6px">
+      <span class="cbx ${t.done?'on':''}" onclick="ramToggle(${c.id},${t.id})">${t.done?'✓':''}</span>
+      <span class="ntxt" style="font-size:14px;${t.done?'text-decoration:line-through;color:var(--txt3)':''}">${esc(t.txt)}</span>
+      <span class="x" onclick="ramDel(${c.id},${t.id})">×</span></div>`).join(''):'<div style="font-size:13px;color:var(--txt3);padding:2px 2px 8px">Sin encargos.</div>');
   document.getElementById('sheetContent').innerHTML=`
     <div class="sh-hd">
       <div class="car">${esc(c.car)}</div>
@@ -431,7 +541,21 @@ function renderSheet(c){
         <select class="inp" onchange="setEtapa(${c.id},this.value)">${opts}</select>
       </div>
 
-      <div class="sec-t" style="margin-top:4px">Vencimientos y audiencias</div>
+      <div class="fld">
+        <div class="lbl">💬 Comentario / avances</div>
+        <textarea class="inp" id="coment-${c.id}" rows="3" placeholder="Escribí el avance de la causa…"
+          style="resize:vertical;line-height:1.45" onblur="guardarComent(${c.id})">${esc(c.not||'')}</textarea>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">Se guarda al tocar fuera del recuadro.</div>
+      </div>
+
+      <div class="sec-t" style="margin-top:2px">⭐ Ramiro</div>
+      ${ramHTML}
+      <div style="display:flex;gap:8px;margin:4px 0 6px">
+        <input class="inp" id="ram-in" placeholder="Nuevo encargo para Ramiro…" style="flex:1" onkeydown="if(event.key==='Enter')ramAdd(${c.id})">
+        <button class="btn oro" style="width:auto;padding:0 18px" onclick="ramAdd(${c.id})">+</button>
+      </div>
+
+      <div class="sec-t" style="margin-top:14px">Vencimientos y audiencias</div>
       ${evList}
 
       <div class="fld" style="background:var(--card);border:1px solid var(--line);border-radius:13px;padding:13px;margin-top:10px">
@@ -457,6 +581,13 @@ function renderSheet(c){
     </div>`;
 }
 
+async function guardarComent(id){
+  const el=document.getElementById('coment-'+id);if(!el)return;
+  const val=el.value.trim();
+  const c=DB.causas.find(x=>x.id===id);if(c&&(c.not||'')===val)return;
+  const ok=await guardar(db=>{const cc=db.causas.find(x=>x.id===id);if(cc)cc.not=val;});
+  if(ok){toast('Comentario guardado');render();}
+}
 async function setEtapa(id,val){
   const ok=await guardar(db=>{const c=db.causas.find(x=>x.id===id);if(c)c.etapa=val;});
   if(ok){toast('Estado actualizado');render();const c=DB.causas.find(x=>x.id===id);if(c&&OPENID===id)renderSheet(c);}
