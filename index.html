@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v306</title>
+<title>Gudiño Cabrera y Asociados v308</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -440,6 +440,23 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 </style>
 </head>
 <body>
+<style id="rich-ctrl-css">
+.rich-tb{display:flex;gap:4px;margin:2px 0 3px}
+.rich-tb button{border:1px solid #ddd;background:#fff;border-radius:6px;width:30px;height:26px;font-size:13px;cursor:pointer;color:#333;line-height:1}
+.rich-tb button:hover{background:#f0f0f0}
+.fi.rich{min-height:70px;overflow-y:auto;text-align:left}
+.fi.rich:empty:before{content:attr(data-ph);color:#aaa}
+.fi.rich u{text-decoration:underline}
+.ctrl-card{border:1px solid #e6e8ee;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fff;box-shadow:0 1px 3px rgba(20,33,61,.06)}
+.ctrl-est{font-size:10px;font-weight:700;padding:3px 9px;border-radius:8px;color:#fff}
+.ctrl-prev{border:1px solid #e6e8ee;border-radius:8px;background:#fff;padding:22px 26px;font-family:Arial;font-size:12px;line-height:2;max-height:52vh;overflow-y:auto;margin:10px 0}
+.ctrl-com{background:#f6f7fa;border-radius:8px;padding:8px 11px;margin-bottom:6px;font-size:12px}
+</style>
+<div id="ctrl-ver-ov" style="display:none;position:fixed;inset:0;background:rgba(15,20,35,.55);z-index:9000;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:14px;max-width:760px;width:100%;max-height:90vh;overflow-y:auto;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.3)">
+    <div id="ctrl-ver-cont"></div>
+  </div>
+</div>
 <div class="app" id="app">
 
 <!-- SIDEBAR -->
@@ -694,6 +711,11 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
           <span style="font-size:24px">🗄</span>
           <div><div style="font-size:13px;font-weight:700">Archivo</div><div style="font-size:11px;color:#aaa">Causas archivadas (consultar, restaurar o borrar)</div></div>
         </div>
+        <div onclick="goP('control')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;position:relative">
+          <span style="font-size:24px">🔍</span>
+          <div><div style="font-size:13px;font-weight:700">Control de escritos</div><div style="font-size:11px;color:#aaa">Revisar, aprobar, editar y comentar escritos</div></div>
+          <span id="her-control-badge" style="margin-left:auto;background:#C0392B;color:#fff;font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:none;align-items:center;justify-content:center;padding:0 5px">0</span>
+        </div>
         <div onclick="goP('turnero')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
           <span style="font-size:24px">🗓</span>
           <div><div style="font-size:13px;font-weight:700">Turnos</div><div style="font-size:11px;color:#aaa">Agenda de consultas y turnos</div></div>
@@ -799,6 +821,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
         <button class="btn" onclick="escImprimir()" style="background:var(--navy);color:#fff;border-color:var(--navy)">🖨 Imprimir</button>
         <button class="btn" onclick="escDescargarWord()" style="background:var(--oro);color:#fff;border-color:var(--oro)">⬇ Word</button>
         <button class="btn" id="btn-drive" onclick="escAbrirEnDrive()" style="background:#0F9D58;color:#fff;border-color:#0F9D58">📤 Abrir en Drive</button>
+        <button class="btn" onclick="escEnviarControl()" style="background:#7A5C99;color:#fff;border-color:#7A5C99">🔍 Enviar a control</button>
         <button class="btn" onclick="escDescargarPDF()" style="background:#8b2c2c;color:#fff;border-color:#8b2c2c">⬇ PDF</button>
         <button class="btn" onclick="escGuardarArchivo()" style="background:var(--green);color:#fff;border-color:var(--green)" title="Guardar en la lista de Escritos generados (Herramientas) sin imprimir ni descargar">💾 Guardar en archivo</button>
       </div>
@@ -888,6 +911,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
       </div>
       <div class="fa"><button class="btn p" onclick="addCausa()">+ Agregar causa</button><button class="btn" onclick="goR()">Cancelar</button></div>
       <div class="ok" id="form-ok">✓ Causa agregada correctamente.</div>
+    </div>
+
+    <div class="ct panel" id="panel-control">
+      <div id="control-body"></div>
     </div>
 
     <div class="ct panel" id="panel-archivo">
@@ -1170,6 +1197,8 @@ let gastos=JSON.parse(localStorage.getItem('ga_g')||'null')||G0;
 let audiencias=JSON.parse(localStorage.getItem('ga_a')||'null')||A0;
 let extraj=JSON.parse(localStorage.getItem('ga_e')||'null')||EXT0;
 let vglob=JSON.parse(localStorage.getItem('ga_vglob')||'[]');
+let revisiones=JSON.parse(localStorage.getItem('ga_rev')||'[]');
+function sRev(){localStorage.setItem('ga_rev',JSON.stringify(revisiones));}
 let feriados=JSON.parse(localStorage.getItem('ga_f')||'null')||F0;
 let mailCfg=JSON.parse(localStorage.getItem('ga_mc')||'{}');
 let filtroF=null,curView='reg',openCID=null,calM_map={},activeEd=null;
@@ -1280,7 +1309,7 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob};}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones};}
 function applyPayload(d){
   if(!d)return;
   if(d.causas){
@@ -1298,7 +1327,7 @@ function applyPayload(d){
     else movidas=new Set();
   }
   if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;if(d.pendientes)pendientes=d.pendientes;
-  if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;if(d.vglob)vglob=d.vglob;
+  if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;if(d.vglob)vglob=d.vglob;if(d.revisiones)revisiones=d.revisiones;
   if(d.mailCfg)mailCfg=d.mailCfg;
   if(d.tareasRam)tareasRam=d.tareasRam;
   svl('ga_c',causas);svl('ga_m_'+SK,[...movidas]);svl('ga_g',gastos);
@@ -1382,17 +1411,17 @@ function showRegLayout(v){
 }
 function showOtherPanel(id){
   document.getElementById('panel-reg-wrap').style.display='none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes','mev','escritos','prueba','archivo'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes','mev','escritos','prueba','archivo','control'].forEach(p=>{
     document.getElementById('panel-'+p).classList.toggle('on',p===id);
   });
 }
 function goR(){filtroF=null;showRegLayout(true);niOn('reg');document.getElementById('ptitle').textContent='Registro de causas';renderBan();renderR();}
 function goF(f){filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos'};
   document.getElementById('ptitle').textContent=t[p]||p;
   showOtherPanel(p);
-  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her',escgen:'her',archivo:'arch'}[p]||p);
+  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her',escgen:'her',archivo:'arch',control:'control'}[p]||p);
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
   if(p==='audiencias'){sincTodasAudiencias();renderCal();}
@@ -1403,6 +1432,7 @@ function goP(p){
   if(p==='prueba'){renderPrueba();}
   if(p==='escgen'){renderEscGen();}
   if(p==='archivo'){renderArchivo();}
+  if(p==='control'){renderControl();}
   if(p==='config'){try{driveRenderCfg();}catch(e){}}
   if(p==='extrajudiciales')renderExt();
   if(p==='vencemañana')renderVMP();
@@ -1442,6 +1472,17 @@ function updBadges(){
   const vmp=vmpProx.length+miosUrg.length;
   const vmpEl=document.getElementById('cnt-vmp');
   if(vmpEl){vmpEl.textContent=vmp;vmpEl.style.display=vmp?'':'none';}
+  const ctEl=document.getElementById('cnt-control');
+  const cnCtrl=(revisiones||[]).filter(r=>r.estado==='pendiente').length;
+  if(ctEl){ctEl.textContent=cnCtrl;ctEl.style.display=cnCtrl?'':'none';}
+  const herB=document.getElementById('her-control-badge');
+  if(herB){herB.textContent=cnCtrl;herB.style.display=cnCtrl?'inline-flex':'none';}
+  const herNi=document.getElementById('ni-her');
+  if(herNi){
+    let d=herNi.querySelector('.her-dot');
+    if(cnCtrl){ if(!d){d=document.createElement('span');d.className='nb her-dot';d.style.cssText='background:#C0392B;color:#fff';herNi.appendChild(d);} d.textContent=cnCtrl; d.style.display=''; }
+    else if(d){d.style.display='none';}
+  }
   // pulse si alguno vence hoy o mañana
   const hayUrgente=vmpProx.some(c=>{
     const d=Math.round((new Date(c.ven+' 12:00')-new Date(hoy5+' 12:00'))/(1000*60*60*24));
@@ -4277,7 +4318,10 @@ function escActualizar(){
   if(!def.campos.length){cont.innerHTML='<div style="font-size:11px;color:#aaa;padding:6px 2px">Este escrito no requiere datos adicionales.</div>';return;}
   cont.innerHTML='<label class="fl">2 — Datos del escrito</label>'+def.campos.map(c=>
     `<div style="font-size:10px;color:#8a94a6;margin:6px 0 1px;font-weight:600">${c.l}${c.op?' <span style="font-weight:400">(opcional)</span>':''}</div>`+
-    (c.ta?`<textarea class="fi" id="esc-f-${c.k}" placeholder="${c.ph}" style="width:100%;height:${c.k==='aperc'?'46':'70'}px;resize:vertical;font-size:${c.k==='aperc'?'10':'12'}px"></textarea>`
+    (c.ta?(['prov','cuerpo','texto','relato','pedido','hechos'].includes(c.k)
+      ? `<div class="rich-tb"><button type="button" title="Negrita" onmousedown="richCmd(event,'bold')"><b>N</b></button><button type="button" title="Cursiva" onmousedown="richCmd(event,'italic')"><i>K</i></button><button type="button" title="Subrayado" onmousedown="richCmd(event,'underline')"><u>S</u></button></div>
+         <div class="fi rich" id="esc-f-${c.k}" contenteditable="true" data-ph="${c.ph}" style="width:100%;min-height:${c.k==='aperc'?'46':'70'}px;font-size:${c.k==='aperc'?'10':'12'}px" oninput="escPreviewRefresh()"></div>`
+      : `<textarea class="fi" id="esc-f-${c.k}" placeholder="${c.ph}" style="width:100%;height:${c.k==='aperc'?'46':'70'}px;resize:vertical;font-size:${c.k==='aperc'?'10':'12'}px"></textarea>`)
        :`<input class="fi" id="esc-f-${c.k}" placeholder="${c.ph}" style="width:100%;font-size:12px">`)
   ).join('')
   +(def.esCedula?`<div style="display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap">
@@ -4296,11 +4340,147 @@ function escActualizar(){
     escArmarAperc();
   }
 }
+function escPreviewRefresh(){const pv=document.getElementById('esc-preview');if(pv&&pv.style.display!=='none'){try{escVistaPrevia();}catch(e){}}}
+
+/* ═══════════ CONTROL DE ESCRITOS (revisión interna) ═══════════ */
+function escEnviarControl(){
+  escGuardarGenerado();
+  const h=escHTML();if(!h){alert('Completá el escrito antes de enviarlo a control.');return;}
+  const cid=parseInt(document.getElementById('esc-causa').value);
+  const c=causas.find(x=>x.id===cid);
+  const tipo=document.getElementById('esc-tipo').value;
+  const datos=escDatos();
+  const rol=(document.querySelector('input[name="esc-rol"]:checked')||{}).value||'apoderado';
+  const maxpag=(document.getElementById('esc-maxpag')||{}).value||'2';
+  const reiter=(document.getElementById('esc-reiter')||{}).checked||false;
+  if(_ctrlEditando){
+    const r=revisiones.find(x=>x.id===_ctrlEditando);
+    if(r){
+      r.html=h;r.datos=datos;r.rol=rol;r.maxpag=maxpag;r.reiter=reiter;r.estado='pendiente';
+      r.coment=r.coment||[];r.coment.push({autor:miUsuario||'—',txt:'✎ Escrito editado y reenviado a control',fecha:new Date().toLocaleString('es-AR')});
+      _ctrlEditando=null;sRev();sC();updBadges();
+      const t=document.getElementById('esc-aviso');if(t){t.style.display='block';t.style.background='#EDE7F3';t.style.color='#5B3D7A';t.textContent='🔍 Cambios guardados en Control (queda pendiente).';t._hold=true;setTimeout(()=>{t._hold=false;},4000);}
+      return;
+    }
+  }
+  const reg={
+    id:Date.now(),causaId:cid,car:c?c.car:'',ex:c?c.ex:'',juz:c?c.juz:'',
+    tipo,titulo:(ESC_TIPOS[tipo]&&ESC_TIPOS[tipo].titulo)||'Escrito',
+    html:h, datos, rol, maxpag, reiter,
+    autor:miUsuario||'—', fecha:new Date().toLocaleString('es-AR'),
+    estado:'pendiente', coment:[]
+  };
+  revisiones.unshift(reg);
+  sRev();sC();updBadges();
+  const t=document.getElementById('esc-aviso');
+  if(t){t.style.display='block';t.style.background='#EDE7F3';t.style.color='#5B3D7A';t.textContent='🔍 Escrito enviado a Control. Queda pendiente de aprobación.';t._hold=true;setTimeout(()=>{t._hold=false;},4000);}
+}
+let _ctrlEditando=null;
+function ctrlEditar(id){
+  const r=revisiones.find(x=>x.id===id);if(!r)return;
+  const ov=document.getElementById('ctrl-ver-ov');if(ov)ov.style.display='none';
+  goP('escritos');
+  setTimeout(()=>{
+    escPoblarCausas();
+    const cs=document.getElementById('esc-causa');if(cs&&r.causaId)cs.value=String(r.causaId);
+    const tp=document.getElementById('esc-tipo');if(tp)tp.value=r.tipo;
+    const rr=document.querySelector('input[name="esc-rol"][value="'+(r.rol||'apoderado')+'"]');if(rr)rr.checked=true;
+    escActualizar();
+    setTimeout(()=>{
+      Object.keys(r.datos||{}).forEach(k=>{const el=document.getElementById('esc-f-'+k);if(!el)return;
+        if(el.isContentEditable)el.innerHTML=r.datos[k]||'';else el.value=r.datos[k]||'';});
+      const mp=document.getElementById('esc-maxpag');if(mp&&r.maxpag)mp.value=r.maxpag;
+      const ri=document.getElementById('esc-reiter');if(ri)ri.checked=!!r.reiter;
+      _ctrlEditando=id;
+      try{escVistaPrevia();}catch(e){}
+    },70);
+  },70);
+}
+function _revEstMeta(e){return ({pendiente:{n:'Pendiente',c:'#B8860B'},aprobado:{n:'Aprobado',c:'#2f9e44'},rechazado:{n:'Con cambios',c:'#C0392B'}})[e]||{n:e,c:'#888'};}
+function renderControl(){
+  const el=document.getElementById('control-body');if(!el)return;
+  const pend=revisiones.filter(r=>r.estado==='pendiente');
+  const resu=revisiones.filter(r=>r.estado!=='pendiente');
+  let h=`<div style="font-size:11px;color:#aaa;margin-bottom:12px">Escritos enviados a revisión. Aprobá, pedí cambios o comentá. Todo queda dentro de la app y sincronizado.</div>`;
+  if(!revisiones.length){h+='<div style="color:#aaa;text-align:center;padding:34px">No hay escritos en control.</div>';el.innerHTML=h;return;}
+  const card=(r)=>{
+    const m=_revEstMeta(r.estado);
+    return `<div class="ctrl-card">
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+        <span class="ctrl-est" style="background:${m.c}">${m.n}</span>
+        <div style="flex:1;min-width:140px"><div style="font-weight:700;font-size:13px">${r.titulo}</div>
+          <div style="font-size:11px;color:#888">${r.car||''} ${r.ex?'· '+r.ex:''}</div></div>
+        <div style="font-size:10px;color:#aaa;text-align:right">por ${r.autor}<br>${r.fecha}</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap">
+        <button class="btn" style="font-size:11px" onclick="ctrlVer(${r.id})">👁 Ver</button>
+        ${r.datos?`<button class="btn" style="font-size:11px;background:#185FA5;color:#fff;border-color:#185FA5" onclick="ctrlEditar(${r.id})">✎ Editar</button>`:''}
+        ${r.estado!=='aprobado'?`<button class="btn" style="font-size:11px;background:#2f9e44;color:#fff;border-color:#2f9e44" onclick="ctrlEstado(${r.id},'aprobado')">✓ Aprobar</button>`:''}
+        ${r.estado!=='rechazado'?`<button class="btn" style="font-size:11px;background:#fff;color:#C0392B;border-color:#e6b3ac" onclick="ctrlEstado(${r.id},'rechazado')">✎ Pedir cambios</button>`:''}
+        <button class="btn" style="font-size:11px" onclick="ctrlBorrar(${r.id})">🗑</button>
+      </div>
+      ${(r.coment&&r.coment.length)?`<div style="margin-top:9px">${r.coment.map(co=>`<div class="ctrl-com"><b>${co.autor}:</b> ${co.txt} <span style="color:#aaa;font-size:10px">· ${co.fecha}</span></div>`).join('')}</div>`:''}
+      <div style="display:flex;gap:6px;margin-top:7px">
+        <input class="fi" id="ctrl-com-${r.id}" placeholder="Escribir un comentario..." style="flex:1;font-size:11px">
+        <button class="btn" style="font-size:11px" onclick="ctrlComent(${r.id})">Comentar</button>
+      </div>
+    </div>`;
+  };
+  if(pend.length){h+=`<div style="font-size:11px;font-weight:700;color:#B8860B;text-transform:uppercase;letter-spacing:.4px;margin:4px 0 8px">Pendientes (${pend.length})</div>`+pend.map(card).join('');}
+  if(resu.length){h+=`<div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.4px;margin:14px 0 8px">Resueltos (${resu.length})</div>`+resu.map(card).join('');}
+  el.innerHTML=h;
+}
+function ctrlVer(id){
+  const r=revisiones.find(x=>x.id===id);if(!r)return;
+  const ov=document.getElementById('ctrl-ver-ov');
+  document.getElementById('ctrl-ver-cont').innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+      <div style="flex:1"><b style="font-size:14px">${r.titulo}</b><div style="font-size:11px;color:#888">${r.car||''}</div></div>
+      <button class="btn" style="font-size:12px" onclick="document.getElementById('ctrl-ver-ov').style.display='none'">✕ Cerrar</button>
+    </div>
+    <div class="ctrl-prev">${r.html}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${r.datos?`<button class="btn" style="background:#185FA5;color:#fff;border-color:#185FA5" onclick="ctrlEditar(${r.id})">✎ Editar en el generador</button>`:''}
+      <button class="btn" style="background:#2f9e44;color:#fff;border-color:#2f9e44" onclick="ctrlEstado(${r.id},'aprobado');document.getElementById('ctrl-ver-ov').style.display='none'">✓ Aprobar</button>
+      <button class="btn" style="background:#fff;color:#C0392B;border-color:#e6b3ac" onclick="ctrlEstado(${r.id},'rechazado');document.getElementById('ctrl-ver-ov').style.display='none'">✎ Pedir cambios</button>
+    </div>`;
+  ov.style.display='flex';
+}
+function ctrlEstado(id,est){
+  const r=revisiones.find(x=>x.id===id);if(!r)return;
+  r.estado=est;r.resueltoPor=miUsuario||'—';r.resueltoFecha=new Date().toLocaleString('es-AR');
+  sRev();sC();updBadges();renderControl();
+  toast&&toast(est==='aprobado'?'Escrito aprobado':'Marcado para cambios');
+}
+function ctrlComent(id){
+  const inp=document.getElementById('ctrl-com-'+id);const t=(inp.value||'').trim();if(!t)return;
+  const r=revisiones.find(x=>x.id===id);if(!r)return;
+  r.coment=r.coment||[];r.coment.push({autor:miUsuario||'—',txt:t,fecha:new Date().toLocaleString('es-AR')});
+  sRev();sC();renderControl();
+}
+function ctrlBorrar(id){
+  if(!confirm('¿Quitar este escrito del control?'))return;
+  revisiones=revisiones.filter(x=>x.id!==id);sRev();sC();updBadges();renderControl();
+}
+function richCmd(e,cmd){e.preventDefault();try{document.execCommand('styleWithCSS',false,false);}catch(_){}document.execCommand(cmd,false,null);escPreviewRefresh();}
+function _richVal(el){
+  let h=el.innerHTML||'';
+  h=h.replace(/<div><br\s*\/?><\/div>/gi,' ').replace(/<div>/gi,' ').replace(/<\/div>/gi,'').replace(/<br\s*\/?>/gi,' ');
+  h=h.replace(/<span[^>]*font-weight:\s*(bold|[6-9]00)[^>]*>(.*?)<\/span>/gi,'<b>$2</b>');
+  h=h.replace(/<span[^>]*font-style:\s*italic[^>]*>(.*?)<\/span>/gi,'<i>$1</i>');
+  h=h.replace(/<span[^>]*text-decoration:[^>]*underline[^>]*>(.*?)<\/span>/gi,'<u>$1</u>');
+  h=h.replace(/<(?!\/?(?:b|i|u|strong|em)\b)[^>]*>/gi,'');
+  h=h.replace(/&nbsp;/g,' ').replace(/\s+/g,' ');
+  return h.trim();
+}
 function escDatos(){
   const tipo=document.getElementById('esc-tipo').value;
   const def=ESC_TIPOS[tipo];
   const d={};
-  def.campos.forEach(c=>{const el=document.getElementById('esc-f-'+c.k);d[c.k]=el?el.value.trim():'';});
+  def.campos.forEach(c=>{const el=document.getElementById('esc-f-'+c.k);
+    if(!el)d[c.k]='';
+    else if(el.isContentEditable)d[c.k]=_richVal(el);
+    else d[c.k]=el.value.trim();});
   return d;
 }
 const _NOMB_F=['mariela','marianela','silvana','marisa','hebe','graciela','adriana','veronica','verónica','ana','guillermina','laura','cecilia','gabriela','maria','maría','marcela','sandra','patricia','claudia','andrea','carolina','lucia','lucía','sofia','sofía','valentina','florencia','daniela','gisela','romina','natalia','paula','julieta','agustina','belen','belén','rosa','elena','beatriz','susana','monica','mónica','alejandra','fernanda','carla','noelia'];
@@ -4544,20 +4724,21 @@ function _zipStore(files){
   return new Blob([...parts,...central,new Uint8Array(eo.buffer)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
 }
 function _xesc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function _runsDe(nodo,bold,ital,sz){
+function _runsDe(nodo,bold,ital,sz,und){
   let out=[];
   nodo.childNodes.forEach(n=>{
     if(n.nodeType===3){
       const t=n.textContent.replace(/\s+/g,' ');
-      if(t.trim()||t===' ')out.push({t,b:bold,i:ital,s:sz});
+      if(t.trim()||t===' ')out.push({t,b:bold,i:ital,u:und,s:sz});
     } else if(n.nodeType===1){
       const tag=n.tagName.toLowerCase();
       if(tag==='img')return;
       const st=(n.getAttribute('style')||'');
-      const b=bold||tag==='b'||tag==='strong'||/font-weight:\s*(bold|700)/.test(st);
+      const b=bold||tag==='b'||tag==='strong'||/font-weight:\s*(bold|[6-9]00)/.test(st);
       const i=ital||tag==='i'||tag==='em';
+      const u=und||tag==='u'||/text-decoration:[^;]*underline/.test(st);
       const m=st.match(/font-size:\s*([\d.]+)pt/);
-      out=out.concat(_runsDe(n,b,i,m?Math.round(parseFloat(m[1])*2):sz));
+      out=out.concat(_runsDe(n,b,i,m?Math.round(parseFloat(m[1])*2):sz,u));
     }
   });
   return out;
@@ -4606,7 +4787,7 @@ function _htmlADocx(html){
       if(txt)rs+='<w:r><w:tab/></w:r>';
     }
     _runsDe(el,boldBloque,false,szBloque).forEach(r=>{
-      rs+=`<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:color w:val="000000"/><w:sz w:val="${r.s||szBloque}"/><w:szCs w:val="${r.s||szBloque}"/>${r.b?'<w:b/>':''}${r.i?'<w:i/>':''}</w:rPr><w:t xml:space="preserve">${_xesc(r.t)}</w:t></w:r>`;
+      rs+=`<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:color w:val="000000"/><w:sz w:val="${r.s||szBloque}"/><w:szCs w:val="${r.s||szBloque}"/>${r.b?'<w:b/>':''}${r.i?'<w:i/>':''}${r.u?'<w:u w:val="single"/>':''}</w:rPr><w:t xml:space="preserve">${_xesc(r.t)}</w:t></w:r>`;
     });
     cuerpo+=`<w:p><w:pPr>${tabs}<w:jc w:val="${jc}"/><w:spacing w:after="120" w:line="480" w:lineRule="auto"/>${ind}</w:pPr>${rs}</w:p>`;
   });
