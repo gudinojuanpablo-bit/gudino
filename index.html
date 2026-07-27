@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v308</title>
+<title>Gudiño Cabrera y Asociados v311</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -486,7 +486,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
     </div>
     <div class="ni" id="ni-aud" onclick="goP('audiencias')">📅 Audiencias</div>
     <div class="ni" id="ni-pend" onclick="goP('pendientes')">📝 Anotador <span class="nb" id="cnt-pend" style="display:none">0</span></div>
-    <div class="ni" id="ni-nue" onclick="goP('nueva')">➕ Nueva causa</div>
+    <div class="ni" id="ni-control" onclick="goP('control')">🔍 Control de escritos <span class="nb" id="cnt-control" style="display:none;background:#C0392B;color:#fff">0</span></div>
     <div class="ni" id="ni-her" onclick="goP('herramientas')" style="color:#2980b9">🔧 Herramientas</div>
     <div class="ni" id="ni-cfg" onclick="goP('config')">⚙ Config. / Online</div>
   </nav>
@@ -711,10 +711,9 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
           <span style="font-size:24px">🗄</span>
           <div><div style="font-size:13px;font-weight:700">Archivo</div><div style="font-size:11px;color:#aaa">Causas archivadas (consultar, restaurar o borrar)</div></div>
         </div>
-        <div onclick="goP('control')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;position:relative">
-          <span style="font-size:24px">🔍</span>
-          <div><div style="font-size:13px;font-weight:700">Control de escritos</div><div style="font-size:11px;color:#aaa">Revisar, aprobar, editar y comentar escritos</div></div>
-          <span id="her-control-badge" style="margin-left:auto;background:#C0392B;color:#fff;font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:none;align-items:center;justify-content:center;padding:0 5px">0</span>
+        <div onclick="goP('nueva')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
+          <span style="font-size:24px">➕</span>
+          <div><div style="font-size:13px;font-weight:700">Nueva causa</div><div style="font-size:11px;color:#aaa">Dar de alta un expediente</div></div>
         </div>
         <div onclick="goP('turnero')" style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);cursor:pointer">
           <span style="font-size:24px">🗓</span>
@@ -823,7 +822,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
         <button class="btn" id="btn-drive" onclick="escAbrirEnDrive()" style="background:#0F9D58;color:#fff;border-color:#0F9D58">📤 Abrir en Drive</button>
         <button class="btn" onclick="escEnviarControl()" style="background:#7A5C99;color:#fff;border-color:#7A5C99">🔍 Enviar a control</button>
         <button class="btn" onclick="escDescargarPDF()" style="background:#8b2c2c;color:#fff;border-color:#8b2c2c">⬇ PDF</button>
-        <button class="btn" onclick="escGuardarArchivo()" style="background:var(--green);color:#fff;border-color:var(--green)" title="Guardar en la lista de Escritos generados (Herramientas) sin imprimir ni descargar">💾 Guardar en archivo</button>
+        <button class="btn" onclick="escGuardarArchivo()" style="background:var(--green);color:#fff;border-color:var(--green)" title="Guardar en la lista de Escritos generados (Herramientas)">💾 Guardar</button>
       </div>
       <div id="esc-guardado-ok" style="display:none;font-size:11px;color:var(--green);font-weight:600;margin-top:6px">✓ Guardado en Herramientas → Escritos generados</div>
 
@@ -1411,7 +1410,7 @@ function showRegLayout(v){
 }
 function showOtherPanel(id){
   document.getElementById('panel-reg-wrap').style.display='none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes','mev','escritos','prueba','archivo','control'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes','mev','escritos','prueba','archivo','control','escgen'].forEach(p=>{
     document.getElementById('panel-'+p).classList.toggle('on',p===id);
   });
 }
@@ -1421,7 +1420,7 @@ function goP(p){
   const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos'};
   document.getElementById('ptitle').textContent=t[p]||p;
   showOtherPanel(p);
-  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'nue',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her',escgen:'her',archivo:'arch',control:'control'}[p]||p);
+  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her',escgen:'her',archivo:'arch',control:'control'}[p]||p);
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
   if(p==='audiencias'){sincTodasAudiencias();renderCal();}
@@ -1475,14 +1474,6 @@ function updBadges(){
   const ctEl=document.getElementById('cnt-control');
   const cnCtrl=(revisiones||[]).filter(r=>r.estado==='pendiente').length;
   if(ctEl){ctEl.textContent=cnCtrl;ctEl.style.display=cnCtrl?'':'none';}
-  const herB=document.getElementById('her-control-badge');
-  if(herB){herB.textContent=cnCtrl;herB.style.display=cnCtrl?'inline-flex':'none';}
-  const herNi=document.getElementById('ni-her');
-  if(herNi){
-    let d=herNi.querySelector('.her-dot');
-    if(cnCtrl){ if(!d){d=document.createElement('span');d.className='nb her-dot';d.style.cssText='background:#C0392B;color:#fff';herNi.appendChild(d);} d.textContent=cnCtrl; d.style.display=''; }
-    else if(d){d.style.display='none';}
-  }
   // pulse si alguno vence hoy o mañana
   const hayUrgente=vmpProx.some(c=>{
     const d=Math.round((new Date(c.ven+' 12:00')-new Date(hoy5+' 12:00'))/(1000*60*60*24));
@@ -4320,7 +4311,7 @@ function escActualizar(){
     `<div style="font-size:10px;color:#8a94a6;margin:6px 0 1px;font-weight:600">${c.l}${c.op?' <span style="font-weight:400">(opcional)</span>':''}</div>`+
     (c.ta?(['prov','cuerpo','texto','relato','pedido','hechos'].includes(c.k)
       ? `<div class="rich-tb"><button type="button" title="Negrita" onmousedown="richCmd(event,'bold')"><b>N</b></button><button type="button" title="Cursiva" onmousedown="richCmd(event,'italic')"><i>K</i></button><button type="button" title="Subrayado" onmousedown="richCmd(event,'underline')"><u>S</u></button></div>
-         <div class="fi rich" id="esc-f-${c.k}" contenteditable="true" data-ph="${c.ph}" style="width:100%;min-height:${c.k==='aperc'?'46':'70'}px;font-size:${c.k==='aperc'?'10':'12'}px" oninput="escPreviewRefresh()"></div>`
+         <div class="fi rich" id="esc-f-${c.k}" contenteditable="true" data-ph="${c.ph}" style="width:100%;min-height:${c.k==='aperc'?'46':'70'}px;font-size:${c.k==='aperc'?'10':'12'}px" oninput="escPreviewRefresh()" onpaste="richPaste(event)"></div>`
       : `<textarea class="fi" id="esc-f-${c.k}" placeholder="${c.ph}" style="width:100%;height:${c.k==='aperc'?'46':'70'}px;resize:vertical;font-size:${c.k==='aperc'?'10':'12'}px"></textarea>`)
        :`<input class="fi" id="esc-f-${c.k}" placeholder="${c.ph}" style="width:100%;font-size:12px">`)
   ).join('')
@@ -4461,6 +4452,17 @@ function ctrlComent(id){
 function ctrlBorrar(id){
   if(!confirm('¿Quitar este escrito del control?'))return;
   revisiones=revisiones.filter(x=>x.id!==id);sRev();sC();updBadges();renderControl();
+}
+function richPaste(e){
+  e.preventDefault();
+  const txt=(e.clipboardData||window.clipboardData).getData('text/plain');
+  // insertar como texto plano (hereda la tipografía del sistema)
+  try{document.execCommand('insertText',false,txt);}
+  catch(_){
+    const sel=window.getSelection();
+    if(sel&&sel.rangeCount){const r=sel.getRangeAt(0);r.deleteContents();r.insertNode(document.createTextNode(txt));r.collapse(false);}
+  }
+  escPreviewRefresh();
 }
 function richCmd(e,cmd){e.preventDefault();try{document.execCommand('styleWithCSS',false,false);}catch(_){}document.execCommand(cmd,false,null);escPreviewRefresh();}
 function _richVal(el){
