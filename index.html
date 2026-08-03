@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v314</title>
+<title>Gudiño Cabrera y Asociados v316</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -672,36 +672,41 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
     </div>
 
     <div class="ct panel" id="panel-gastos">
-      <div class="gcards">
-        <div class="gcard"><div class="gl">Total</div><div class="gv" id="g-tot">$0</div></div>
-        <div class="gcard"><div class="gl">JP</div><div class="gv" id="g-jp">$0</div></div>
-        <div class="gcard"><div class="gl">Otros</div><div class="gv" id="g-otr">$0</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:flex-end">
+        <div style="flex:1;min-width:170px"><label class="fl">Ver gastos de</label>
+          <select class="fi" id="gflt-causa" onchange="renderG()"><option value="">— Todas las causas —</option></select></div>
+        <div style="min-width:130px"><label class="fl">Socio</label>
+          <select class="fi" id="gflt-socio" onchange="renderG()"><option value="">— Todos —</option></select></div>
+        <button class="btn" onclick="gImprimir('causa')" style="font-size:11px" title="Extracto formal agrupado por causa">🖨 Extracto por causa</button>
+        <button class="btn" onclick="gImprimir('socio')" style="font-size:11px" title="Extracto formal agrupado por socio">🖨 Por socio</button>
+        <button class="btn p" onclick="toggleGF()" style="font-size:11px">+ Agregar gasto</button>
       </div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn p" onclick="toggleGF()" style="font-size:11px">+ Agregar gasto</button></div>
-      <div id="g-form" style="display:none;background:var(--bg2);border-radius:6px;padding:11px 13px;margin-bottom:10px;border:1px solid var(--border)">
-        <div class="fg" style="grid-template-columns:1fr 1fr 1fr">
-          <div class="fgg"><label class="fl">Fecha</label><input class="fi" type="date" id="gf-f"></div>
-          <div class="fgg" style="grid-column:span 2"><label class="fl">Proceso / Causas</label>
-            <div style="display:flex;gap:6px">
-              <div style="flex:1;position:relative">
-                <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px">🔍</span>
-                <input class="fi" id="gf-causa-buscar" placeholder="Buscar causa..." autocomplete="off"
-                  style="width:100%;padding-left:28px"
-                  onfocus="mostrarListaCausasGasto()"
-                  oninput="mostrarListaCausasGasto()">
-                <div id="gf-causa-lista" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;background:#fff;border:1px solid var(--border);border-radius:7px;max-height:220px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.12);margin-top:2px"></div>
-              </div>
+
+      <div id="g-resumen" style="margin-bottom:12px"></div>
+
+      <div id="g-form" style="display:none;background:var(--bg2);border-radius:8px;padding:13px 15px;margin-bottom:12px;border:1px solid var(--border)">
+        <div class="fg" style="grid-template-columns:1fr 1fr">
+          <div class="fgg"><label class="fl">Fecha del gasto</label><input class="fi" type="date" id="gf-f"></div>
+          <div class="fgg"><label class="fl">¿Quién pagó?</label><select class="fi" id="gf-q"></select></div>
+          <div class="fgg" style="grid-column:span 2"><label class="fl">Causa</label>
+            <div style="position:relative">
+              <input class="fi" id="gf-causa-buscar" placeholder="Buscar causa..." autocomplete="off" style="width:100%" onfocus="mostrarListaCausasGasto()" oninput="_gCausaSel='';_gAIniciar=false;mostrarListaCausasGasto()">
+              <div id="gf-causa-lista" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;background:#fff;border:1px solid var(--border);border-radius:7px;max-height:220px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,.12);margin-top:2px"></div>
             </div>
-            <div id="gf-causas-tags" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px"></div>
-            <input type="hidden" id="gf-p" value="">
+            <div id="gf-ini-hint" style="display:none;font-size:11px;color:#2a3a8a;margin-top:4px">📝 Causa a iniciar: escribí el nombre arriba (no hace falta juzgado).</div>
           </div>
-          <div class="fgg"><label class="fl">Monto ($)</label><input class="fi" type="number" id="gf-m"></div>
-          <div class="fgg"><label class="fl">¿Quién pagó?</label><select class="fi" id="gf-q"><option>JP</option><option>EUGE</option><option>YANI</option><option>ROSANA</option><option>ALDANA</option><option>REINALDO</option><option>RAMIRO</option><option>Cliente</option><option>OTRO</option></select></div>
-          <div class="fgg" style="grid-column:span 2"><label class="fl">Observaciones</label><input class="fi" id="gf-o" placeholder="Ej: 1 UF y 1 UP"></div>
         </div>
-        <div class="fa"><button class="btn p" onclick="addG()">Agregar</button><button class="btn" onclick="document.getElementById('g-form').style.display='none'">Cancelar</button></div>
+        <label class="fl" style="margin-top:6px">Rubros (tildá los que correspondan)</label>
+        <div id="gf-rubros" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:5px 12px;margin:5px 0 6px"></div>
+        <div class="fgg" id="gf-esp-wrap" style="display:none;margin-bottom:8px"><label class="fl">Especificar (estudio médico / otro)</label><input class="fi" id="gf-esp" placeholder="Ej: RMN de hombro izquierdo"></div>
+        <div class="fg" style="grid-template-columns:1fr 2fr">
+          <div class="fgg"><label class="fl">Monto ($)</label><input class="fi" type="number" id="gf-m" placeholder="0"></div>
+          <div class="fgg"><label class="fl">Observaciones / detalle</label><input class="fi" id="gf-o" placeholder="Detalle libre del gasto"></div>
+        </div>
+        <div class="fa" style="margin-top:8px"><button class="btn p" onclick="addG()">💾 Guardar gasto</button><button class="btn" onclick="document.getElementById('g-form').style.display='none'">Cancelar</button></div>
       </div>
-      <table class="gtbl"><thead><tr><th>Fecha</th><th>Proceso</th><th>Monto</th><th>Pagó</th><th>Observaciones</th><th></th></tr></thead><tbody id="g-body"></tbody></table>
+
+      <table class="gtbl"><thead><tr><th>Fecha</th><th>Causa</th><th>Rubro / detalle</th><th>Pagó</th><th style="text-align:right">Monto</th><th></th></tr></thead><tbody id="g-body"></tbody></table>
     </div>
 
     <div class="ct panel" id="panel-herramientas">
@@ -2743,90 +2748,165 @@ function delA(){
   sA();document.getElementById('af-form').classList.remove('ab');renderCal();
 }
 
-function renderG(){
-  let tot=0,jp=0,otr=0;gastos.forEach(g=>{tot+=g.m;if(g.q==='JP')jp+=g.m;else otr+=g.m;});
-  document.getElementById('g-tot').textContent=pesos(tot);document.getElementById('g-jp').textContent=pesos(jp);document.getElementById('g-otr').textContent=pesos(otr);
-  document.getElementById('g-body').innerHTML=[...gastos].sort((a,b)=>new Date(b.f)-new Date(a.f)).map(g=>{
-    const pcMap={JP:'pjp',EUGE:'peuge',YANI:'pyani',ROSANA:'pros',ALDANA:'pald',REINALDO:'prei',RAMIRO:'pram',Cliente:'pcli',OTRO:'poth'};const pc=pcMap[g.q]||'poth';
-    return`<tr><td style="white-space:nowrap">${fmtS(g.f)}</td><td>${g.p}</td><td style="font-weight:700">${pesos(g.m)}</td><td><span class="ppill ${pc}">${g.q}</span></td><td style="color:#888">${g.o}</td><td><button class="ib" onclick="delG(${g.id})">🗑</button></td></tr>`;
-  }).join('');
+const GRUBROS=[
+  {k:'UF1',n:'Unidades Forenses 1 (UF 1)'},
+  {k:'UF2',n:'Unidades Forenses 2 (UF 2)'},
+  {k:'UP1',n:'Unidades Previsionales 1 (UP 1)'},
+  {k:'UP2',n:'Unidades Previsionales 2 (UP 2)'},
+  {k:'ADEL',n:'Adelanto de gastos de perito'},
+  {k:'PLUS',n:'"Plus" solicitado por el perito'},
+  {k:'TRAS',n:'Traslados'},
+  {k:'ESTM',n:'Estudios médicos'},
+  {k:'OTRO',n:'Otro'},
+];
+const GSOCIOS=['Rami','Juan Pablo','Euge','Yani','Aldana','Reinaldo','Rosana','Otros'];
+function gSocioNorm(q){const m={JP:'Juan Pablo',RAMIRO:'Rami',EUGE:'Euge',YANI:'Yani',ROSANA:'Rosana',ALDANA:'Aldana',REINALDO:'Reinaldo',Cliente:'Otros',OTRO:'Otros'};return m[q]||q;}
+function gRubroTxt(g){
+  const arr=(g.rubros||[]).map(k=>{const r=GRUBROS.find(x=>x.k===k);return r?r.n.replace(/\s*\(.*\)/,''):k;});
+  let t=arr.join(', ');
+  if(g.esp)t+=(t?' — ':'')+g.esp;
+  if(!t)t=g.o||'—';
+  return t;
 }
-let _causasGasto=[]; // causas seleccionadas para el gasto actual
-function poblarCausasGasto(){
-  // ya no usa select; el combo busca en vivo
-  const inp=document.getElementById('gf-causa-buscar');
-  if(inp)inp.value='';
-  const lista=document.getElementById('gf-causa-lista');
-  if(lista)lista.style.display='none';
-}
+let _gCausaSel='',_gAIniciar=false;
+function poblarCausasGasto(){const inp=document.getElementById('gf-causa-buscar');if(inp)inp.value='';const l=document.getElementById('gf-causa-lista');if(l)l.style.display='none';}
 function mostrarListaCausasGasto(){
-  const inp=document.getElementById('gf-causa-buscar');
-  const lista=document.getElementById('gf-causa-lista');
+  const inp=document.getElementById('gf-causa-buscar'),lista=document.getElementById('gf-causa-lista');
   if(!inp||!lista)return;
   const q=inp.value.toLowerCase().trim();
-  const activas=causas.filter(c=>c.est!=='archivada')
-    .filter(c=>!q||c.car.toLowerCase().includes(q)||(c.ex||'').toLowerCase().includes(q))
-    .sort((a,b)=>a.car.localeCompare(b.car));
-  let h='<div onclick="elegirCausaGasto(\'__NUEVA__\')" style="padding:9px 12px;cursor:pointer;font-size:12px;font-weight:700;color:#2a3a8a;background:#f0f4ff;border-bottom:1px solid var(--border)">➕ Causa nueva (escribir en observaciones)</div>';
-  if(activas.length){
-    h+=activas.map(c=>`<div onclick="elegirCausaGasto('${c.car.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" style="padding:8px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid #f3f3f3" onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background='#fff'">${c.car}</div>`).join('');
-  } else {
-    h+='<div style="padding:10px 12px;font-size:11px;color:#aaa">Sin coincidencias</div>';
-  }
-  lista.innerHTML=h;
-  lista.style.display='block';
+  const activas=causas.filter(c=>c.est!=='archivada').filter(c=>!q||c.car.toLowerCase().includes(q)||(c.ex||'').toLowerCase().includes(q)).sort((a,b)=>a.car.localeCompare(b.car));
+  let h='<div onclick="elegirCausaGasto(\'__INI__\')" style="padding:9px 12px;cursor:pointer;font-size:12px;font-weight:700;color:#2a3a8a;background:#f0f4ff;border-bottom:1px solid var(--border)">➕ Causa a iniciar (sin juzgado)</div>';
+  h+=activas.length?activas.map(c=>`<div onclick="elegirCausaGasto('${c.car.replace(/'/g,"\\'")}')" style="padding:8px 12px;cursor:pointer;font-size:12px;border-bottom:1px solid #f3f3f3" onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background='#fff'">${c.car}${c.ex?' <span style=\"color:#aaa\">· '+c.ex+'</span>':''}</div>`).join(''):'<div style="padding:10px 12px;font-size:11px;color:#aaa">Sin coincidencias — podés usar "Causa a iniciar"</div>';
+  lista.innerHTML=h;lista.style.display='block';
 }
 function elegirCausaGasto(v){
-  const lista=document.getElementById('gf-causa-lista');
-  const inp=document.getElementById('gf-causa-buscar');
-  if(v==='__NUEVA__'){
-    // Causa nueva: foco en observaciones para escribir el nombre
-    if(lista)lista.style.display='none';
-    if(inp)inp.value='';
-    const obs=document.getElementById('gf-o');
-    if(obs){obs.focus();obs.placeholder='Escribí el nombre de la causa nueva acá...';}
-    if(!_causasGasto.includes('CAUSA NUEVA'))_causasGasto.push('CAUSA NUEVA');
-    renderCausasGastoTags();
-    return;
-  }
-  if(!_causasGasto.includes(v))_causasGasto.push(v);
-  if(inp)inp.value='';
-  if(lista)lista.style.display='none';
-  renderCausasGastoTags();
+  const lista=document.getElementById('gf-causa-lista'),inp=document.getElementById('gf-causa-buscar'),hint=document.getElementById('gf-ini-hint');
+  if(v==='__INI__'){_gAIniciar=true;_gCausaSel='';if(inp){inp.value='';inp.placeholder='Nombre de la causa a iniciar (ej: Pérez c/ ART)';inp.focus();}if(hint)hint.style.display='block';if(lista)lista.style.display='none';return;}
+  _gAIniciar=false;_gCausaSel=v;if(inp)inp.value=v;if(hint)hint.style.display='none';if(lista)lista.style.display='none';
 }
-// Cerrar la lista si se hace click afuera
-document.addEventListener('click',e=>{
-  const lista=document.getElementById('gf-causa-lista');
-  const inp=document.getElementById('gf-causa-buscar');
-  if(lista&&inp&&!lista.contains(e.target)&&e.target!==inp)lista.style.display='none';
-});
-function quitarCausaGasto(i){_causasGasto.splice(i,1);renderCausasGastoTags();}
-function renderCausasGastoTags(){
-  const el=document.getElementById('gf-causas-tags');
-  if(!el)return;
-  el.innerHTML=_causasGasto.map((c,i)=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--blue-l);color:#0C447C;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600">${c}<span onclick="quitarCausaGasto(${i})" style="cursor:pointer;color:#88a">✕</span></span>`).join('');
-}
+document.addEventListener('click',e=>{const lista=document.getElementById('gf-causa-lista'),inp=document.getElementById('gf-causa-buscar');if(lista&&inp&&!lista.contains(e.target)&&e.target!==inp)lista.style.display='none';});
 function toggleGF(){
-  const f=document.getElementById('g-form');
-  const showing=f.style.display!=='none'&&f.style.display!=='';
+  const f=document.getElementById('g-form');const showing=f.style.display==='block';
   f.style.display=showing?'none':'block';
-  if(!showing){_causasGasto=[];renderCausasGastoTags();poblarCausasGasto();document.getElementById('gf-p').value='';}
+  if(!showing){
+    _gCausaSel='';_gAIniciar=false;
+    document.getElementById('gf-f').value=todayISO();
+    document.getElementById('gf-causa-buscar').value='';document.getElementById('gf-causa-buscar').placeholder='Buscar causa...';
+    document.getElementById('gf-ini-hint').style.display='none';
+    document.getElementById('gf-m').value='';document.getElementById('gf-o').value='';document.getElementById('gf-esp').value='';
+    document.getElementById('gf-esp-wrap').style.display='none';
+    const q=document.getElementById('gf-q');q.innerHTML=GSOCIOS.map(s=>`<option>${s}</option>`).join('');
+    document.getElementById('gf-rubros').innerHTML=GRUBROS.map(r=>`<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" id="grb-${r.k}" onchange="gRubrosChange()"> ${r.n}</label>`).join('');
+  }
+}
+function gRubrosChange(){
+  const need=(document.getElementById('grb-ESTM').checked||document.getElementById('grb-OTRO').checked);
+  document.getElementById('gf-esp-wrap').style.display=need?'block':'none';
 }
 function addG(){
   const m=parseFloat(document.getElementById('gf-m').value);
-  const libre=document.getElementById('gf-p').value.trim();
-  // Combinar causas elegidas + texto libre
-  let proceso='';
-  if(_causasGasto.length){proceso=_causasGasto.join(' + ');}
-  if(libre){proceso=proceso?proceso+' + '+libre:libre;}
-  if(!proceso||!m){alert('Elegí al menos una causa (o escribí el proceso) y el monto.');return;}
-  gastos.push({id:Date.now(),f:document.getElementById('gf-f').value||todayISO(),p:proceso,m,q:document.getElementById('gf-q').value,o:document.getElementById('gf-o').value.trim()});
-  sG();
-  _causasGasto=[];
-  document.getElementById('g-form').style.display='none';
-  renderG();
+  const buscado=document.getElementById('gf-causa-buscar').value.trim();
+  let causa=_gAIniciar?(buscado?buscado+' (a iniciar)':''):(_gCausaSel||buscado);
+  const rubros=GRUBROS.filter(r=>{const el=document.getElementById('grb-'+r.k);return el&&el.checked;}).map(r=>r.k);
+  const esp=document.getElementById('gf-esp').value.trim();
+  if(!causa){alert('Elegí la causa o escribí la causa a iniciar.');return;}
+  if(!m){alert('Ingresá el monto.');return;}
+  if(!rubros.length){alert('Tildá al menos un rubro.');return;}
+  gastos.push({id:Date.now(),f:document.getElementById('gf-f').value||todayISO(),p:causa,m,q:document.getElementById('gf-q').value,o:document.getElementById('gf-o').value.trim(),rubros,esp});
+  sG();document.getElementById('g-form').style.display='none';renderG();
 }
-function delG(id){if(!confirm('¿Eliminar?'))return;gastos=gastos.filter(g=>g.id!==id);sG();renderG();}
+function delG(id){if(!confirm('¿Eliminar este gasto?'))return;gastos=gastos.filter(g=>g.id!==id);sG();renderG();}
+function _gPill(q){const n=gSocioNorm(q);const map={'Juan Pablo':'pjp','Euge':'peuge','Yani':'pyani','Rosana':'pros','Aldana':'pald','Reinaldo':'prei','Rami':'pram','Otros':'poth'};return`<span class="ppill ${map[n]||'poth'}">${n}</span>`;}
+function renderG(){
+  // poblar filtros
+  const fCausaSel=document.getElementById('gflt-causa'),fSocSel=document.getElementById('gflt-socio');
+  const causasG=[...new Set(gastos.map(g=>g.p))].sort();
+  const prevC=fCausaSel.value,prevS=fSocSel.value;
+  fCausaSel.innerHTML='<option value="">— Todas las causas —</option>'+causasG.map(c=>`<option${c===prevC?' selected':''}>${c}</option>`).join('');
+  const socsG=[...new Set(gastos.map(g=>gSocioNorm(g.q)))].sort();
+  fSocSel.innerHTML='<option value="">— Todos —</option>'+socsG.map(s=>`<option${s===prevS?' selected':''}>${s}</option>`).join('');
+  const fc=fCausaSel.value,fs=fSocSel.value;
+  let lista=[...gastos];
+  if(fc)lista=lista.filter(g=>g.p===fc);
+  if(fs)lista=lista.filter(g=>gSocioNorm(g.q)===fs);
+  // tabla
+  document.getElementById('g-body').innerHTML=lista.sort((a,b)=>new Date(b.f)-new Date(a.f)).map(g=>
+    `<tr><td style="white-space:nowrap">${fmtS(g.f)}</td><td>${g.p}</td><td style="color:#555">${gRubroTxt(g)}${g.o&&(g.rubros&&g.rubros.length)?`<div style="color:#aaa;font-size:11px">${g.o}</div>`:''}</td><td>${_gPill(g.q)}</td><td style="font-weight:700;text-align:right;white-space:nowrap">${pesos(g.m)}</td><td><button class="ib" onclick="delG(${g.id})">🗑</button></td></tr>`
+  ).join('')||'<tr><td colspan="6" style="text-align:center;color:#aaa;padding:20px">Sin gastos'+(fc||fs?' para este filtro':'')+'.</td></tr>';
+  // resumen
+  renderGResumen(lista,fc);
+}
+function renderGResumen(lista,fc){
+  const cont=document.getElementById('g-resumen');
+  const tot=lista.reduce((s,g)=>s+g.m,0);
+  const porSocio={};lista.forEach(g=>{const n=gSocioNorm(g.q);porSocio[n]=(porSocio[n]||0)+g.m;});
+  const porRubro={};lista.forEach(g=>(g.rubros||['—']).forEach(k=>{const r=GRUBROS.find(x=>x.k===k);const n=r?r.n.replace(/\s*\(.*\)/,''):'Otros';porRubro[n]=(porRubro[n]||0)+g.m;}));
+  let h=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px 14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div style="font-size:13px;font-weight:700">${fc?fc:'Todas las causas'}</div>
+      <div style="font-size:18px;font-weight:800;color:var(--navy)">${pesos(tot)}</div>
+    </div>`;
+  if(lista.length){
+    h+=`<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:8px">
+      <div style="flex:1;min-width:180px"><div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:3px">Puesto por cada socio</div>${Object.entries(porSocio).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:1px 0"><span>${k}</span><b>${pesos(v)}</b></div>`).join('')}</div>
+      <div style="flex:1;min-width:180px"><div style="font-size:10px;font-weight:700;color:#999;text-transform:uppercase;margin-bottom:3px">Por rubro</div>${Object.entries(porRubro).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:1px 0"><span>${k}</span><b>${pesos(v)}</b></div>`).join('')}</div>
+    </div>`;
+  }
+  h+='</div>';
+  cont.innerHTML=h;
+}
+function gImprimir(modo){
+  const fc=document.getElementById('gflt-causa').value,fs=document.getElementById('gflt-socio').value;
+  let lista=[...gastos];
+  if(fc)lista=lista.filter(g=>g.p===fc);
+  if(fs)lista=lista.filter(g=>gSocioNorm(g.q)===fs);
+  if(!lista.length){alert('No hay gastos para imprimir con este filtro.');return;}
+  const fecha=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+  const grupos={};
+  lista.forEach(g=>{const key=modo==='socio'?gSocioNorm(g.q):g.p;(grupos[key]=grupos[key]||[]).push(g);});
+  let cuerpo='',totalGeneral=0;
+  Object.keys(grupos).sort().forEach(k=>{
+    const items=grupos[k].sort((a,b)=>new Date(a.f)-new Date(b.f));
+    const sub=items.reduce((s,g)=>s+g.m,0);totalGeneral+=sub;
+    const porSocio={};items.forEach(g=>{const n=gSocioNorm(g.q);porSocio[n]=(porSocio[n]||0)+g.m;});
+    cuerpo+=`<h2>${modo==='socio'?'Socio: '+k:k}</h2><table><thead><tr><th>Fecha</th><th>Concepto / rubro</th>${modo==='socio'?'<th>Causa</th>':'<th>Pagó</th>'}<th class="r">Monto</th></tr></thead><tbody>`;
+    items.forEach(g=>{cuerpo+=`<tr><td>${fmtS(g.f)}</td><td>${gRubroTxt(g)}${g.o?` <span class="obs">(${g.o})</span>`:''}</td><td>${modo==='socio'?g.p:gSocioNorm(g.q)}</td><td class="r">${pesos(g.m)}</td></tr>`;});
+    cuerpo+=`<tr class="sub"><td colspan="3">Subtotal</td><td class="r">${pesos(sub)}</td></tr></tbody></table>`;
+    if(modo!=='socio'){cuerpo+=`<div class="tsoc"><b>Aportado por cada socio:</b> ${Object.entries(porSocio).map(([s,v])=>`${s}: ${pesos(v)}`).join(' · ')}</div>`;}
+  });
+  const totSocGlobal={};lista.forEach(g=>{const n=gSocioNorm(g.q);totSocGlobal[n]=(totSocGlobal[n]||0)+g.m;});
+  const doc=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Extracto de gastos</title><style>
+    @page{margin:2.5cm 2cm}
+    body{font-family:Arial,sans-serif;color:#1a1a1a;font-size:12px;line-height:1.5}
+    .hd{text-align:center;border-bottom:2px solid #14213D;padding-bottom:10px;margin-bottom:6px}
+    .hd .est{font-family:Georgia,serif;font-size:20px;font-weight:700;color:#14213D}
+    .hd .sub{font-size:11px;color:#C0912F;font-weight:600;letter-spacing:1px}
+    .doc-t{text-align:center;font-size:14px;font-weight:700;margin:14px 0 2px}
+    .doc-f{text-align:center;font-size:11px;color:#666;margin-bottom:16px}
+    h2{font-size:13px;color:#14213D;border-left:4px solid #C0912F;padding-left:8px;margin:18px 0 6px}
+    table{width:100%;border-collapse:collapse;margin-bottom:4px}
+    th{background:#f0f0f0;text-align:left;padding:6px 8px;font-size:11px;border-bottom:1px solid #ccc}
+    td{padding:5px 8px;border-bottom:1px solid #eee}
+    .r{text-align:right;white-space:nowrap}
+    .obs{color:#888;font-style:italic}
+    tr.sub td{font-weight:700;border-top:1px solid #999;background:#fafafa}
+    .tsoc{font-size:11px;color:#444;margin:4px 0 10px;padding:6px 8px;background:#f7f4ec;border-radius:4px}
+    .tot{margin-top:20px;border-top:2px solid #14213D;padding-top:10px}
+    .tot .g{display:flex;justify-content:space-between;font-size:15px;font-weight:800;color:#14213D}
+    .tot .s{font-size:11px;color:#444;margin-top:6px}
+    .foot{margin-top:30px;font-size:10px;color:#999;text-align:center;border-top:1px solid #eee;padding-top:8px}
+  </style></head><body>
+    <div class="hd"><div class="est">Gudiño Cabrera y Asociados</div><div class="sub">ESTUDIO JURÍDICO</div></div>
+    <div class="doc-t">EXTRACTO DE GASTOS${fc?' — '+fc:fs?' — '+fs:''}</div>
+    <div class="doc-f">Emitido el ${fecha}${modo==='socio'?' · agrupado por socio':' · agrupado por causa'}</div>
+    ${cuerpo}
+    <div class="tot"><div class="g"><span>TOTAL GENERAL</span><span>${pesos(totalGeneral)}</span></div>
+      <div class="s"><b>Totales por socio:</b> ${Object.entries(totSocGlobal).sort((a,b)=>b[1]-a[1]).map(([s,v])=>`${s}: ${pesos(v)}`).join(' · ')}</div>
+    </div>
+    <div class="foot">Documento generado por el sistema del estudio — ${fecha}</div>
+  </body></html>`;
+  const w=window.open('','_blank');w.document.write(doc);w.document.close();w.focus();setTimeout(()=>w.print(),400);
+}
 
 function renderCfg(){
   if(mailCfg.email)document.getElementById('cfg-email').value=mailCfg.email;
@@ -4757,7 +4837,9 @@ function escGuardarGenerado(){
   const d=escDatos();
   const dest=(d.dest||'').trim();
   const key=tipo+'|'+dest;
-  const reg={key,tipo,titulo:def.titulo,dest,fecha:new Date().toISOString(),html:h};
+  const reg={key,tipo,titulo:def.titulo,dest,fecha:new Date().toISOString(),html:h,
+    datos:d,rol:(document.querySelector('input[name="esc-rol"]:checked')||{}).value||'apoderado',
+    maxpag:(document.getElementById('esc-maxpag')||{}).value||'',reiter:(document.getElementById('esc-reiter')||{}).checked||false};
   const ix=c.escritos.findIndex(e=>e.key===key);
   if(ix>=0)c.escritos[ix]=reg;else c.escritos.unshift(reg);
   if(c.escritos.length>60)c.escritos.length=60;
@@ -5905,15 +5987,22 @@ function renderEscGen(){
   if(!filas.length){cont.innerHTML='<div style="color:#aaa;font-size:12px;text-align:center;padding:24px">No hay escritos guardados todavía.<br>Se guardan solos cuando descargás o imprimís desde el generador.</div>';return;}
   // agrupar por causa
   const porCausa={};
-  filas.forEach(f=>{(porCausa[f.c.id]=porCausa[f.c.id]||{c:f.c,items:[]}).items.push(f);});
+  filas.forEach(f=>{(porCausa[f.c.id]=porCausa[f.c.id]||{c:f.c,items:[],ult:''}).items.push(f);});
+  // ordenar causas por escrito más reciente
+  Object.values(porCausa).forEach(g=>{g.ult=g.items.reduce((m,it)=>((it.e.fecha||'')>m?(it.e.fecha||''):m),'');g.items.sort((a,b)=>(b.e.fecha||'').localeCompare(a.e.fecha||''));});
+  const grupos=Object.values(porCausa).sort((a,b)=>b.ult.localeCompare(a.ult));
   let h='';
-  Object.values(porCausa).forEach(g=>{
-    h+=`<div style="margin-bottom:12px">
-      <div style="font-size:12px;font-weight:700;color:var(--navy);padding:4px 0;border-bottom:1px solid var(--border)">${g.c.car} <span style="color:#aaa;font-weight:400">· ${g.c.ex||''}</span></div>`;
+  grupos.forEach(g=>{
+    h+=`<div style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:800;color:var(--navy);padding:5px 0 4px;border-bottom:2px solid var(--border)">${g.c.car}<span style="color:#b8b8b8;font-weight:600;font-size:11px"> · ${g.c.ex||''}</span></div>`;
     g.items.forEach(({c,e,idx})=>{
-      h+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 4px;border-bottom:1px dashed var(--border);font-size:12px">
-        <span style="flex:1"><b>${e.titulo}</b>${e.dest?` <span style="color:#888">— ${e.dest}</span>`:''}<br><span style="font-size:10px;color:#aaa">${_dv((e.fecha||'').split('T')[0])}</span></span>
+      h+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 2px 6px 10px;border-bottom:1px solid #f2f2f2">
+        <span style="flex:1;min-width:0">
+          <span style="font-size:11.5px;color:#555">${e.titulo}${e.dest?` <span style="color:#aaa">— ${e.dest}</span>`:''}</span>
+          <span style="font-size:10px;color:#c0c0c0;margin-left:6px">${_dv((e.fecha||'').split('T')[0])}</span>
+        </span>
         <button class="btn-mini" onclick="escGenVer(${c.id},${idx})" title="Ver">👁</button>
+        ${e.datos?`<button class="btn-mini" onclick="escGenEditar(${c.id},${idx})" title="Volver a mandar al editor" style="color:#185FA5">✎</button>`:''}
         <button class="btn-mini" onclick="escGenAbrir(${c.id},${idx})" title="Imprimir">🖨</button>
         <button class="btn-mini" onclick="escGenWord(${c.id},${idx})" title="Descargar Word">⬇</button>
         <button class="btn-mini" onclick="escGenBorrar(${c.id},${idx})" title="Borrar" style="color:#c00">✕</button>
@@ -5947,6 +6036,26 @@ function escGenVer(cid,idx){
       <button class="btn" style="background:var(--oro);color:#fff;border-color:var(--oro)" onclick="escGenWord(${cid},${idx})">⬇ Word</button>
     </div>`;
   ov.style.display='flex';
+}
+function escGenEditar(cid,idx){
+  const c=causas.find(x=>x.id===cid);if(!c)return;const e=(c.escritos||[])[idx];if(!e||!e.datos)return;
+  const ov=document.getElementById('ctrl-ver-ov');if(ov)ov.style.display='none';
+  goP('escritos');
+  setTimeout(()=>{
+    _escLoadingSpecific=true;
+    escPoblarCausas();
+    const cs=document.getElementById('esc-causa');if(cs)cs.value=String(cid);
+    const tp=document.getElementById('esc-tipo');if(tp)tp.value=e.tipo;
+    const rr=document.querySelector('input[name="esc-rol"][value="'+(e.rol||'apoderado')+'"]');if(rr)rr.checked=true;
+    escActualizar();
+    setTimeout(()=>{
+      Object.keys(e.datos||{}).forEach(k=>{const el=document.getElementById('esc-f-'+k);if(!el)return;if(el.isContentEditable)el.innerHTML=e.datos[k]||'';else el.value=e.datos[k]||'';});
+      const mp=document.getElementById('esc-maxpag');if(mp&&e.maxpag)mp.value=e.maxpag;
+      const ri=document.getElementById('esc-reiter');if(ri)ri.checked=!!e.reiter;
+      _escLoadingSpecific=false;escSaveDraft();
+      try{escVistaPrevia();}catch(_){}
+    },70);
+  },70);
 }
 function escGenAbrir(cid,idx){
   const c=causas.find(x=>x.id===cid);if(!c)return;const e=(c.escritos||[])[idx];if(!e)return;
