@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v320</title>
+<title>Gudiño Cabrera y Asociados v321</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -475,6 +475,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
       <div style="flex:1"><label class="fl">Expediente</label><input class="fi" id="ec-ex" style="width:100%"></div>
       <div style="flex:2"><label class="fl">Juzgado</label><input class="fi" id="ec-juz" style="width:100%"></div>
     </div>
+    <div style="margin-top:10px"><label class="fl">Cliente de</label><select class="fi" id="ec-cli" style="width:100%">
+      <option value="">— Seleccionar —</option>
+      <option>J.P.</option><option>Eugenia</option><option>Yanina</option><option>Reinaldo</option><option>Aldana</option><option>Rosana</option><option>Gabriela P.</option>
+    </select></div>
     <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
       <button class="btn" onclick="document.getElementById('edit-causa-ov').style.display='none'">Cancelar</button>
       <button class="btn p" onclick="guardarCausaDatos()">💾 Guardar</button>
@@ -524,6 +528,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 <div class="main">
   <div class="topbar">
     <button class="btn ico" onclick="document.getElementById('sb').classList.toggle('hide')">☰</button>
+    <button class="btn ico" id="nav-back-btn" onclick="navBack()" title="Volver atrás" style="display:none">←</button>
     <div class="tb-title" id="ptitle">Registro de causas</div>
     <span class="sync-dot" id="sync-dot" title="Estado de sincronización"></span>
     <span class="sync-label" id="sync-label">local</span>
@@ -546,6 +551,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
             <div class="filtro-btn on" onclick="setFiltroEstado('');swV('reg')">Todas</div>
             <div class="filtro-btn" onclick="setFiltroEstado('trabajar');swV('reg')">📋 Para trabajar</div>
             <div class="filtro-btn" id="btn-ram-fil" onclick="swV('ram')" style="display:flex;align-items:center;gap:4px">⭐ Ramiro <span class="tbadge y" id="rbadge" style="position:static;margin-left:2px">0</span></div>
+            <div class="filtro-btn" id="btn-art-fil" onclick="toggleART()" style="display:none">🦺 Solo ART</div>
           </div>
           <div class="view on" id="view-reg">
             <div id="reg-secs"></div>
@@ -904,6 +910,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
       <div class="fg">
         <div class="fgg"><label class="fl">N° expediente</label><input class="fi" id="f-ex" placeholder="Ej: 1607/25"></div>
         <div class="fgg"><label class="fl">Carátula</label><input class="fi" id="f-car" placeholder="Ej: SILVA ALAN C/ASOCIART"></div>
+        <div class="fgg"><label class="fl">Cliente de</label><select class="fi" id="f-cli">
+          <option value="">— Seleccionar —</option>
+          <option>J.P.</option><option>Eugenia</option><option>Yanina</option><option>Reinaldo</option><option>Aldana</option><option>Rosana</option><option>Gabriela P.</option>
+        </select></div>
         <div class="fgg"><label class="fl">Fuero</label><select class="fi" id="f-fue" onchange="updJuzSelect()">
           <option value="">— Seleccionar —</option>
           <option value="Laboral">Laboral</option>
@@ -1433,9 +1443,22 @@ function showOtherPanel(id){
     document.getElementById('panel-'+p).classList.toggle('on',p===id);
   });
 }
-function goR(){filtroF=null;showRegLayout(true);niOn('reg');document.getElementById('ptitle').textContent='Registro de causas';renderBan();renderR();}
-function goF(f){filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
+let _navStack=[],_loc='reg',_navBacking=false;
+function _navRecord(newLoc){if(_navBacking)return;if(_loc&&_loc!==newLoc)_navStack.push(_loc);_loc=newLoc;updBackBtn();}
+function updBackBtn(){const b=document.getElementById('nav-back-btn');if(b)b.style.display=_navStack.length?'inline-flex':'none';}
+function navBack(){
+  if(!_navStack.length)return;
+  _navBacking=true;
+  const prev=_navStack.pop();_loc=prev;
+  if(prev==='reg')goR();
+  else if(prev.indexOf('fuero:')===0)goF(prev.slice(6));
+  else if(prev.indexOf('panel:')===0)goP(prev.slice(6));
+  _navBacking=false;updBackBtn();
+}
+function goR(){_navRecord('reg');filtroF=null;showRegLayout(true);niOn('reg');document.getElementById('ptitle').textContent='Registro de causas';renderBan();renderR();}
+function goF(f){_navRecord('fuero:'+f);filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
+  _navRecord('panel:'+p);
   const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos'};
   document.getElementById('ptitle').textContent=t[p]||p;
   showOtherPanel(p);
@@ -1850,6 +1873,8 @@ function openCP(id,e){
   // Llenar campos con datos de la causa
   document.getElementById('gcp-car').textContent=c.car;
   document.getElementById('gcp-car').title=c.car;
+  const gcli=document.getElementById('gcp-cli');
+  if(gcli)gcli.innerHTML=c.cli?`👤 Cliente de <b>${c.cli}</b>`:'<span style="color:#c9a227;cursor:pointer" onclick="editarCausaDatos(openCID)">+ asignar cliente</span>';
   document.getElementById('gcp-aud').value=c.tipo_aud||'';
   const addWrap=document.getElementById('gcp-add-wrap');
   if(addWrap)addWrap.style.display=c.ven?'block':'none';
@@ -2152,6 +2177,9 @@ function chequearMailRamiro(){
 setInterval(chequearMailRamiro,10*60*1000); // cada 10 minutos
 setTimeout(chequearMailRamiro,5000);
 let filtroEstado = '';
+let filtroART=false;
+function esART(c){return /ASOCIART|(^|[^A-Za-zÁÉÍÓÚ])ART([^A-Za-zÁÉÍÓÚ]|$)|EXPERTA|PREVENCI[OÓ]N|GALENO|BERKLEY|SEGUNDA\s+ART|PROVINCIA\s+ART|SWISS\s*MEDICAL|OMINT|RIESGOS\s+DEL\s+TRABAJO|\bSRT\b|FED(ERACI[OÓ]N)?\.?\s+PATRONAL|LA\s+CAJA|RECONQUISTA\s+ART/i.test(c.car||'');}
+function toggleART(){filtroART=!filtroART;const b=document.getElementById('btn-art-fil');if(b)b.classList.toggle('on',filtroART);renderR();}
 function setFiltroEstado(f){
   filtroEstado=f;
   document.querySelectorAll('.filtro-btn').forEach(el=>{
@@ -2427,6 +2455,9 @@ function renderR(){
   const q=document.getElementById('si').value.trim().toLowerCase();
   let fl=causas.filter(c=>c.est!=='archivada');
   if(filtroF)fl=fl.filter(c=>c.fue===filtroF);
+  const artBtn=document.getElementById('btn-art-fil');
+  if(artBtn){artBtn.style.display=(filtroF==='Laboral')?'block':'none';if(filtroF!=='Laboral'&&filtroART){filtroART=false;artBtn.classList.remove('on');}}
+  if(filtroART)fl=fl.filter(esART);
   if(filtroEstado==='trabajar')fl=fl.filter(c=>!movidas.has(c.id));
   if(filtroEstado==='prueba')fl=fl.filter(c=>c.etapa==='prueba');
   if(filtroEstado==='semana'){
@@ -2622,9 +2653,10 @@ function filtrarJuz(){updJuzSelect();}
 function addCausa(){
   const ex=document.getElementById('f-ex').value.trim(),car=document.getElementById('f-car').value.trim();
   if(!ex||!car){alert('Completá expediente y carátula.');return;}
-  causas.push({id:Date.now(),ex,car,fue:document.getElementById('f-fue').value,juz:document.getElementById('f-juz').value.trim()||'—',est:document.getElementById('f-est').value,rol:document.getElementById('f-rol').value,ven:'',tv:'',tipo_aud:'',pl:document.getElementById('f-pl').checked,not:document.getElementById('f-not').value.trim(),ram:document.getElementById('f-ram').value.trim(),rdon:document.getElementById('f-rdon').checked});
+  causas.push({id:Date.now(),ex,car,cli:document.getElementById('f-cli').value,fue:document.getElementById('f-fue').value,juz:document.getElementById('f-juz').value.trim()||'—',est:document.getElementById('f-est').value,rol:document.getElementById('f-rol').value,ven:'',tv:'',tipo_aud:'',pl:document.getElementById('f-pl').checked,not:document.getElementById('f-not').value.trim(),ram:document.getElementById('f-ram').value.trim(),rdon:document.getElementById('f-rdon').checked});
   sC();updProgress();
   ['f-ex','f-car','f-juz','f-not','f-ram','f-juz-buscar'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  const fcli=document.getElementById('f-cli');if(fcli)fcli.value='';
   document.getElementById('f-pl').checked=false;document.getElementById('f-rdon').checked=false;
   const ok=document.getElementById('form-ok');ok.style.display='block';setTimeout(()=>ok.style.display='none',2500);
 }
@@ -2881,6 +2913,7 @@ function editarCausaDatos(id){
   document.getElementById('ec-car').value=c.car||'';
   document.getElementById('ec-ex').value=c.ex||'';
   document.getElementById('ec-juz').value=c.juz||'';
+  const ecCli=document.getElementById('ec-cli');if(ecCli)ecCli.value=c.cli||'';
   document.getElementById('edit-causa-ov').style.display='flex';
 }
 function guardarCausaDatos(){
@@ -2890,6 +2923,7 @@ function guardarCausaDatos(){
   c.car=car;
   c.ex=document.getElementById('ec-ex').value.trim();
   c.juz=document.getElementById('ec-juz').value.trim();
+  const ecCli=document.getElementById('ec-cli');if(ecCli)c.cli=ecCli.value;
   sC();
   document.getElementById('edit-causa-ov').style.display='none';
   renderR();updBadges();
@@ -4694,6 +4728,7 @@ function escJuzgadoInfo(c){
   let nombre=juzNum;
   const mm=juzNum.match(/^(\d+°)\s+(.+)$/);
   if(mm)nombre=`${ORD[mm[1]]||mm[1]} Juzgado ${mm[2]==='Laboral'?'Laboral':mm[2]==='Civil'?'Civil':mm[2]}`;
+  if(nombre&&!/san\s+juan/i.test(nombre))nombre+=' de la Provincia de San Juan';
   return {nombre,titular,gen:_generoTitular(titular)};
 }
 function escHTML(){
@@ -4843,14 +4878,25 @@ function escDescargarPDF(){
     jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
   }).from(cont).save();
 }
+function _imprimirEnIframe(doc){
+  let f=document.getElementById('_print-frame');
+  if(f)f.remove();
+  f=document.createElement('iframe');
+  f.id='_print-frame';
+  f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden';
+  document.body.appendChild(f);
+  const fd=f.contentWindow.document;
+  fd.open();fd.write(doc);fd.close();
+  const go=()=>{try{f.contentWindow.focus();f.contentWindow.print();}catch(e){}};
+  if(f.contentWindow.document.readyState==='complete')setTimeout(go,300);
+  else f.onload=()=>setTimeout(go,300);
+}
 function escImprimir(){
   escGuardarGenerado();
   _escMarcarOrigen();
   try{etapaPorEscrito(parseInt(document.getElementById('esc-causa').value),document.getElementById('esc-tipo').value);}catch(e){}
   const doc=_escDocCompleto();if(!doc)return;
-  const w=window.open('','_blank');
-  w.document.write(doc+'<scr'+'ipt>window.onload=()=>window.print()</scr'+'ipt>');
-  w.document.close();
+  _imprimirEnIframe(doc);
 }
 function _escMarcarOrigen(){
   if(!_escOrigen)return;
@@ -6100,7 +6146,7 @@ function escGenEditar(cid,idx){
 }
 function escGenAbrir(cid,idx){
   const c=causas.find(x=>x.id===cid);if(!c)return;const e=(c.escritos||[])[idx];if(!e)return;
-  const w=window.open('','_blank');w.document.write(_escGenDoc(e.html));w.document.close();w.focus();setTimeout(()=>w.print(),350);
+  _imprimirEnIframe(_escGenDoc(e.html));
 }
 function escGenWord(cid,idx){
   const c=causas.find(x=>x.id===cid);if(!c)return;const e=(c.escritos||[])[idx];if(!e)return;
@@ -6126,6 +6172,7 @@ try{updToolsCounts();}catch(e){}
 <!-- POPUP CALENDARIO GLOBAL — solo audiencias + limpiar/borrar -->
 <div class="cpop" id="global-cpop" onclick="_gcpClickInterno=true" style="display:none">
   <div id="gcp-car" style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+  <div id="gcp-cli" style="font-size:10px;color:#777;margin:-2px 0 7px"></div>
   <div class="cp-hdr">
     <div class="cp-nav" onclick="navGCP(-1,event)">&#8249;</div>
     <span class="cp-mes" id="gcp-mes">—</span>
