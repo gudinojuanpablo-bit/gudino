@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v322</title>
+<title>Gudiño Cabrera y Asociados v324</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -803,6 +803,9 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
         <div>
           <label class="fl">1 — Tipo de escrito</label>
           <select class="fi" id="esc-tipo" style="width:100%;margin-top:3px" onchange="escActualizar()">
+            <optgroup label="Escrito libre">
+              <option value="libre">✍️ Escrito de llenado libre</option>
+            </optgroup>
             <optgroup label="Cédulas de notificación">
               <option value="cedula_dda_lab">Notificación de demanda — LABORAL</option>
               <option value="cedula_dda_civ">Notificación de demanda — CIVIL</option>
@@ -831,10 +834,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
             </optgroup>
           </select>
         </div>
-        <div style="display:flex;gap:12px;align-items:center;padding-bottom:6px">
+        <div id="esc-rol-row" style="display:flex;gap:12px;align-items:center;padding-bottom:6px">
           <label style="font-size:11px;display:flex;gap:4px;align-items:center"><input type="radio" name="esc-rol" value="apoderado" checked> Apoderado</label>
           <label style="font-size:11px;display:flex;gap:4px;align-items:center"><input type="radio" name="esc-rol" value="patrocinante"> Patrocinante</label>
-          <label style="font-size:11px;display:flex;gap:4px;align-items:center;margin-left:12px;border-left:1px solid var(--border);padding-left:12px"><input type="checkbox" id="esc-membrete" checked onchange="escPreviewRefresh()"> 🖼 Con membrete</label>
+          <label id="esc-membrete-wrap" style="font-size:11px;display:none;gap:4px;align-items:center;margin-left:12px;border-left:1px solid var(--border);padding-left:12px"><input type="checkbox" id="esc-membrete" checked onchange="escPreviewRefresh()"> 🖼 Con membrete</label>
         </div>
       </div>
 
@@ -4386,6 +4389,7 @@ function _camposCedula(o){
   return f;
 }
 const ESC_TIPOS={
+  libre:{titulo:'ESCRITO',libre:true,campos:[]},
   consiente:{titulo:'CONSIENTE INTERVENCIÓN',campos:[],
     cuerpo:d=>`Que vengo por el presente a consentir expresamente la intervención de S.S. en los presentes autos.`},
   provea:{titulo:'SE PROVEA DEMANDA',campos:[],
@@ -4529,7 +4533,42 @@ function escActualizar(){
   const tipo=document.getElementById('esc-tipo').value;
   const def=ESC_TIPOS[tipo];
   const cont=document.getElementById('esc-campos');
+  const mw=document.getElementById('esc-membrete-wrap');if(mw)mw.style.display=def.esCedula?'flex':'none';
+  const rr=document.getElementById('esc-rol-row');if(rr)rr.style.display=def.libre?'none':'flex';
   _escFit=null;
+  if(def.libre){
+    cont.innerHTML=`
+    <label class="fl">2 — Escrito libre</label>
+    <div style="font-size:10px;color:#8a94a6;margin:6px 0 1px;font-weight:600">Título del escrito (va centrado y en negrita arriba)</div>
+    <input class="fi" id="esc-f-titulo_libre" placeholder="Ej: CONTESTA VISTA — SOLICITA — INTERPONE RECURSO" style="width:100%;font-size:12px;font-weight:700" oninput="escPreviewRefresh()">
+    <div style="font-size:10px;color:#8a94a6;margin:10px 0 3px;font-weight:600">¿Cómo firmás?</div>
+    <select class="fi" id="esc-libre-modo" style="width:100%;font-size:12px" onchange="escLibreModo();escPreviewRefresh()">
+      <option value="apoderado_actora">Apoderado de la parte actora</option>
+      <option value="apoderado_demandada">Apoderado de la parte demandada</option>
+      <option value="patroc_mero">Patrocinante — mero trámite (art. 45 CPC, sin firma del cliente)</option>
+      <option value="patroc_cliente">Patrocinante con firma del cliente (por derecho propio)</option>
+    </select>
+    <div id="esc-libre-parte-wrap" style="display:none"></div>
+    <div id="esc-libre-cliente-wrap" style="display:none;margin-top:8px">
+      <div style="display:flex;gap:10px">
+        <div style="flex:2"><div style="font-size:10px;color:#8a94a6;margin-bottom:3px;font-weight:600">Nombre del cliente</div><input class="fi" id="esc-f-cli_nombre" placeholder="Ej: JUAN PÉREZ" style="width:100%;font-size:12px" oninput="escPreviewRefresh()"></div>
+        <div style="flex:1"><div style="font-size:10px;color:#8a94a6;margin-bottom:3px;font-weight:600">D.N.I. N°</div><input class="fi" id="esc-f-cli_dni" placeholder="Ej: 30.111.222" style="width:100%;font-size:12px" oninput="escPreviewRefresh()"></div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:12px 0 3px">
+      <div style="font-size:10px;color:#8a94a6;font-weight:600">Cuerpo del escrito (libre)</div>
+      <div class="rich-tb" style="margin:0">
+        <button type="button" title="Negrita" onmousedown="richCmd(event,'bold')"><b>N</b></button>
+        <button type="button" title="Cursiva" onmousedown="richCmd(event,'italic')"><i>K</i></button>
+        <button type="button" title="Subrayado" onmousedown="richCmd(event,'underline')"><u>S</u></button>
+        <button type="button" title="Deshacer (Ctrl+Z)" onmousedown="richCmd(event,'undo')">↶</button>
+        <button type="button" title="Rehacer (Ctrl+Y)" onmousedown="richCmd(event,'redo')">↷</button>
+      </div>
+    </div>
+    <div class="fi rich" id="esc-f-cuerpo" contenteditable="true" data-ph="Escribí acá todo el texto del escrito, sin límite. Podés usar negrita, cursiva y subrayado." style="width:100%;min-height:340px;font-size:13px;line-height:1.6" oninput="escPreviewRefresh()" onpaste="richPaste(event)"></div>`;
+    escLibreModo();
+    return;
+  }
   if(!def.campos.length){cont.innerHTML='<div style="font-size:11px;color:#aaa;padding:6px 2px">Este escrito no requiere datos adicionales.</div>';return;}
   cont.innerHTML='<label class="fl">2 — Datos del escrito</label>'+def.campos.map(c=>
     `<div style="font-size:10px;color:#8a94a6;margin:6px 0 1px;font-weight:600">${c.l}${c.op?' <span style="font-weight:400">(opcional)</span>':''}</div>`+
@@ -4707,6 +4746,10 @@ function escDatos(){
     if(!el)d[c.k]='';
     else if(el.isContentEditable)d[c.k]=_richVal(el);
     else d[c.k]=el.value.trim();});
+  if(def.libre){
+    ['titulo_libre','cli_nombre','cli_dni'].forEach(k=>{const el=document.getElementById('esc-f-'+k);d[k]=el?el.value.trim():'';});
+    const cu=document.getElementById('esc-f-cuerpo');d.cuerpo=cu?_richVal(cu):'';
+  }
   return d;
 }
 const _NOMB_F=['mariela','marianela','silvana','marisa','hebe','graciela','adriana','veronica','verónica','ana','guillermina','laura','cecilia','gabriela','maria','maría','marcela','sandra','patricia','claudia','andrea','carolina','lucia','lucía','sofia','sofía','valentina','florencia','daniela','gisela','romina','natalia','paula','julieta','agustina','belen','belén','rosa','elena','beatriz','susana','monica','mónica','alejandra','fernanda','carla','noelia'];
@@ -4737,6 +4780,11 @@ function escJuzgadoInfo(c){
   return {nombre,titular,gen:_generoTitular(titular)};
 }
 function escConMembrete(){const el=document.getElementById('esc-membrete');return !el||el.checked;}
+function escLibreModo(){
+  const modo=(document.getElementById('esc-libre-modo')||{}).value||'apoderado_actora';
+  const cw=document.getElementById('esc-libre-cliente-wrap');
+  if(cw)cw.style.display=(modo==='patroc_cliente')?'block':'none';
+}
 function escHTML(){
   const cid=parseInt(document.getElementById('esc-causa').value);
   const c=causas.find(x=>x.id===cid);
@@ -4748,6 +4796,27 @@ function escHTML(){
   const rolTxt=rol==='apoderado'?'apoderado':'letrado patrocinante';
   const parte=(_ladoDeCausa(c));
   const jz=escJuzgadoInfo(c);
+  if(def.libre){
+    const modo=(document.getElementById('esc-libre-modo')||{}).value||'apoderado_actora';
+    const titulo=(d.titulo_libre||'ESCRITO').toUpperCase();
+    const cuerpo=d.cuerpo||'';
+    const autos=`<b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(c.car)}"</b>`;
+    let encab;
+    if(modo==='patroc_cliente'){
+      const nom=(d.cli_nombre||'____').toUpperCase(), dni=d.cli_dni||'____';
+      encab=`<b>${nom}</b>, D.N.I. N° ${dni}, por derecho propio, con el patrocinio letrado del Dr. <b>JUAN PABLO GUDIÑO CABRERA</b>, abogado del foro local, M.P. N° 4683, en ${autos}, a V.S. respetuosamente digo:`;
+    } else if(modo==='patroc_mero'){
+      encab=`<b>JUAN PABLO GUDIÑO CABRERA</b>, abogado del foro local, M.P. N° 4683, invocando las facultades que el artículo 45 del C.P.C. confiere a los letrados patrocinantes, en ${autos}, a V.S. respetuosamente digo:`;
+    } else {
+      encab=`<b>JUAN PABLO GUDIÑO CABRERA</b>, abogado del foro local, M.P. N° 4683, apoderado ${modo==='apoderado_demandada'?'de la parte demandada':'de la parte actora'}, en ${autos}, a V.S. respetuosamente digo:`;
+    }
+    return `<p style="text-align:center;font-weight:bold;margin-bottom:22pt">${escH(titulo)}</p>
+    <p>${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.nombre)}:</p>
+    <p style="text-align:justify;text-indent:1.25cm;margin-top:10pt">${encab}</p>
+    <div style="text-align:justify;text-indent:1.25cm">${cuerpo}</div>
+    <p style="margin-top:16pt;text-align:center">Proveer de conformidad,</p>
+    <p style="font-weight:bold;text-align:center">SERÁ JUSTICIA.-</p>`;
+  }
   const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
 
   if(def.esCedula){
