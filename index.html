@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v327</title>
+<title>Gudiño Cabrera y Asociados v331</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -48,18 +48,19 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 /* ── SIDEBAR ── */
 .sb{width:172px;background:var(--navy);border-right:1px solid var(--navy);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s;overflow:hidden}
 .sb.hide{width:0}
-.sb-top{padding:16px 10px 12px;border-bottom:1px solid rgba(255,255,255,.12)}
-.sb-iso{width:46px;height:auto;display:block;margin:0 auto 7px;opacity:.95}
-.sb-name{font-family:'Gelasio',Georgia,serif;font-size:14px;font-weight:600;color:#fff;text-align:center;line-height:1.2;letter-spacing:.2px}
-.sb-sub{font-size:9px;color:var(--oro);text-align:center;margin-top:1px;letter-spacing:.6px;font-weight:500}
-.sb-week{font-size:9px;color:rgba(255,255,255,.42);margin-top:9px;font-weight:500;letter-spacing:.4px;text-align:center}
+.sb-top{padding:10px 10px 8px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sb-brand{display:flex;align-items:center;gap:8px}
+.sb-iso{width:30px;height:auto;display:block;margin:0;flex-shrink:0;opacity:.95}
+.sb-name{font-family:'Gelasio',Georgia,serif;font-size:13px;font-weight:600;color:#fff;text-align:left;line-height:1.15;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-sub{font-size:8.5px;color:var(--oro);text-align:left;margin-top:0;letter-spacing:.6px;font-weight:500}
+.sb-week{font-size:8.5px;color:rgba(255,255,255,.42);margin-top:6px;font-weight:500;letter-spacing:.4px;text-align:center}
 .nav{padding:4px;flex:1;overflow-y:auto;overflow-x:hidden}
-.ng{font-size:9px;font-weight:700;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.1em;padding:9px 7px 3px;white-space:nowrap}
-.ni{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:5px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.75);margin-bottom:1px;white-space:nowrap;user-select:none;font-weight:500;transition:background .15s}
+.ng{font-size:9px;font-weight:700;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.1em;padding:7px 7px 2px;white-space:nowrap}
+.ni{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:5px;cursor:pointer;font-size:12px;color:rgba(255,255,255,.75);margin-bottom:1px;white-space:nowrap;user-select:none;font-weight:500;transition:background .15s}
 .ni:hover{background:rgba(255,255,255,.08);color:#fff}
 .ni.on{background:rgba(192,145,47,.18);color:#fff;font-weight:700;border:1px solid rgba(192,145,47,.45)}
 .nb{margin-left:auto;background:rgba(255,255,255,.14);color:rgba(255,255,255,.85);font-size:9px;padding:1px 6px;border-radius:8px;font-weight:600}
-.prog{padding:7px 11px 9px;border-top:1px solid rgba(255,255,255,.12)}
+.prog{padding:6px 11px 7px;border-top:1px solid rgba(255,255,255,.12)}
 .prog-top{display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,.55);margin-bottom:4px;font-weight:600;letter-spacing:.3px}
 .prog-bar{height:4px;background:rgba(255,255,255,.14);border-radius:4px;overflow:hidden}
 .prog-fill{height:100%;background:var(--oro);border-radius:4px;transition:width .4s}
@@ -108,6 +109,9 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 @keyframes antig-pulse{0%,100%{opacity:1}50%{opacity:.18}}
 .antig-tag{display:inline-block;margin-left:5px;font-size:9px;font-weight:700;color:#8a5c00;background:#FFE9B8;border:1px solid #E3B65A;border-radius:4px;padding:0 4px;vertical-align:middle;animation:antig-pulse 1.4s ease-in-out infinite}
 .sec-antig{color:#C08A00;margin-right:3px;animation:antig-pulse 1.4s ease-in-out infinite}
+.pin-tag{display:inline-block;margin-left:5px;font-size:9px;font-weight:700;color:#a3302a;background:#FDE7E5;border:1px solid #F0B4AE;border-radius:4px;padding:0 4px;vertical-align:middle;cursor:pointer;user-select:none}
+.pin-tag:hover{background:#F8D3CF}
+.pin-tag.off{color:#8a94a6;background:var(--bg2);border-color:var(--border);opacity:.7}
 .filtros-wrap{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
 .filtro-btn{padding:4px 11px;border-radius:12px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text2);user-select:none;font-weight:500;transition:all .15s}
 .filtro-btn:hover{background:var(--bg2)}
@@ -495,9 +499,13 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 <!-- SIDEBAR -->
 <div class="sb" id="sb">
   <div class="sb-top">
+    <div class="sb-brand">
     <img src="data:image/png;base64,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" alt="" class="sb-iso">
-    <div class="sb-name">Gudiño Cabrera</div>
-    <div class="sb-sub">y asociados</div>
+      <div style="min-width:0">
+        <div class="sb-name">Gudiño Cabrera</div>
+        <div class="sb-sub">y asociados</div>
+      </div>
+    </div>
     <div class="sb-week" id="sb-week">—</div>
   </div>
   <nav class="nav">
@@ -509,8 +517,8 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
     <div class="ni" id="ni-paz" onclick="goF('Juzgado de Paz')">🕊️ Paz Letrado <span class="nb" id="cnt-Juzgado de Paz">0</span></div>
     <div class="ng">Gestión</div>
     <div id="ni-vmp" onclick="goP('vencemañana')" style="margin:4px 6px;border-radius:7px;cursor:pointer;overflow:hidden;border:1.5px solid transparent;transition:border .15s" onmouseenter="this.style.borderColor='#e67e22'" onmouseleave="this.style.borderColor='transparent'">
-      <div id="vmp-btn-inner" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);padding:7px 10px;display:flex;align-items:center;gap:7px">
-        <span style="font-size:18px">⚡</span>
+      <div id="vmp-btn-inner" style="background:linear-gradient(135deg,#fff3e0,#ffe0b2);padding:4px 10px;display:flex;align-items:center;gap:6px">
+        <span style="font-size:14px">⚡</span>
         <div style="flex:1">
           <div style="font-size:11px;font-weight:700;color:#b84d00">Vencimientos</div>
         </div>
@@ -520,6 +528,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
     <div class="ni" id="ni-aud" onclick="goP('audiencias')">📅 Audiencias</div>
     <div class="ni" id="ni-pend" onclick="goP('pendientes')">📝 Anotador <span class="nb" id="cnt-pend" style="display:none">0</span></div>
     <div class="ni" id="ni-control" onclick="goP('control')">🔍 Control de escritos <span class="nb" id="cnt-control" style="display:none;background:#C0392B;color:#fff">0</span></div>
+    <div class="ni" id="ni-imp" onclick="goP('imprimir')">🖨 Para imprimir <span class="nb" id="cnt-imp" style="display:none;background:var(--oro);color:#fff">0</span></div>
     <div class="ni" id="ni-her" onclick="goP('herramientas')" style="color:#2980b9">🔧 Herramientas</div>
     <div class="ni" id="ni-cfg" onclick="goP('config')">⚙ Config. / Online</div>
   </nav>
@@ -864,6 +873,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
         <button class="btn" onclick="escDescargarWord()" style="background:var(--oro);color:#fff;border-color:var(--oro)">⬇ Word</button>
         <button class="btn" id="btn-drive" onclick="escAbrirEnDrive()" style="background:#0F9D58;color:#fff;border-color:#0F9D58">📤 Abrir en Drive</button>
         <button class="btn" onclick="escEnviarControl()" style="background:#7A5C99;color:#fff;border-color:#7A5C99">🔍 Enviar a control</button>
+        <button class="btn" onclick="escParaImprimir()" style="background:#B8860B;color:#fff;border-color:#B8860B" title="Guardarlo en la lista Para imprimir (panel de la izquierda)">🖨 Para imprimir</button>
         <button class="btn" onclick="escDescargarPDF()" style="background:#8b2c2c;color:#fff;border-color:#8b2c2c">⬇ PDF</button>
         <button class="btn" onclick="escGuardarArchivo()" style="background:var(--green);color:#fff;border-color:var(--green)" title="Guardar en la lista de Escritos generados (Herramientas)">💾 Guardar</button>
       </div>
@@ -872,6 +882,11 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
       <div id="esc-preview" style="margin-top:14px;display:none;border:1px solid var(--border);border-radius:10px;background:#fff;padding:26px 30px;font-family:Arial;font-size:12px;line-height:2;max-height:70vh;overflow-y:auto;box-shadow:0 2px 12px rgba(20,33,61,.08)"></div>
     </div>
 
+    <div class="ct panel" id="panel-imprimir">
+      <div style="font-size:14px;font-weight:700;margin-bottom:4px">🖨 Para imprimir</div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:10px">Los escritos que dejaste listos con el botón "🖨 Para imprimir" del generador. Se van de acá cuando los marcás como impresos.</div>
+      <div id="imp-list"></div>
+    </div>
     <div class="ct panel" id="panel-escgen">
       <div style="font-size:14px;font-weight:700;margin-bottom:4px">📑 Escritos generados</div>
       <div style="font-size:11px;color:#aaa;margin-bottom:10px">Escritos guardados al descargar o imprimir. Reabrilos para imprimir o bajar el Word en el estudio.</div>
@@ -1453,13 +1468,13 @@ setTimeout(async()=>{
 function niOn(id){document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));const el=document.getElementById('ni-'+id);if(el)el.classList.add('on');}
 function showRegLayout(v){
   document.getElementById('panel-reg-wrap').style.display=v?'flex':'none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes','mev','escritos','prueba'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes','mev','escritos','prueba','imprimir'].forEach(p=>{
     document.getElementById('panel-'+p).classList.remove('on');
   });
 }
 function showOtherPanel(id){
   document.getElementById('panel-reg-wrap').style.display='none';
-  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes','mev','escritos','prueba','archivo','control','escgen'].forEach(p=>{
+  ['extrajudiciales','audiencias','gastos','nueva','config','vencemañana','turnero','herramientas','pendientes','inactivas','histmes','mev','escritos','prueba','archivo','control','escgen','imprimir'].forEach(p=>{
     document.getElementById('panel-'+p).classList.toggle('on',p===id);
   });
 }
@@ -1479,10 +1494,10 @@ function goR(){_navRecord('reg');filtroF=null;showRegLayout(true);niOn('reg');do
 function goF(f){_navRecord('fuero:'+f);filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
   _navRecord('panel:'+p);
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos',imprimir:'Para imprimir'};
   document.getElementById('ptitle').textContent=t[p]||p;
   showOtherPanel(p);
-  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her',escgen:'her',archivo:'arch',control:'control'}[p]||p);
+  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her',escgen:'her',archivo:'arch',control:'control',imprimir:'imp'}[p]||p);
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
   if(p==='audiencias'){sincTodasAudiencias();renderCal();}
@@ -1494,6 +1509,7 @@ function goP(p){
   if(p==='escgen'){renderEscGen();}
   if(p==='archivo'){renderArchivo();}
   if(p==='control'){renderControl();}
+  if(p==='imprimir'){renderImp();}
   if(p==='config'){try{driveRenderCfg();}catch(e){}}
   if(p==='extrajudiciales')renderExt();
   if(p==='vencemañana')renderVMP();
@@ -1791,7 +1807,7 @@ function rowHTML(c){
   return`<div class="cr ${cls}" id="cr-${c.id}">
     <div class="chk-col" data-mov="${c.id}"><div class="chkbox${on?' on':''}">${on?'✓':''}</div></div>
     <div class="ci">
-      <div class="ci-car">${escH(c.car)}<span class="${exCls(c)}"> · ${c.ex}</span>${(()=>{const etLbl=c.etapa?etapaInfo(c.etapa).n:'etapa';const w=(etLbl.length+2.5).toFixed(1);return `<select onchange="setEtapaFila(${c.id},this.value)" onclick="event.stopPropagation()" title="Etapa procesal" style="font-size:10px;font-weight:600;border:none;padding:0 2px;margin-left:5px;cursor:pointer;-webkit-appearance:none;appearance:none;box-sizing:border-box;width:${w}ch;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;background:transparent;color:${c.etapa?etapaInfo(c.etapa).c:'var(--text3)'}"><option value=""${!c.etapa?' selected':''} disabled hidden>etapa</option>${ETAPAS.map(e=>`<option value="${e.k}"${e.k===c.etapa?' selected':''} style="background:#fff;color:#222">${e.n}</option>`).join('')}</select>`;})()}${(()=>{const b=c.etapa==='prueba'?_plazoBadge(c):'';return b||(c.pl?'<span class="pdot" title="Con plazo"></span>':'');})()}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':''}${_antigBadge(c)}
+      <div class="ci-car">${escH(c.car)}<span class="${exCls(c)}"> · ${c.ex}</span>${(()=>{const etLbl=c.etapa?etapaInfo(c.etapa).n:'etapa';const w=(etLbl.length+2.5).toFixed(1);return `<select onchange="setEtapaFila(${c.id},this.value)" onclick="event.stopPropagation()" title="Etapa procesal" style="font-size:10px;font-weight:600;border:none;padding:0 2px;margin-left:5px;cursor:pointer;-webkit-appearance:none;appearance:none;box-sizing:border-box;width:${w}ch;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;background:transparent;color:${c.etapa?etapaInfo(c.etapa).c:'var(--text3)'}"><option value=""${!c.etapa?' selected':''} disabled hidden>etapa</option>${ETAPAS.map(e=>`<option value="${e.k}"${e.k===c.etapa?' selected':''} style="background:#fff;color:#222">${e.n}</option>`).join('')}</select>`;})()}${(()=>{const b=c.etapa==='prueba'?_plazoBadge(c):'';return b||(c.pl?'<span class="pdot" title="Con plazo"></span>':'');})()}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':''}${_pinChip(c)}${_antigBadge(c)}
       </div>
       <div class="ci-tv-tag">${(()=>{
         if(c.tipo_aud&&TIPOS[c.tipo_aud]){
@@ -2422,23 +2438,27 @@ function renderSecs(cid,filas){
     const idx=JUZ_ORDER.findIndex(k=>j.startsWith(k));
     return idx>=0?idx:999;
   }
-  // v325 — orden de fueros rotativo por semana y juzgados en dirección alterna
+  _pinCalcular();
+  // v328 — primero el fuero que toca esta semana; adentro, los juzgados en orden 1°, 2°, 3°…
   const _fueDe={};filas.forEach(c=>{if(!_fueDe[c.juz])_fueDe[c.juz]=c.fue||'';});
-  const _ordF=ordenFuerosSemana(),_inv=invertirJuzgados();
+  const _ordF=ordenFuerosSemana();
   function fueOrder(j){const i=_ordF.indexOf(_fueDe[j]||'');return i<0?99:i;}
   const jzs=[...new Set(filas.map(c=>c.juz))].sort((a,b)=>{
     const fa=fueOrder(a),fb=fueOrder(b);
     if(fa!==fb)return fa-fb;
-    const ja=juzOrder(a),jb=juzOrder(b);
-    return _inv?jb-ja:ja-jb;
+    return juzOrder(a)-juzOrder(b);
   });
   let h='';
   jzs.forEach(j=>{
+    // v329 — dentro del juzgado: primero lo que vence en ≤2 días, después las más inactivas
+    const _ps=_pinState();
     const sub=filas.filter(c=>c.juz===j).sort((a,b)=>{
-      const da=dLeft(a.ven),db=dLeft(b.ven);
-      const ra=a.est==='urgente'||da<=1?0:da<=7?1:2;
-      const rb=b.est==='urgente'||db<=1?0:db<=7?1:2;
-      return ra!==rb?ra-rb:da-db;
+      const pa=_ps.pin.has(a.id)?0:1,pb=_ps.pin.has(b.id)?0:1;
+      if(pa!==pb)return pa-pb;
+      if(pa===0){const da=_ps.map[a.id].d,db=_ps.map[b.id].d;if(da!==db)return da-db;}
+      const ta=a.lastTouch||0,tb=b.lastTouch||0;
+      if(ta!==tb)return ta-tb;
+      return dLeft(a.ven)-dLeft(b.ven);
     });
     const mov=sub.filter(c=>movidas.has(c.id));
     const noMov=sub.filter(c=>!movidas.has(c.id));
@@ -4848,18 +4868,18 @@ function escHTML(){
 
   if(def.esCedula){
     const fit=_escFit||{fs:12,lh:2,ap:8};
-    return `${escConMembrete()?`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14pt"><img src="${MEMBRETE_BN}" style="width:7.5cm;height:auto"><span style="font-size:15pt;font-weight:bold;color:#333">C 11</span></div>`:`<div style="text-align:right;margin-bottom:14pt;font-size:15pt;font-weight:bold;color:#333">C 11</div>`}
+    return _fitInline(`${escConMembrete()?`<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14pt"><img src="${MEMBRETE_BN}" style="width:7.5cm;height:auto"><span style="font-size:15pt;font-weight:bold;color:#333">C 11</span></div>`:`<div style="text-align:right;margin-bottom:14pt;font-size:15pt;font-weight:bold;color:#333">C 11</div>`}
     <p style="text-align:center;font-weight:bold;font-size:19pt;margin-bottom:20pt;white-space:nowrap;letter-spacing:.5px">CÉDULA DE NOTIFICACIÓN JUDICIAL</p>
     <p><b>Destinatario:</b> ${d.dest||'________________'}</p>
     <p><b>Domicilio:</b> ${d.dom||'________________'}</p>
-    <div style="font-size:${fit.fs}pt;line-height:${fit.lh}">
+    <div class="fit" style="font-size:${fit.fs}pt;line-height:${fit.lh}">
       <p style="margin-top:14pt;text-align:justify;text-indent:1.25cm;">Comunico a Ud. que en los <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(c.car)}"</b>, que tramitan por ante el <b>${jz.nombre}</b>, se ha dictado una resolución que en su parte pertinente dice: <i>"${d.prov||'________________'}"</i></p>
       ${d.obs?`<p style="font-weight:bold">${d.obs}</p>`:''}
       ${d.fojas?`<p style="text-align:justify;text-indent:1.25cm;">Se acompañan copias para traslado obrantes en ${d.fojas} (${numALetras(d.fojas)}) fojas útiles doble faz.-</p>`:''}
       ${d.link?`<p style="margin-top:8pt"><b>ENLACE A REPOSITORIO:</b> ${d.link}</p>`:''}
       ${d.aperc?`<p style="font-size:${fit.ap||8}pt;line-height:1.25;text-align:justify;margin-top:8pt">${d.aperc}</p>`:''}
     </div>
-    <p style="margin-top:14pt;font-weight:bold;text-indent:1.25cm;">QUEDA UD. DEBIDAMENTE NOTIFICADO.-</p>`;
+    <p style="margin-top:14pt;font-weight:bold;text-indent:1.25cm;">QUEDA UD. DEBIDAMENTE NOTIFICADO.-</p>`);
   }
   if(def.esOficio){
     const jd=juzgadoDatos(c.juz);
@@ -4873,11 +4893,11 @@ function escHTML(){
     const S='text-indent:1.25cm;';
     const esLab=def.fuero==='lab';
     const ofiLab=_mailOfiLab(c.juz);
-    return `<p style="text-align:center;font-weight:bold;font-size:14pt;margin-bottom:6pt">${reit?'REITERACIÓN - ':''}OFICIO JUDICIAL</p>
+    return _fitInline(`<p style="text-align:center;font-weight:bold;font-size:14pt;margin-bottom:6pt">${reit?'REITERACIÓN - ':''}OFICIO JUDICIAL</p>
     <p style="text-align:right;margin-bottom:16pt">San Juan,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; de ${mesActual} de ${anio}.-</p>
     <p style="font-weight:bold">${(d.dest||'________________').toUpperCase()}</p>
     <p>S&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;D</p>
-    <div style="font-size:${fit.fs}pt;line-height:${fit.lh}">
+    <div class="fit" style="font-size:${fit.fs}pt;line-height:${fit.lh}">
     <p style="margin-top:12pt;text-align:justify;${S}">Tengo el agrado de dirigirme a Ud. a fin de comunicarle que en los <b>Autos N° ${c.ex||'____'}</b>, caratulados <b>"${escH(c.car)}"</b>, que se tramitan por ante el <b>${jz.nombre.toUpperCase()}</b>, se ha ${reit?'dispuesto <b>REITERAR</b> el presente oficio':'ordenado librar el presente'} a los fines de que ${d.pedido||'________________'}.-</p>
     ${(esLab||ofiLab)?`<p style="font-weight:bold">PLAZO PARA CONTESTAR OFICIO: 10 DÍAS</p>
     <p style="font-weight:bold">REMITIR CONTESTACIÓN A: ${ofiLab||mailJuz}</p>`
@@ -4886,7 +4906,7 @@ function escHTML(){
     ${esLab?'':`<p style="${S}">Cumplido, sírvalo devolver con todo lo actuado.-</p>`}
     ${d.aperc?d.aperc.split('\n').filter(x=>x.trim()).map(a=>`<p style="font-size:${fit.ap||8}pt;line-height:1.25;text-align:justify;margin-top:6pt">${a.trim()}</p>`).join(''):''}
     </div>
-    <p style="text-align:center;font-weight:bold;margin-top:16pt">${esLab?'SALUDO A UD. MUY ATENTAMENTE':'Sin otro particular, lo saludo atentamente.-'}</p>`;
+    <p style="text-align:center;font-weight:bold;margin-top:16pt">${esLab?'SALUDO A UD. MUY ATENTAMENTE':'Sin otro particular, lo saludo atentamente.-'}</p>`);
   }
   // Escrito de mero trámite estándar
   const rolParte=rol==='apoderado'?`apoderado ${parte==='actora'?'del actor':'de la demandada'}`:`letrado patrocinante ${parte==='actora'?'del actor':'de la demandada'}`;
@@ -4901,24 +4921,63 @@ function _ladoDeCausa(c){
   if(c&&c.rol)return c.rol;
   return 'actora'; // respaldo: en laboral casi siempre vamos por la actora
 }
-let _escFit=null;
+let _escFit=null,_escPags=1,_escEntra=true;
+/* v329 — el ajuste a N páginas se calculaba sobre un área útil equivocada
+   (163,5 × 288 mm: se habían tomado los márgenes en mm en vez de cm), así que
+   creía que sobraba lugar y dejaba renglones sueltos en la hoja siguiente.
+   El área real, con márgenes 4,5 cm arriba/abajo/izquierda y 2 cm derecha,
+   es 145 × 207 mm por página. */
+function _fitInline(html){
+  // baja el tamaño e interlineado a cada párrafo como estilo propio: así lo
+  // respetan la vista previa, la impresión y el Word (antes el CSS del
+  // documento fijaba 12pt/doble y se comía el ajuste)
+  const fit=_escFit;
+  if(!fit||(fit.fs>=12&&fit.lh>=2))return html;
+  try{
+    const box=document.createElement('div');
+    box.innerHTML=html;
+    box.querySelectorAll('.fit').forEach(dv=>{
+      dv.querySelectorAll('p').forEach(pp=>{
+        const st=pp.getAttribute('style')||'';
+        if(!/font-size/.test(st))pp.style.fontSize=fit.fs+'pt';
+        if(!/line-height/.test(st))pp.style.lineHeight=String(fit.lh);
+      });
+    });
+    return box.innerHTML;
+  }catch(e){return html;}
+}
 function escCalcularFit(){
   const tipo=document.getElementById('esc-tipo').value;
-  if(!ESC_TIPOS[tipo].esCedula&&!ESC_TIPOS[tipo].esOficio){_escFit=null;return;}
+  if(!ESC_TIPOS[tipo].esCedula&&!ESC_TIPOS[tipo].esOficio){_escFit=null;_escPags=1;_escEntra=true;return;}
   const maxPag=parseInt(document.getElementById('esc-maxpag')?.value||'2');
-  // Área útil A4 (Acuerdo 69/2020 SJ): ancho 163,5mm (210-4,5-2), alto 288mm (297-4,5-4,5). 1mm≈3.78px
-  const anchoPx=Math.round(163.5*3.78);
-  const altoMaxPx=Math.round(maxPag*288*3.78);
-  const pasos=[{fs:12,lh:2,ap:8},{fs:12,lh:1.8,ap:8},{fs:11.5,lh:1.7,ap:7.5},{fs:11,lh:1.6,ap:7.5},{fs:10.5,lh:1.5,ap:7},{fs:10,lh:1.4,ap:7},{fs:10,lh:1.2,ap:7}];
+  const MM=3.7795;                       // 1 mm a 96 dpi
+  const anchoPx=Math.round(145*MM);      // 210 - 4,5 - 2 cm
+  const altoPag=207*MM;                  // 297 - 4,5 - 4,5 cm
+  const altoMaxPx=Math.floor(maxPag*altoPag)-14;  // resguardo (~3,7 mm): que no se escape un renglón
+  const pasos=[
+    {fs:12,lh:2,ap:8},{fs:12,lh:1.9,ap:8},{fs:12,lh:1.8,ap:8},
+    {fs:11.5,lh:1.8,ap:8},{fs:11.5,lh:1.7,ap:7.5},
+    {fs:11,lh:1.7,ap:7.5},{fs:11,lh:1.6,ap:7.5},
+    {fs:10.5,lh:1.6,ap:7},{fs:10.5,lh:1.5,ap:7},
+    {fs:10,lh:1.5,ap:7},{fs:10,lh:1.4,ap:7},{fs:10,lh:1.3,ap:6.5},
+    {fs:9.5,lh:1.3,ap:6.5},{fs:9.5,lh:1.2,ap:6.5},
+    {fs:9,lh:1.2,ap:6},{fs:9,lh:1.1,ap:6}];
   const med=document.createElement('div');
-  med.style.cssText=`position:absolute;left:-9999px;top:0;width:${anchoPx}px;font-family:Arial;font-size:12pt;line-height:2`;
-  document.body.appendChild(med);
+  med.id='esc-medidor';
+  med.style.cssText=`position:absolute;left:-9999px;top:0;width:${anchoPx}px;font-family:Arial,sans-serif;font-size:12pt;line-height:2;color:#000`;
+  const est=document.createElement('style');
+  est.textContent='#esc-medidor p{margin:0 0 6pt 0}#esc-medidor img{max-width:100%}';
+  document.head.appendChild(est);document.body.appendChild(med);
+  let alto=0;
   for(const p of pasos){
     _escFit=p;
     med.innerHTML=escHTML()||'';
-    if(med.scrollHeight<=altoMaxPx)break;
+    alto=med.scrollHeight;
+    if(alto<=altoMaxPx)break;
   }
-  document.body.removeChild(med);
+  _escPags=Math.max(1,Math.ceil(alto/altoPag));
+  _escEntra=(alto<=altoMaxPx);
+  med.remove();est.remove();
 }
 function escToggleForm(){
   const a=document.getElementById('esc-armado');const b=document.getElementById('esc-toggle-form');
@@ -4934,8 +4993,11 @@ function escVistaPrevia(){
   const pv=document.getElementById('esc-preview');
   pv.style.cssText='margin-top:14px;display:block;background:#4a4d52;padding:22px 0;border-radius:10px;max-height:640px;overflow:auto';
   const maxPag=document.getElementById('esc-maxpag')?parseInt(document.getElementById('esc-maxpag').value):1;
-  pv.innerHTML=`<div style="text-align:right;padding:0 16px 10px"><button onclick="escCerrarPreview()" style="background:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;color:#333;cursor:pointer">✕ Cerrar vista previa</button></div><div id="esc-wrap" style="margin:0 auto"><div id="esc-sheet" style="width:210mm;min-height:297mm;background:#fff;box-shadow:0 8px 34px rgba(0,0,0,.55);padding:45mm 20mm 45mm 45mm;font-family:Arial,sans-serif;font-size:12pt;line-height:2;box-sizing:border-box;transform-origin:top left;color:#000">${h}</div></div>
-  ${_escFit&&_escFit.fs<12?`<div style="text-align:center;color:#ddd;font-size:11px;margin-top:10px">Contenido ajustado a ${_escFit.fs}pt para caber en ${maxPag} página${maxPag>1?'s':''}</div>`:''}`;
+  const _aviso=!_escEntra
+    ?`<div style="text-align:center;color:#ffb3ad;font-size:11px;margin-top:10px;font-weight:700">⚠ No entra en ${maxPag} página${maxPag>1?'s':''} ni al mínimo legible (9pt): ocupa ${_escPags}. Recortá texto o subí el máximo.</div>`
+    :`<div style="text-align:center;color:#ddd;font-size:11px;margin-top:10px">${_escFit&&_escFit.fs<12?`Ajustado a ${_escFit.fs}pt e interlineado ${String(_escFit.lh).replace('.',',')} · `:''}entra en ${_escPags} página${_escPags>1?'s':''}</div>`;
+  pv.innerHTML=`<style>#esc-sheet p{margin:0 0 6pt 0}</style><div style="text-align:right;padding:0 16px 10px"><button onclick="escCerrarPreview()" style="background:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;color:#333;cursor:pointer">✕ Cerrar vista previa</button></div><div id="esc-wrap" style="margin:0 auto"><div id="esc-sheet" style="width:210mm;min-height:297mm;background:#fff;box-shadow:0 8px 34px rgba(0,0,0,.55);padding:45mm 20mm 45mm 45mm;font-family:Arial,sans-serif;font-size:12pt;line-height:2;box-sizing:border-box;transform-origin:top left;color:#000">${h}</div></div>
+  ${_aviso}`;
   // Escalar la hoja A4 para que entre completa en el panel (vista de impresión)
   const wrap=document.getElementById('esc-wrap'),sheet=document.getElementById('esc-sheet');
   if(wrap&&sheet){
@@ -5126,7 +5188,9 @@ function _htmlADocx(html){
     _runsDe(el,boldBloque,false,szBloque).forEach(r=>{
       rs+=`<w:r><w:rPr><w:rFonts w:ascii="Arial" w:hAnsi="Arial" w:cs="Arial"/><w:color w:val="000000"/><w:sz w:val="${r.s||szBloque}"/><w:szCs w:val="${r.s||szBloque}"/>${r.b?'<w:b/>':''}${r.i?'<w:i/>':''}${r.u?'<w:u w:val="single"/>':''}</w:rPr><w:t xml:space="preserve">${_xesc(r.t)}</w:t></w:r>`;
     });
-    cuerpo+=`<w:p><w:pPr>${tabs}<w:jc w:val="${jc}"/><w:spacing w:after="120" w:line="480" w:lineRule="auto"/>${ind}</w:pPr>${rs}</w:p>`;
+    const mLh=st.match(/line-height:\s*([\d.]+)/);           // v329: respeta el ajuste a N páginas
+    const wLine=mLh?Math.max(200,Math.round(240*parseFloat(mLh[1]))):480;
+    cuerpo+=`<w:p><w:pPr>${tabs}<w:jc w:val="${jc}"/><w:spacing w:after="120" w:line="${wLine}" w:lineRule="auto"/>${ind}</w:pPr>${rs}</w:p>`;
   });
   const NS='xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"';
   const documentXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -6268,6 +6332,72 @@ function escGenBorrar(cid,idx){
 function updToolsCounts(){
   let n=0;causas.forEach(c=>n+=(c.escritos||[]).length);
   const el=document.getElementById('cnt-escgen');if(el)el.textContent=n;
+  updCntImp();
+}
+
+/* ═══════════ v330 — PARA IMPRIMIR ═══════════
+   Cola manual: el escrito entra sólo si se aprieta "🖨 Para imprimir" en el
+   generador, y sale sólo cuando se lo marca impreso a mano (el navegador no
+   avisa si el papel salió de verdad). */
+function impPendientes(){
+  const out=[];
+  causas.forEach(c=>(c.escritos||[]).forEach((e,idx)=>{if(e.imp)out.push({c,e,idx});}));
+  return out.sort((a,b)=>(a.e.impF||'').localeCompare(b.e.impF||''));
+}
+function updCntImp(){
+  const n=impPendientes().length;
+  const b=document.getElementById('cnt-imp');
+  if(b){b.textContent=n;b.style.display=n?'':'none';}
+}
+function escParaImprimir(){
+  const cid=parseInt(document.getElementById('esc-causa').value);
+  const c=causas.find(x=>x.id===cid);
+  if(!c){alert('Elegí la causa.');return;}
+  escGuardarGenerado();
+  const tipo=document.getElementById('esc-tipo').value;
+  const dest=(escDatos().dest||'').trim();
+  const reg=(c.escritos||[]).find(e=>e.key===tipo+'|'+dest);
+  if(!reg){alert('No se pudo guardar el escrito.');return;}
+  reg.imp=true;reg.impF=new Date().toISOString();
+  sC();updToolsCounts();
+  const ok=document.getElementById('esc-guardado-ok');
+  if(ok){const prev=ok.textContent;ok.textContent='🖨 Queda en "Para imprimir"';ok.style.display='block';
+    setTimeout(()=>{ok.style.display='none';ok.textContent=prev;},3500);}
+}
+function impMarcarImpreso(cid,idx){
+  const c=causas.find(x=>x.id===cid);if(!c)return;
+  const e=(c.escritos||[])[idx];if(!e)return;
+  e.imp=false;e.impreso=new Date().toISOString();
+  logC(c,'Impreso: '+e.titulo+(e.dest?' — '+e.dest:''));
+  sC();updToolsCounts();renderImp();
+}
+function renderImp(){
+  const cont=document.getElementById('imp-list');if(!cont)return;
+  const L=impPendientes();
+  updCntImp();
+  if(!L.length){cont.innerHTML='<div style="color:#aaa;font-size:12px;text-align:center;padding:24px">No hay nada esperando la impresora.<br>Desde el generador, "🖨 Para imprimir" deja el escrito acá.</div>';return;}
+  // agrupados por causa, en el orden en que se fueron dejando
+  const porCausa={};
+  L.forEach(f=>{(porCausa[f.c.id]=porCausa[f.c.id]||{c:f.c,items:[],prim:f.e.impF||''}).items.push(f);});
+  const grupos=Object.values(porCausa).sort((a,b)=>(a.prim||'').localeCompare(b.prim||''));
+  let h=`<div style="font-size:11px;color:var(--text2);margin-bottom:8px">${L.length} escrito${L.length!==1?'s':''} esperando</div>`;
+  grupos.forEach(g=>{
+    h+=`<div style="margin-bottom:14px">
+      <div style="font-size:13px;font-weight:800;color:var(--navy);padding:5px 0 4px;border-bottom:2px solid var(--border)">${escH(g.c.car)}<span style="color:#b8b8b8;font-weight:600;font-size:11px"> · ${g.c.ex||''}</span></div>`;
+    g.items.forEach(({c,e,idx})=>{
+      h+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 2px 7px 10px;border-bottom:1px solid #f2f2f2">
+        <span style="flex:1;min-width:0">
+          <span style="font-size:11.5px;color:#555">${e.titulo}${e.dest?` <span style="color:#aaa">— ${e.dest}</span>`:''}</span>
+          <span style="font-size:10px;color:#c0c0c0;margin-left:6px">${_dv((e.impF||e.fecha||'').split('T')[0])}</span>
+        </span>
+        <button class="btn-mini" onclick="escGenVer(${c.id},${idx})" title="Ver">👁</button>
+        <button class="btn-mini" onclick="escGenAbrir(${c.id},${idx})" title="Imprimir">🖨</button>
+        <button class="btn-mini" onclick="impMarcarImpreso(${c.id},${idx})" title="Ya lo imprimí — sacarlo de la lista" style="color:var(--green);font-weight:700">✓ Impreso</button>
+      </div>`;
+    });
+    h+='</div>';
+  });
+  cont.innerHTML=h;
 }
 
 
@@ -6284,15 +6414,16 @@ function semanaNro(){return Math.floor((LUN-new Date(2026,0,5,0,0,0))/(7*8640000
 function rotOffset(){const v=localStorage.getItem('ga_rot_off');return v===null?1:(parseInt(v,10)||0);}
 function rotIdx(){const n=FUEROS_ROT().length;return((semanaNro()+rotOffset())%n+n)%n;}
 function ordenFuerosSemana(){const F=FUEROS_ROT(),i=rotIdx();return F.slice(i).concat(F.slice(0,i));}
-function invertirJuzgados(){return Math.abs((semanaNro()+rotOffset()))%2===1;}
 function rotarOrdenManual(){localStorage.setItem('ga_rot_off',String(rotOffset()+1));renderBan();renderR();}
 function _fueCorto(f){return({'Juzgado de Paz':'Paz','Laboral':'Laboral','Civil':'Civil','Familia':'Familia'})[f]||f;}
 function ordenSemanaTxt(){return ordenFuerosSemana().map(_fueCorto).join(' → ');}
+function ordenSemanaHTML(){const F=ordenFuerosSemana().map(_fueCorto);
+  return `<b style="color:var(--oro)">${F[0]}</b> → `+F.slice(1).join(' → ');}
 function bannerOrdenSemana(){
   return `<div style="display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--text3);padding:3px 4px 7px;border-bottom:1px dashed var(--border);margin-bottom:8px">
     <span style="font-weight:700;color:var(--oro)">🔄 Orden de esta semana:</span>
-    <span style="font-weight:600;color:var(--text2)">${ordenSemanaTxt()}</span>
-    <span style="color:var(--text3)">· juzgados ${invertirJuzgados()?'de atrás para adelante':'de adelante para atrás'}</span>
+    <span style="font-weight:600;color:var(--text2)">${ordenSemanaHTML()}</span>
+    <span style="color:var(--text3)">· juzgados 1°, 2°, 3°… · adentro: lo que vence en ≤2 días y después las más inactivas</span>
     <span onclick="rotarOrdenManual()" title="Correr el orden un lugar" style="margin-left:auto;cursor:pointer;border:1px solid var(--border);border-radius:6px;padding:1px 7px;font-size:10px;font-weight:700;color:var(--text2)">🔀 Correr</span>
   </div>`;
 }
@@ -6469,6 +6600,51 @@ function chequearAvisos(){
     }catch(e){}
   });
   localStorage.setItem('ga_notif_hechas',JSON.stringify(st));
+}
+
+/* ── 6 bis. Vencimientos a ≤2 días: arriba de su juzgado ───────────── */
+function _pinState(){if(!window.__pin)window.__pin={map:{},pin:new Set(),off:new Set()};return window.__pin;}
+function _pinOffGet(){try{return JSON.parse(localStorage.getItem('ga_pin_off')||'{}');}catch(e){return {};}}
+function _pinCalcular(){
+  const st=_pinState();
+  st.map={};st.pin=new Set();st.off=new Set();
+  const off=_pinOffGet();
+  try{
+    _gatherVenc().forEach(v=>{
+      if(!v.c||!v.c.id||v.cat==='saber')return;   // "para saber" no es plazo propio
+      const d=_faltan(v.f);
+      if(d>2)return;                              // sólo lo que vence dentro de 2 días (o ya venció)
+      const cur=st.map[v.c.id];
+      if(!cur||d<cur.d)st.map[v.c.id]={d:d,f:v.f,txt:v.txt||''};
+    });
+  }catch(e){}
+  Object.keys(st.map).forEach(k=>{
+    const id=parseInt(k);
+    if(off[k]===st.map[k].f)st.off.add(id); else st.pin.add(id);
+  });
+}
+function _pinChip(c){
+  const st=_pinState();
+  if(st.pin.has(c.id)){
+    const d=st.map[c.id].d;
+    const t=d<0?'Vencido hace '+Math.abs(d)+' día'+(Math.abs(d)!==1?'s':''):d===0?'Vence hoy':d===1?'Vence mañana':'Vence en 2 días';
+    return `<span class="pin-tag" title="${t} — clic para bajarla a su lugar" onclick="desanclarVenc(${c.id},event)">📌 ✕</span>`;
+  }
+  if(st.off.has(c.id))return `<span class="pin-tag off" title="Bajada a mano — clic para volver a subirla" onclick="anclarVenc(${c.id},event)">📌</span>`;
+  return '';
+}
+function desanclarVenc(id,e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  id=parseInt(id);const st=_pinState();const o=_pinOffGet();
+  if(st.map[id])o[id]=st.map[id].f;               // se ata a ESE vencimiento: si aparece otro, vuelve a subir
+  localStorage.setItem('ga_pin_off',JSON.stringify(o));
+  renderR();
+}
+function anclarVenc(id,e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  const o=_pinOffGet();delete o[parseInt(id)];
+  localStorage.setItem('ga_pin_off',JSON.stringify(o));
+  renderR();
 }
 
 /* ── 7. Antigüedad visible en la fila ──────────────────────────────── */
