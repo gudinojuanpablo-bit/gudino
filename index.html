@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v331</title>
+<title>Gudiño Cabrera y Asociados v332</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -107,7 +107,8 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 .ban.gris{background:var(--bg2);border-color:var(--border);color:var(--text2)}
 .ban.amber{background:#FFF7E8;border-color:#F0D0A0;color:#6b4300}
 @keyframes antig-pulse{0%,100%{opacity:1}50%{opacity:.18}}
-.antig-tag{display:inline-block;margin-left:5px;font-size:9px;font-weight:700;color:#8a5c00;background:#FFE9B8;border:1px solid #E3B65A;border-radius:4px;padding:0 4px;vertical-align:middle;animation:antig-pulse 1.4s ease-in-out infinite}
+.antig-tag{display:inline-block;margin-left:5px;font-size:9px;font-weight:700;color:#8a5c00;background:#FFE9B8;border:1px solid #E3B65A;border-radius:4px;padding:0 4px;vertical-align:middle;cursor:pointer;user-select:none;animation:antig-pulse 1.4s ease-in-out infinite}
+.antig-tag:hover{background:#F5DCA0}
 .sec-antig{color:#C08A00;margin-right:3px;animation:antig-pulse 1.4s ease-in-out infinite}
 .pin-tag{display:inline-block;margin-left:5px;font-size:9px;font-weight:700;color:#a3302a;background:#FDE7E5;border:1px solid #F0B4AE;border-radius:4px;padding:0 4px;vertical-align:middle;cursor:pointer;user-select:none}
 .pin-tag:hover{background:#F8D3CF}
@@ -2463,7 +2464,7 @@ function renderSecs(cid,filas){
     const mov=sub.filter(c=>movidas.has(c.id));
     const noMov=sub.filter(c=>!movidas.has(c.id));
     const urg=noMov.some(c=>c.est==='urgente'||dLeft(c.ven)<=1);
-    const dorm=noMov.some(c=>Math.floor((Date.now()-(c.lastTouch||Date.now()))/86400000)>14);
+    const dorm=noMov.some(c=>_estaDormida(c));
     const rPend=noMov.filter(c=>c.ram&&!c.rdon).length;
     h+=`<div class="sec">
       <div class="sec-hdr" onclick="this.nextElementSibling.classList.toggle('z')">
@@ -6648,11 +6649,28 @@ function anclarVenc(id,e){
 }
 
 /* ── 7. Antigüedad visible en la fila ──────────────────────────────── */
-function _antigBadge(c){
+function _zzVisto(){try{return JSON.parse(localStorage.getItem('ga_zz_visto')||'{}');}catch(e){return {};}}
+function _diasDesdeISO(iso){const p=String(iso).split('-').map(Number);if(p.length<3)return 999;return Math.floor((Date.now()-new Date(p[0],p[1]-1,p[2]).getTime())/86400000);}
+function _estaDormida(c){
   const d=Math.floor((Date.now()-(c.lastTouch||Date.now()))/86400000);
-  if(d<=14)return '';                       // titila recién pasadas las dos semanas
+  if(d<=14)return 0;                        // avisa recién pasadas las dos semanas
+  const v=_zzVisto()[c.id];
+  if(v&&_diasDesdeISO(v)<14)return 0;       // la diste por vista: calla dos semanas más
+  return d;
+}
+function zzVisto(id,e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  const o=_zzVisto();
+  Object.keys(o).forEach(k=>{if(_diasDesdeISO(o[k])>40)delete o[k];});   // limpieza
+  o[parseInt(id)]=todayISO();
+  localStorage.setItem('ga_zz_visto',JSON.stringify(o));
+  renderR();
+}
+function _antigBadge(c){
+  const d=_estaDormida(c);
+  if(!d)return '';
   const sem=Math.floor(d/7);
-  return `<span class="antig-tag" title="Sin movimiento hace ${d} días">💤 ${sem} sem</span>`;
+  return `<span class="antig-tag" onclick="zzVisto(${c.id},event)" title="Sin movimiento hace ${d} días — clic para apagar el aviso (vuelve a los 14 días)">💤 ${sem} sem</span>`;
 }
 
 /* ── 8. Arranque ───────────────────────────────────────────────────── */
