@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v333</title>
+<title>Gudiño Cabrera y Asociados v335</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -113,6 +113,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 .pin-tag{display:inline-block;margin-left:5px;font-size:9px;font-weight:700;color:#a3302a;background:#FDE7E5;border:1px solid #F0B4AE;border-radius:4px;padding:0 4px;vertical-align:middle;cursor:pointer;user-select:none}
 .pin-tag:hover{background:#F8D3CF}
 .pin-tag.off{color:#8a94a6;background:var(--bg2);border-color:var(--border);opacity:.7}
+.rep-sel{font-size:10px;padding:2px 3px;border:1px solid var(--border2);border-radius:5px;background:var(--bg);color:var(--text2);max-width:145px;cursor:pointer}
 .filtros-wrap{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
 .filtro-btn{padding:4px 11px;border-radius:12px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text2);user-select:none;font-weight:500;transition:all .15s}
 .filtro-btn:hover{background:var(--bg2)}
@@ -3085,13 +3086,13 @@ function renderRam(){
   causas.forEach(c=>{getRams(c);c.rams.filter(t=>!t.done).forEach(t=>pendTasks.push({c,t}));});
   const epend=extraj.filter(e=>e.ram&&!e.rdon);
   const carpeta=_carpetaTasks();
-  let h='';
+  let h=ramBarra();
 
   // DILIGENCIAMIENTOS EN CARPETA (cédulas/oficios listos para llevar)
   if(carpeta.length){
     h+=`<div class="a-sec" style="margin-bottom:10px"><h3>⭐ A diligenciar — en carpeta (${carpeta.length})</h3>`;
     carpeta.forEach(({c,tipo,i,nom,doc})=>{
-      h+=`<div class="r-card" style="border-left:3px solid #E6A817"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${c.car}</div><div class="r-task">${doc} — ${nom}</div><div class="r-meta">${c.juz} · ${c.ex}</div></div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="prCambiarEstado(${c.id},'${tipo}',${i},'dilig');renderRam()">✓ Diligenciada</button><button class="btn" style="font-size:11px" onclick="irAPrueba(${c.id})">Abrir</button></div></div>`;
+      h+=`<div class="r-card" style="border-left:3px solid #E6A817"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${c.car}</div><div class="r-task">${doc} — ${nom}</div><div class="r-meta">${c.juz} · ${c.ex}</div></div><div class="r-btns">${repSel('carp',c.id,tipo,i)}<button class="btn p" style="font-size:11px" onclick="prCambiarEstado(${c.id},'${tipo}',${i},'dilig');renderRam()">✓ Diligenciada</button><button class="btn" style="font-size:11px" onclick="irAPrueba(${c.id})">Abrir</button></div></div>`;
     });
     h+='</div>';
   }
@@ -3110,6 +3111,7 @@ function renderRam(){
       <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
         <input type="checkbox" ${t.done?'checked':''} onchange="toggleTareaRam(${i})" style="width:14px;height:14px;cursor:pointer">
         <span style="flex:1;font-size:12px;${t.done?'text-decoration:line-through;color:#bbb':''}">${t.txt}</span>
+        ${t.done?'':repSel('gen',i)}
         <button class="ib" onclick="delTareaRam(${i})" style="opacity:.4">🗑</button>
       </div>`).join('')}
     </div>
@@ -3119,16 +3121,171 @@ function renderRam(){
   if(pendTasks.length||epend.length){
     h+=`<div class="a-sec"><h3>⭐ Encargos en causas (${pendTasks.length+epend.length})</h3>`;
     pendTasks.forEach(({c,t})=>{
-      h+=`<div class="r-card"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${c.car}</div><div class="r-task">${t.txt}</div><div class="r-meta">${c.juz} · ${c.ex}</div></div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="cumplirTareaRam(${c.id},${t.id})">✓ Cumplida</button><button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="borrarTareaRam(${c.id},${t.id},event)">🗑</button></div></div>`;
+      h+=`<div class="r-card"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${c.car}</div><div class="r-task">${t.txt}</div><div class="r-meta">${c.juz} · ${c.ex}</div></div><div class="r-btns">${repSel('causa',c.id,t.id)}<button class="btn p" style="font-size:11px" onclick="cumplirTareaRam(${c.id},${t.id})">✓ Cumplida</button><button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="borrarTareaRam(${c.id},${t.id},event)">🗑</button></div></div>`;
     });
     epend.forEach(c=>{
-      h+=`<div class="r-card"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${c.tit}</div><div class="r-task">${c.ram}</div><div class="r-meta">Extrajudicial · ${c.tipo}</div></div><div class="r-btns"><button class="btn p" style="font-size:11px" onclick="abrirCumplida(${c.id},true)">✓ Cumplida</button><button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="borrarRamE(${c.id},event)">🗑</button></div></div>`;
+      h+=`<div class="r-card"><div style="font-size:18px">⭐</div><div class="r-info"><div class="r-car">${c.tit}</div><div class="r-task">${c.ram}</div><div class="r-meta">Extrajudicial · ${c.tipo}</div></div><div class="r-btns">${repSel('ext',c.id)}<button class="btn p" style="font-size:11px" onclick="abrirCumplida(${c.id},true)">✓ Cumplida</button><button class="btn" style="font-size:11px;color:#a00;border-color:var(--red-b)" onclick="borrarRamE(${c.id},event)">🗑</button></div></div>`;
     });
     h+='</div>';
   }
   if(!pendTasks.length&&!epend.length&&!tareasRam.length&&!carpeta.length)h='<div style="color:#aaa;text-align:center;padding:30px">Sin tareas para Ramiro.</div>';
   el.innerHTML=h;
 }
+/* ═══════════════ v334 — TAREAS DE RAMIRO POR REPARTICIÓN ═══════════════
+   Cada tarea se clasifica según dónde hay que ir; la sábana las agrupa en
+   ese orden para hacer el recorrido de una sola vez. */
+function REPARTICIONES(){return['Oficina de Notificaciones','Centro Cívico','Civiles','Laborales','Penales','Familia','Archivo de Tribunales','Colegio Notarial','Correo Argentino','OSSE','Boletín Oficial','Diario el Zonda','Registro Civil','Secretaría Electoral','Otros'];}
+
+function _repSugerida(c,tipo,doc,nom){
+  const t=((doc||'')+' '+(nom||'')).toLowerCase();
+  if(/osse|obras sanitarias/.test(t))return 'OSSE';
+  if(/correo/.test(t))return 'Correo Argentino';
+  if(/notarial|escriban/.test(t))return 'Colegio Notarial';
+  if(/archivo/.test(t))return 'Archivo de Tribunales';
+  if(/zonda/.test(t))return 'Diario el Zonda';
+  if(/bolet[íi]n|edicto/.test(t))return 'Boletín Oficial';
+  if(/registro civil|partida|acta de nacimiento|acta de defunci/.test(t))return 'Registro Civil';
+  if(/electoral|padr[óo]n/.test(t))return 'Secretaría Electoral';
+  if(tipo&&tipo!=='informes')return 'Oficina de Notificaciones';   // cédulas
+  const f=(c&&c.fue)||'';
+  if(f==='Laboral')return 'Laborales';
+  if(f==='Civil')return 'Civiles';
+  if(f==='Familia')return 'Familia';
+  return 'Otros';
+}
+function _repDe(kind,k1,k2,k3){
+  if(kind==='gen'){const t=tareasRam[k1];return (t&&t.rep)||_repSugerida(null,null,'',(t&&t.txt)||'');}
+  if(kind==='causa'){const c=causas.find(x=>x.id===k1);if(!c)return 'Otros';getRams(c);const t=c.rams.find(x=>x.id===k2);return (t&&t.rep)||_repSugerida(c,null,'',(t&&t.txt)||'');}
+  if(kind==='ext'){const e=extraj.find(x=>x.id===k1);return (e&&e.ramRep)||_repSugerida(null,null,'',(e&&e.ram)||'');}
+  if(kind==='carp'){const c=causas.find(x=>x.id===k1);if(!c||!c.prueba)return 'Otros';
+    const it=(c.prueba[k2]||[])[k3]||{};
+    const nom=k2==='informes'?(it.dest||''):(it.nombre||'');
+    return it.rep||_repSugerida(c,k2,k2==='informes'?'Oficio':'Cédula',nom);}
+  return 'Otros';
+}
+function repSel(kind,k1,k2,k3){
+  const act=_repDe(kind,k1,k2,k3);
+  const args=[JSON.stringify(kind),JSON.stringify(k1),JSON.stringify(k2===undefined?null:k2),JSON.stringify(k3===undefined?null:k3)].join(',');
+  return `<select class="rep-sel" title="¿Dónde hay que ir?" onchange="setRep(${args},this.value)" onclick="event.stopPropagation()">`+
+    REPARTICIONES().map(r=>`<option value="${r}"${r===act?' selected':''}>${r}</option>`).join('')+'</select>';
+}
+function setRep(kind,k1,k2,k3,val){
+  if(kind==='gen'){if(tareasRam[k1]){tareasRam[k1].rep=val;saveTareasRam();}}
+  else if(kind==='causa'){const c=causas.find(x=>x.id===k1);if(c){getRams(c);const t=c.rams.find(x=>x.id===k2);if(t)t.rep=val;sC();}}
+  else if(kind==='ext'){const e=extraj.find(x=>x.id===k1);if(e){e.ramRep=val;sE&&sE();sC();}}
+  else if(kind==='carp'){const c=causas.find(x=>x.id===k1);if(c&&c.prueba&&c.prueba[k2]&&c.prueba[k2][k3]){c.prueba[k2][k3].rep=val;sC();}}
+  renderRam();
+}
+
+function ramTareas(){
+  const out=[];
+  _carpetaTasks().forEach(({c,tipo,i,nom,doc})=>{
+    out.push({rep:_repDe('carp',c.id,tipo,i),que:doc+' — '+nom,car:c.car,ex:c.ex||'',juz:c.juz||''});
+  });
+  causas.forEach(c=>{getRams(c);c.rams.filter(t=>!t.done).forEach(t=>{
+    out.push({rep:_repDe('causa',c.id,t.id),que:t.txt,car:c.car,ex:c.ex||'',juz:c.juz||''});
+  });});
+  extraj.filter(e=>e.ram&&!e.rdon).forEach(e=>{
+    out.push({rep:_repDe('ext',e.id),que:e.ram,car:e.tit||'—',ex:'',juz:'Extrajudicial'+(e.tipo?' · '+e.tipo:'')});
+  });
+  tareasRam.forEach((t,i)=>{if(t.done)return;
+    out.push({rep:_repDe('gen',i),que:t.txt,car:'—',ex:'',juz:'Tarea general'});
+  });
+  return out;
+}
+function ramBarra(){
+  const n=ramTareas().length;
+  return `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+    <span style="font-size:11px;color:var(--text3);flex:1">${n} tarea${n!==1?'s':''} pendiente${n!==1?'s':''} para Ramiro</span>
+    <button class="btn" style="font-size:11px" onclick="ramSabanaImprimir()" title="Una hoja con todas las tareas agrupadas por repartición">🖨 Sábana</button>
+    <button class="btn" style="font-size:11px" onclick="ramSabanaCopiar()" title="Copiar la lista en texto para pegarla en un mail o WhatsApp">📋 Copiar</button>
+    <button class="btn" style="font-size:11px" onclick="ramSabanaMail()" title="Abrir el correo con la lista adentro">📧 Mail</button>
+  </div>`;
+}
+function _ramAgrupado(){
+  const L=ramTareas(),out=[];
+  REPARTICIONES().forEach(r=>{const g=L.filter(x=>x.rep===r);if(g.length)out.push({rep:r,items:g});});
+  return {grupos:out,total:L.length};
+}
+function ramSabanaHTML(){
+  const {grupos,total}=_ramAgrupado();
+  const hoy=new Date().toLocaleDateString('es-AR');
+  let filas='';
+  grupos.forEach(g=>{
+    filas+=`<tr class="rep"><td colspan="4">${escH(g.rep)} <span class="cnt">(${g.items.length})</span></td></tr>`;
+    g.items.forEach(x=>{
+      filas+=`<tr>
+        <td class="ck">☐</td>
+        <td class="car"><b>${escH(x.car)}</b>${x.ex?` <span class="ex">· ${escH(x.ex)}</span>`:''}${x.juz?`<div class="juz">${escH(x.juz)}</div>`:''}</td>
+        <td class="que">${escH(x.que)}</td>
+        <td class="obs"></td></tr>`;
+    });
+  });
+  if(!total)filas='<tr><td colspan="4" style="text-align:center;padding:20px;color:#777">No hay tareas pendientes.</td></tr>';
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Tareas para Ramiro</title>
+<style>
+  @page{size:21cm 29.7cm;margin:1.4cm 1.2cm}
+  body{font-family:Arial,Helvetica,sans-serif;color:#111;margin:0}
+  .enc{display:flex;align-items:center;gap:12px;border-bottom:2px solid #C0912F;padding-bottom:6px;margin-bottom:10px}
+  .enc img{width:5.4cm;height:auto}
+  .enc h1{font-size:13pt;margin:0;letter-spacing:.5px}
+  .enc .f{margin-left:auto;font-size:9pt;color:#555}
+  table{width:100%;border-collapse:collapse}
+  td{font-size:9pt;padding:4px 5px;border-bottom:1px solid #ddd;vertical-align:top}
+  tr.rep td{background:#14213D;color:#fff;font-weight:bold;font-size:9.5pt;letter-spacing:.6px;text-transform:uppercase;padding:4px 6px;border:none}
+  tr.rep .cnt{font-weight:normal;color:#C6B183}
+  .ck{width:22px;font-size:13pt;line-height:1;color:#555}
+  .car{width:38%}
+  .car .ex{color:#666;font-weight:normal}
+  .car .juz{font-size:7.5pt;color:#777;margin-top:1px}
+  .que{width:40%}
+  .obs{width:18%;border-left:1px dotted #bbb}
+  .pie{margin-top:14px;font-size:8pt;color:#666;display:flex;justify-content:space-between;border-top:1px solid #ccc;padding-top:5px}
+  tr{page-break-inside:avoid}
+</style></head><body>
+  <div class="enc"><img src="${MEMBRETE_BN}" alt=""><h1>TAREAS PARA RAMIRO</h1><span class="f">${hoy} · ${total} tarea${total!==1?'s':''}</span></div>
+  <table>${filas}</table>
+  <div class="pie"><span>Observaciones y devolución en la última columna.</span><span>Recibí conforme: ______________________</span></div>
+</body></html>`;
+}
+function ramSabanaImprimir(){_imprimirEnIframe(ramSabanaHTML());}
+function ramSabanaTexto(){
+  const {grupos,total}=_ramAgrupado();
+  const hoy=new Date().toLocaleDateString('es-AR');
+  let t='TAREAS PARA RAMIRO — '+hoy+' ('+total+')\n';
+  grupos.forEach(g=>{
+    t+='\n== '+g.rep.toUpperCase()+' ('+g.items.length+') ==\n';
+    g.items.forEach((x,i)=>{
+      t+=(i+1)+'. '+x.que+'\n   '+x.car+(x.ex?' · '+x.ex:'')+(x.juz?' · '+x.juz:'')+'\n';
+    });
+  });
+  if(!total)t+='\nNo hay tareas pendientes.\n';
+  return t;
+}
+function ramSabanaCopiar(){
+  const t=ramSabanaTexto();
+  const fin=()=>toast('Lista copiada — pegala en el mail');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(fin).catch(()=>_copiarViejo(t,fin));}
+  else _copiarViejo(t,fin);
+}
+function _copiarViejo(t,fin){
+  const ta=document.createElement('textarea');ta.value=t;ta.style.cssText='position:fixed;left:-9999px';
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand('copy');fin();}catch(e){alert('No se pudo copiar solo. Usá 🖨 Sábana.');}
+  ta.remove();
+}
+function ramSabanaMail(){
+  const t=ramSabanaTexto();
+  const asunto='Tareas — '+new Date().toLocaleDateString('es-AR');
+  const body=encodeURIComponent(t);
+  if(body.length>1700){   // los mailto largos los cortan los clientes de correo
+    ramSabanaCopiar();
+    setTimeout(()=>{alert('La lista es larga para abrirla dentro del correo: te la copié al portapapeles. Abrí el mail y pegala con Ctrl+V.');},200);
+    return;
+  }
+  window.location.href='mailto:?subject='+encodeURIComponent(asunto)+'&body='+body;
+}
+
 function cumplirTareaRam(cid,tid){
   cid=parseInt(cid);
   const c=causas.find(x=>x.id===cid);if(!c)return;
