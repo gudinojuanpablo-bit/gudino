@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v358</title>
+<title>Gudiño Cabrera y Asociados v359</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1916,7 +1916,7 @@ function rowHTML(c){
   return`<div class="cr ${cls}" id="cr-${c.id}">
     <div class="chk-col" data-mov="${c.id}"><div class="chkbox${on?' on':''}">${on?'✓':''}</div></div>
     <div class="ci">
-      <div class="ci-car">${escH(c.car)}<span class="${exCls(c)}"> · ${c.ex}</span>${(()=>{const etLbl=c.etapa?etapaInfo(c.etapa).n:'+ etapa';const w=(etLbl.length+2.5).toFixed(1);return `<select onchange="setEtapaFila(${c.id},this.value)" onclick="event.stopPropagation()" title="Etapa procesal" style="font-size:10px;font-weight:600;border:none;padding:0 2px;margin-left:5px;cursor:pointer;-webkit-appearance:none;appearance:none;box-sizing:border-box;width:${w}ch;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;background:transparent;opacity:${c.etapa?1:.45};color:${c.etapa?etapaInfo(c.etapa).c:'var(--text3)'}"><option value=""${!c.etapa?' selected':''} disabled hidden>+ etapa</option>${ETAPAS.map(e=>`<option value="${e.k}"${e.k===c.etapa?' selected':''} style="background:#fff;color:#222">${e.n}</option>`).join('')}</select>`;})()}${(()=>{const b=c.etapa==='prueba'?_plazoBadge(c):'';return b||(c.pl?'<span class="pdot" title="Con plazo"></span>':'');})()}${c.socio?`<span class="soctag" title="Socio a cargo: ${escH(c.socio)}">${escH(c.socio==='Del estudio'?'Estudio':c.socio)}</span>`:''}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':''}${_pinChip(c)}${_antigBadge(c)}
+      <div class="ci-car">${escH(c.car)}<span class="${exCls(c)}"> · ${c.ex}</span>${(()=>{const etLbl=c.etapa?etapaInfo(c.etapa).n:'+ etapa';const w=(etLbl.length+2.5).toFixed(1);return `<select onchange="setEtapaFila(${c.id},this.value)" onclick="event.stopPropagation()" title="Etapa procesal" style="font-size:10px;font-weight:600;border:none;padding:0 2px;margin-left:5px;cursor:pointer;-webkit-appearance:none;appearance:none;box-sizing:border-box;width:${w}ch;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;background:transparent;opacity:${c.etapa?1:.45};color:${c.etapa?etapaInfo(c.etapa).c:'var(--text3)'}"><option value=""${!c.etapa?' selected':''} disabled hidden>+ etapa</option>${ETAPAS.map(e=>`<option value="${e.k}"${e.k===c.etapa?' selected':''} style="background:#fff;color:#222">${e.n}</option>`).join('')}</select>`;})()}${(()=>{const b=c.etapa==='prueba'?_plazoBadge(c):'';return b||(c.pl?'<span class="pdot" title="Con plazo"></span>':'');})()}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':''}${_pinChip(c)}${_antigBadge(c)}
       </div>
       <div class="ci-tv-tag">${(()=>{
         if(c.tipo_aud&&TIPOS[c.tipo_aud]){
@@ -2001,6 +2001,15 @@ function rowHTML(c){
   </div>`;
 }
 
+/* v359 — cambiar el socio a cargo desde el panelito de la causa: antes había
+   que entrar a editar los datos y no era evidente, así que las asignaciones
+   equivocadas quedaban trabadas. */
+function gcpSetSocio(v){
+  const c=causas.find(x=>x.id===openCID);if(!c)return;
+  c.socio=v;c.lastTouch=Date.now();
+  sC();renderR();updBadges();
+  toast(v?('Queda a cargo de '+(v==='Del estudio'?'el estudio':v)):'Socio sin asignar');
+}
 function openCP(id,e){
   e.stopPropagation();
   id=parseInt(id);
@@ -2020,6 +2029,7 @@ function openCP(id,e){
   document.getElementById('gcp-car').title=c.car;
   const gcli=document.getElementById('gcp-cli');
   if(gcli)gcli.innerHTML=c.cli?`👤 Cliente de <b>${c.cli}</b>`:'<span style="color:#c9a227;cursor:pointer" onclick="editarCausaDatos(openCID)">+ asignar cliente</span>';
+  const gsoc=document.getElementById('gcp-socio');if(gsoc)gsoc.value=c.socio||'';
   document.getElementById('gcp-aud').value=c.tipo_aud||'';
   const addWrap=document.getElementById('gcp-add-wrap');
   if(addWrap)addWrap.style.display=c.ven?'block':'none';
@@ -7320,7 +7330,15 @@ try{updToolsCounts();}catch(e){}
 <!-- POPUP CALENDARIO GLOBAL — solo audiencias + limpiar/borrar -->
 <div class="cpop" id="global-cpop" onclick="_gcpClickInterno=true" style="display:none">
   <div id="gcp-car" style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
-  <div id="gcp-cli" style="font-size:10px;color:#777;margin:-2px 0 7px"></div>
+  <div id="gcp-cli" style="font-size:10px;color:#777;margin:-2px 0 4px"></div>
+  <div style="display:flex;align-items:center;gap:5px;margin:0 0 7px">
+    <span style="font-size:10px;color:#777">👥</span>
+    <select class="fi" id="gcp-socio" onchange="gcpSetSocio(this.value)" title="Socio a cargo de la causa"
+      style="flex:1;font-size:10px;padding:2px 6px;height:22px">
+      <option value="">— Sin asignar —</option>
+      <option>Del estudio</option><option>Reinaldo</option><option>Rosana</option><option>Eugenia</option>
+    </select>
+  </div>
   <div class="cp-hdr">
     <div class="cp-nav" onclick="navGCP(-1,event)">&#8249;</div>
     <span class="cp-mes" id="gcp-mes">—</span>
