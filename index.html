@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v355</title>
+<title>Gudiño Cabrera y Asociados v358</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -542,9 +542,9 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
       <option value="">— Seleccionar —</option>
       <option>J.P.</option><option>Eugenia</option><option>Yanina</option><option>Reinaldo</option><option>Aldana</option><option>Rosana</option><option>Gabriela P.</option>
     </select></div>
-    <div style="margin-top:10px"><label class="fl">La llevo con</label><select class="fi" id="ec-socio" style="width:100%">
+    <div style="margin-top:10px"><label class="fl">👥 Socio a cargo</label><select class="fi" id="ec-socio" style="width:100%">
       <option value="">— Sin asignar —</option>
-      <option>Mío</option><option>Reinaldo</option><option>Rosana</option><option>Eugenia</option><option>Todos</option>
+      <option>Del estudio</option><option>Reinaldo</option><option>Rosana</option><option>Eugenia</option>
     </select></div>
     <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-top:12px;cursor:pointer"><input type="checkbox" id="ec-art"> 🦺 Es contra una ART</label>
     <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
@@ -585,6 +585,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
       </div>
     </div>
     <div class="ni" id="ni-aud" onclick="goP('audiencias')">📅 Audiencias</div>
+    <div class="ni" id="ni-tur" onclick="goP('turnero')">🗓 Turnos <span class="nb" id="cnt-tur-side" style="display:none;background:#3A5378;color:#fff">0</span></div>
     <div class="ni" id="ni-pend" onclick="goP('pendientes')">📝 Anotador <span class="nb" id="cnt-pend" style="display:none">0</span></div>
     <div class="ni" id="ni-control" onclick="goP('control')">🔍 Control de escritos <span class="nb" id="cnt-control" style="display:none;background:#C0392B;color:#fff">0</span></div>
     <div class="ni" id="ni-imp" onclick="goP('imprimir')">🖨 Para imprimir <span class="nb" id="cnt-imp" style="display:none;background:var(--oro);color:#fff">0</span></div>
@@ -626,13 +627,12 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
             <div class="filtro-btn" id="btn-ram-fil" onclick="swV('ram')" style="display:flex;align-items:center;gap:4px">⭐ Ramiro <span class="tbadge y" id="rbadge" style="position:static;margin-left:2px">0</span></div>
             <div class="filtro-btn" id="btn-art-fil" onclick="toggleART()" style="display:none">🦺 Solo ART</div>
             <span class="sep-fil"></span>
-            <select class="filtro-sel" id="fil-socio" onchange="setSocio(this.value)" title="Filtrar por quién lleva la causa">
+            <select class="filtro-sel" id="fil-socio" onchange="setSocio(this.value)" title="Filtrar por socio a cargo">
               <option value="">👥 Socios: todas</option>
-              <option value="Mío">Mío</option>
+              <option value="Del estudio">Del estudio</option>
               <option value="Reinaldo">Reinaldo</option>
               <option value="Rosana">Rosana</option>
               <option value="Eugenia">Eugenia</option>
-              <option value="Todos">Del estudio</option>
             </select>
           </div>
           <div class="view on" id="view-reg">
@@ -848,11 +848,6 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
           <div class="ht">Gastos</div>
           <div class="hd">Sellados y gastos del estudio</div>
         </div>
-        <div onclick="goP('turnero')" class="hcard">
-          <span style="font-size:26px">🗓</span>
-          <div class="ht">Turnos <span class="nb" id="cnt-tur" style="display:none">0</span></div>
-          <div class="hd">Consultas y turnos</div>
-        </div>
         <div onclick="goP('archivo')" class="hcard">
           <span style="font-size:26px">🗄</span>
           <div class="ht">Archivo</div>
@@ -1024,10 +1019,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
           <option value="">— Seleccionar —</option>
           <option>J.P.</option><option>Eugenia</option><option>Yanina</option><option>Reinaldo</option><option>Aldana</option><option>Rosana</option><option>Gabriela P.</option>
         </select>
-        <label class="fl" style="margin-top:8px;display:block">La llevo con</label>
+        <label class="fl" style="margin-top:8px;display:block">👥 Socio a cargo</label>
         <select class="fi" id="f-socio">
           <option value="">— Sin asignar —</option>
-          <option>Mío</option><option>Reinaldo</option><option>Rosana</option><option>Eugenia</option><option>Todos</option>
+          <option>Del estudio</option><option>Reinaldo</option><option>Rosana</option><option>Eugenia</option>
         </select>
         <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-top:8px;cursor:pointer"><input type="checkbox" id="f-art"> 🦺 Es contra una ART</label></div>
         <div class="fgg"><label class="fl">Fuero</label><select class="fi" id="f-fue" onchange="updJuzSelect()">
@@ -1591,7 +1586,7 @@ function goP(p){
   const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'<span style="color:#1E8E4E">$</span> Gastos / Sellados',nueva:'Nueva causa',panorama:'📊 Panorama del estudio',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos',imprimir:'Para imprimir'};
   document.getElementById('ptitle').innerHTML=t[p]||escH(p);
   showOtherPanel(p);
-  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her',escgen:'her',archivo:'arch',control:'control',imprimir:'imp'}[p]||p);
+  niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'tur',herramientas:'her',escgen:'her',archivo:'arch',control:'control',imprimir:'imp'}[p]||p);
   if(p==='panorama')renderPanorama();
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
@@ -1640,8 +1635,17 @@ function updBadges(){
   r+=_carpetaTasks().length;
   const rbEl=document.getElementById('rbadge');if(rbEl)rbEl.textContent=r;
   document.getElementById('cnt-ext').textContent=extraj.filter(e=>e.est!=='cerrado').length;
-  const cntTur=document.getElementById('cnt-tur');
-  if(cntTur){const hoyTur=turnos.filter(t=>t.f===isoD(HOY)).length;cntTur.textContent=hoyTur;cntTur.style.display=hoyTur?'':'none';}
+  // el contador de turnos vive ahora en el panel lateral: muestra los de hoy y,
+  // si hoy no hay, los de mañana (que es lo que interesa mirar a la tarde)
+  const cntTur=document.getElementById('cnt-tur-side');
+  if(cntTur){
+    const hoyTur=turnos.filter(t=>t.f===isoD(HOY)).length;
+    const manTur=turnos.filter(t=>t.f===isoD(new Date(HOY.getTime()+864e5))).length;
+    const n=hoyTur||manTur;
+    cntTur.textContent=n;
+    cntTur.title=hoyTur?hoyTur+' turno(s) hoy':(manTur?manTur+' turno(s) mañana':'');
+    cntTur.style.display=n?'':'none';
+  }
   const hoy5=isoD(HOY);
   const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
   const vmpProx=causas.filter(c=>c.ven&&c.ven>=hoy5&&c.ven<=en5&&c.est!=='archivada'&&c.pl&&c.tipo_aud!=='recordatorio');
@@ -1912,7 +1916,7 @@ function rowHTML(c){
   return`<div class="cr ${cls}" id="cr-${c.id}">
     <div class="chk-col" data-mov="${c.id}"><div class="chkbox${on?' on':''}">${on?'✓':''}</div></div>
     <div class="ci">
-      <div class="ci-car">${escH(c.car)}<span class="${exCls(c)}"> · ${c.ex}</span>${(()=>{const etLbl=c.etapa?etapaInfo(c.etapa).n:'+ etapa';const w=(etLbl.length+2.5).toFixed(1);return `<select onchange="setEtapaFila(${c.id},this.value)" onclick="event.stopPropagation()" title="Etapa procesal" style="font-size:10px;font-weight:600;border:none;padding:0 2px;margin-left:5px;cursor:pointer;-webkit-appearance:none;appearance:none;box-sizing:border-box;width:${w}ch;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;background:transparent;opacity:${c.etapa?1:.45};color:${c.etapa?etapaInfo(c.etapa).c:'var(--text3)'}"><option value=""${!c.etapa?' selected':''} disabled hidden>+ etapa</option>${ETAPAS.map(e=>`<option value="${e.k}"${e.k===c.etapa?' selected':''} style="background:#fff;color:#222">${e.n}</option>`).join('')}</select>`;})()}${(()=>{const b=c.etapa==='prueba'?_plazoBadge(c):'';return b||(c.pl?'<span class="pdot" title="Con plazo"></span>':'');})()}${c.socio?`<span class="soctag" title="La lleva con ${escH(c.socio)}">${escH(c.socio==='Todos'?'Estudio':c.socio)}</span>`:''}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':''}${_pinChip(c)}${_antigBadge(c)}
+      <div class="ci-car">${escH(c.car)}<span class="${exCls(c)}"> · ${c.ex}</span>${(()=>{const etLbl=c.etapa?etapaInfo(c.etapa).n:'+ etapa';const w=(etLbl.length+2.5).toFixed(1);return `<select onchange="setEtapaFila(${c.id},this.value)" onclick="event.stopPropagation()" title="Etapa procesal" style="font-size:10px;font-weight:600;border:none;padding:0 2px;margin-left:5px;cursor:pointer;-webkit-appearance:none;appearance:none;box-sizing:border-box;width:${w}ch;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;background:transparent;opacity:${c.etapa?1:.45};color:${c.etapa?etapaInfo(c.etapa).c:'var(--text3)'}"><option value=""${!c.etapa?' selected':''} disabled hidden>+ etapa</option>${ETAPAS.map(e=>`<option value="${e.k}"${e.k===c.etapa?' selected':''} style="background:#fff;color:#222">${e.n}</option>`).join('')}</select>`;})()}${(()=>{const b=c.etapa==='prueba'?_plazoBadge(c):'';return b||(c.pl?'<span class="pdot" title="Con plazo"></span>':'');})()}${c.socio?`<span class="soctag" title="Socio a cargo: ${escH(c.socio)}">${escH(c.socio==='Del estudio'?'Estudio':c.socio)}</span>`:''}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':''}${_pinChip(c)}${_antigBadge(c)}
       </div>
       <div class="ci-tv-tag">${(()=>{
         if(c.tipo_aud&&TIPOS[c.tipo_aud]){
@@ -2309,6 +2313,14 @@ function _pintarFiltroSocio(){const sel=document.getElementById('fil-socio');if(
 /* v351 — con qué socio se lleva cada causa. "Todos" quiere decir que la lleva
    el estudio en conjunto, así que aparece siempre, filtre por quien filtre. */
 let filtroSocio=localStorage.getItem('ga_socio')||'';
+/* v356 — "Mío" y el viejo comodín "Todos" pasan a llamarse "Del estudio", que
+   son las causas que lleva él. Se migra una sola vez lo ya cargado. */
+function _migrarSocios(){
+  let tocado=false;
+  causas.forEach(c=>{if(c.socio==='Mío'||c.socio==='Todos'){c.socio='Del estudio';tocado=true;}});
+  if(tocado)sC();
+  if(filtroSocio==='Mío'||filtroSocio==='Todos'){filtroSocio='Del estudio';localStorage.setItem('ga_socio',filtroSocio);}
+}
 function setSocio(sc){
   filtroSocio=sc;
   localStorage.setItem('ga_socio',sc);
@@ -2606,7 +2618,7 @@ function renderR(){
   const artBtn=document.getElementById('btn-art-fil');
   if(artBtn){artBtn.style.display=(filtroF==='Laboral')?'block':'none';if(filtroF!=='Laboral'&&filtroART){filtroART=false;artBtn.classList.remove('on');}}
   if(filtroART)fl=fl.filter(esART);
-  if(filtroSocio)fl=fl.filter(c=>c.socio===filtroSocio||c.socio==='Todos');
+  if(filtroSocio)fl=fl.filter(c=>c.socio===filtroSocio);
   if(filtroEstado==='trabajar')fl=fl.filter(c=>!movidas.has(c.id));
   if(filtroEstado==='prueba')fl=fl.filter(c=>c.etapa==='prueba');
   if(filtroEstado==='semana'){
@@ -3138,9 +3150,8 @@ function renderPanorama(){
   h+=_panCaja('Dónde está la carga','8 juzgados con más causas',_panBarras(topJuz,{anchoEti:170}));
 
   // 4) reparto entre socios
-  const socios=['Mío','Reinaldo','Rosana','Eugenia','Todos'];
-  const porSocio=socios.map(sc=>({n:sc==='Todos'?'Del estudio':sc,v:act.filter(c=>c.socio===sc).length,c:PAN_COL.navy}))
-    .filter(d=>d.v);
+  const socios=['Del estudio','Reinaldo','Rosana','Eugenia'];
+  const porSocio=socios.map(sc=>({n:sc,v:act.filter(c=>c.socio===sc).length,c:PAN_COL.navy})).filter(d=>d.v);
   const sinAsignar=act.filter(c=>!c.socio).length;
   if(sinAsignar)porSocio.push({n:'Sin asignar',v:sinAsignar,c:PAN_COL.gris});
   h+=_panCaja('Reparto entre socios',sinAsignar?sinAsignar+' sin asignar':'',
@@ -7023,11 +7034,23 @@ function audienciasProximas(dias){
 }
 function _txtFaltan(n){return n===0?'HOY':n===1?'MAÑANA':'en '+n+' días';}
 
-/* Banner fijo arriba de todo (hoy, mañana y los próximos 7 días) */
+/* v357 — AGENDA PRESENCIAL: todo lo que obliga a estar en un lugar a una hora.
+   Junta los turnos que dio para mañana (para saber a la noche cómo viene el día
+   siguiente) con las audiencias de los próximos 7 días. */
+function _turnosDeManana(){
+  try{
+    if(typeof turnos==='undefined'||!turnos.length)return [];
+    const man=isoD(new Date(HOY.getTime()+864e5));
+    return turnos.filter(t=>t.f===man)
+      .sort((a,b)=>(a.h||'').localeCompare(b.h||''));
+  }catch(e){return [];}
+}
+/* Banner fijo arriba de todo (turnos de mañana y audiencias de los 7 días) */
 function bannerAudienciasProximas(){
   const L=audienciasProximas(7);
+  const T=_turnosDeManana();
   const avisosOff=(typeof Notification!=='undefined'&&Notification&&Notification.permission!=='granted');
-  if(!L.length)return '';
+  if(!L.length&&!T.length)return '';
   const _cap=L.slice(0,10),_resto=L.length-_cap.length;
   const filas=_cap.map(a=>{
     const n=_faltan(a.f);
@@ -7042,14 +7065,28 @@ function bannerAudienciasProximas(){
     </div>`;
   }).join('');
   const hoyMan=L.filter(a=>_faltan(a.f)<=1).length;
+  const filasTur=T.map(t=>{
+    const cli=t.cli||t.nom||'(sin nombre)';
+    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid rgba(0,0,0,.06)">
+      <span style="font-size:10.5px;font-weight:800;color:#3A5378;min-width:66px">MAÑANA</span>
+      <span style="font-size:11px;color:var(--text2);min-width:96px">${t.h?escH(t.h)+' hs':'sin hora'}${t.dur?' · '+escH(t.dur)+"'":''}</span>
+      <span style="font-size:11.5px;font-weight:700;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escH(cli)}</span>
+      <span style="font-size:10px;color:var(--text3);white-space:nowrap">${escH(t.mot||'turno en el estudio')}</span>
+    </div>`;
+  }).join('');
+  const _subt=[T.length?T.length+' turno'+(T.length!==1?'s':'')+' mañana':'',
+               L.length?L.length+' audiencia'+(L.length!==1?'s':'')+' en 7 días':'']
+              .filter(Boolean).join(' · ');
   return `<div class="ban ${hoyMan?'rojo':'amber'}" style="padding:8px 11px">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
-      <strong style="font-size:12px">⚖️ AUDIENCIAS — próximos 7 días (${L.length})</strong>
+      <strong style="font-size:12px">📌 AGENDA</strong>
+      <span style="font-size:10.5px;color:var(--text3);font-weight:600">${_subt}</span>
       <span style="margin-left:auto;display:flex;gap:6px">
         <span onclick="event.stopPropagation();bajarICS(60)" title="Bajar al calendario del celular, con alarma 1 día antes y 2 horas antes" style="cursor:pointer;border:1px solid var(--border2);background:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--text2)">📅 Al celular (.ics)</span>
         ${avisosOff?'<span onclick="event.stopPropagation();pedirNotif()" style="cursor:pointer;border:1px solid var(--border2);background:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--text2)">🔔 Activar avisos</span>':''}
       </span>
     </div>
+    ${filasTur}
     ${filas}
     ${_resto>0?`<div style="font-size:10px;color:var(--text3);padding-top:4px">y ${_resto} audiencia${_resto!==1?'s':''} más esta semana…</div>`:''}
   </div>`;
@@ -7270,7 +7307,7 @@ function initAtajos(){
 }
 function initAntiOlvido(){
   try{initAtajos();}catch(e){}
-  try{_pintarFiltroSocio();}catch(e){}
+  try{_migrarSocios();_pintarFiltroSocio();}catch(e){}
   setTimeout(()=>{try{abrirCheckin(false);}catch(e){}},700);
   setTimeout(()=>{try{chequearAvisos();}catch(e){}},2000);
   setInterval(()=>{try{chequearAvisos();}catch(e){}},30*60*1000);
