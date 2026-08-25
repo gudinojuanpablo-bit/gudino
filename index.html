@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v359</title>
+<title>Gudiño Cabrera y Asociados v361</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1335,7 +1335,21 @@ let gastos=JSON.parse(localStorage.getItem('ga_g')||'null')||G0;
 let audiencias=JSON.parse(localStorage.getItem('ga_a')||'null')||A0;
 let extraj=JSON.parse(localStorage.getItem('ga_e')||'null')||EXT0;
 let vglob=JSON.parse(localStorage.getItem('ga_vglob')||'[]');
-let revisiones=JSON.parse(localStorage.getItem('ga_rev')||'[]');
+/* v360 — los escritos que se quitaban del control volvían a aparecer solos.
+   Motivo: la lista de revisiones viaja entera en la sincronización, así que
+   cuando el otro equipo (el de Ramiro) subía su copia —que todavía los tenía—
+   los resucitaba. Ahora se guarda una lista de borrados ("lápidas") que también
+   viaja, y al bajar datos se descarta todo lo que figure ahí. */
+let revBorradas=JSON.parse(localStorage.getItem('ga_revdel')||'[]');
+function sRevDel(){
+  // se limpian las lápidas de más de 120 días para que no crezca sin control
+  const corte=Date.now()-120*864e5;
+  revBorradas=revBorradas.filter(x=>x&&x.t>corte);
+  localStorage.setItem('ga_revdel',JSON.stringify(revBorradas));
+}
+function _estaBorrada(id){return revBorradas.some(x=>String(x.id)===String(id));}
+function _limpiarBorradas(lista){return (lista||[]).filter(r=>!_estaBorrada(r.id));}
+let revisiones=_limpiarBorradas(JSON.parse(localStorage.getItem('ga_rev')||'[]'));
 function sRev(){localStorage.setItem('ga_rev',JSON.stringify(revisiones));}
 let feriados=JSON.parse(localStorage.getItem('ga_f')||'null')||F0;
 let mailCfg=JSON.parse(localStorage.getItem('ga_mc')||'{}');
@@ -1442,7 +1456,7 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones};}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos};}
 function applyPayload(d){
   if(!d)return;
   if(d.causas){
@@ -1460,11 +1474,22 @@ function applyPayload(d){
     else movidas=new Set();
   }
   if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;if(d.pendientes)pendientes=d.pendientes;
-  if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;if(d.vglob)vglob=d.vglob;if(d.revisiones)revisiones=d.revisiones;
+  if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;if(d.vglob)vglob=d.vglob;
+  // las lápidas de los dos lados se suman antes de aplicar la lista remota
+  if(Array.isArray(d.revBorradas)){
+    const vistos=new Set(revBorradas.map(x=>String(x.id)));
+    d.revBorradas.forEach(x=>{if(x&&!vistos.has(String(x.id))){revBorradas.push(x);vistos.add(String(x.id));}});
+    sRevDel();
+  }
+  if(d.revisiones)revisiones=_limpiarBorradas(d.revisiones);
   if(d.mailCfg)mailCfg=d.mailCfg;
   if(d.tareasRam)tareasRam=d.tareasRam;
+  if(Array.isArray(d.turnos)){turnos=d.turnos;saveTurnos();}
   svl('ga_c',causas);svl('ga_m_'+SK,[...movidas]);svl('ga_g',gastos);
   svl('ga_a',audiencias);svl('ga_e',extraj);svl('ga_f',feriados);
+  // esto faltaba: lo que bajaba de la nube no se guardaba en el equipo, así que
+  // al recargar volvía a leerse la copia vieja del disco
+  svl('ga_rev',revisiones);svl('ga_tram',tareasRam);svl('ga_pend',pendientes);
 }
 
 async function fbSave(){
@@ -3665,7 +3690,7 @@ setSyncStatus('local');
 let turnos = JSON.parse(localStorage.getItem('ga_turnos')||'[]');
 let turSemOff = 0; // semana offset desde hoy
 
-function saveTurnos(){localStorage.setItem('ga_turnos',JSON.stringify(turnos));}
+function saveTurnos(){localStorage.setItem('ga_turnos',JSON.stringify(turnos));try{fbSave();}catch(e){}}
 
 // ═══════════════════════════════════════════════
 // EMAILJS — RECORDATORIOS DE TURNOS (12hs antes)
@@ -5366,7 +5391,9 @@ function ctrlComent(id){
 }
 function ctrlBorrar(id){
   if(!confirm('¿Quitar este escrito del control?'))return;
+  revBorradas.push({id:id,t:Date.now()});sRevDel();
   revisiones=revisiones.filter(x=>x.id!==id);sRev();sC();updBadges();renderControl();
+  toast('Quitado del control');
 }
 function richPaste(e){
   e.preventDefault();
