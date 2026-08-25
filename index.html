@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v349</title>
+<title>Gudiño Cabrera y Asociados v355</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -72,7 +72,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 .srch{display:flex;align-items:center;gap:4px;background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;width:160px;flex-shrink:0}
 .srch input{border:none;background:transparent;font-size:11px;outline:none;width:100%}
 .srch input::placeholder{color:var(--text3)}
-.btn{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text2);white-space:nowrap;flex-shrink:0;transition:all .15s ease}
+.btn{transition:transform .12s,filter .12s,box-shadow .12s;display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text2);white-space:nowrap;flex-shrink:0;transition:all .15s ease}
 .btn:hover{border-color:var(--border2);box-shadow:0 1px 4px rgba(20,33,61,.08)}
 .btn:active{transform:scale(.96)}
 .btn:hover{background:var(--bg2)}
@@ -100,6 +100,40 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 /* v338 — en pantallas anchas el contenido de estos paneles quedaba estirado de
    punta a punta; se centra en una columna de lectura cómoda */
 #panel-control,#panel-escgen,#panel-imprimir,#panel-archivo,#panel-pendientes,#panel-inactivas{max-width:1120px;margin:0 auto;width:100%}
+#panel-panorama{max-width:1180px;margin:0 auto;width:100%}
+/* Panorama */
+.hcard:hover{transform:translateY(-3px);box-shadow:0 10px 26px -12px rgba(20,33,61,.45);border-color:var(--oro)}
+.hcard:active{transform:translateY(-1px) scale(.99)}
+.btn:active{transform:scale(.97)}
+/* v354 — escala de color sobria para las acciones: en vez de siete botones
+   rellenos de siete colores, la acción principal va llena en navy y las demás
+   en "fantasma" (fondo claro, borde y texto del color que las identifica).
+   Menos ruido, misma jerarquía. */
+.btn.gh{background:var(--bg)!important;border:1px solid var(--gh,#c9cfda)!important;color:var(--gh,var(--text2))!important;font-weight:650}
+.btn.gh:hover{background:var(--gh-b,#f5f6f9)!important;filter:none}
+.btn.gh.gh-verde{--gh:#1E6F42;--gh-b:#EAF5EE}
+.btn.gh.gh-oro{--gh:#8a6413;--gh-b:#FBF3E2}
+.btn.gh.gh-rojo{--gh:#A03A2C;--gh-b:#FBEDEA}
+.btn.gh.gh-azul{--gh:#3A5378;--gh-b:#EEF1F7}
+.btn.gh.gh-navy{--gh:var(--navy);--gh-b:#EDEFF4}
+.btn:hover{filter:brightness(1.06)}
+.filtro-btn{transition:background .15s,color .15s,border-color .15s}
+.pan-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.pan-kpi{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;
+  transition:transform .15s,box-shadow .15s}
+.pan-kpi:hover{transform:translateY(-2px);box-shadow:0 6px 18px -8px rgba(20,33,61,.3)}
+.pan-kpi .v{font-size:26px;font-weight:800;line-height:1;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.pan-kpi .t{font-size:10.5px;color:var(--text3);margin-top:5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.pan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:12px}
+.pan-caja{background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px 12px;
+  box-shadow:0 1px 2px rgba(20,33,61,.04)}
+.pan-tit{font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:baseline;gap:8px}
+.pan-tit span{font-size:10.5px;font-weight:500;color:var(--text3)}
+.pan-ley{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);padding:4px 0}
+.pan-ley .pt{width:10px;height:10px;border-radius:3px;flex:none}
+.pan-ley b{margin-left:auto;color:var(--text);font-variant-numeric:tabular-nums}
+.pan-ley .pc{width:38px;text-align:right;color:var(--text3);font-size:11px}
+.pan-nada{font-size:12px;color:var(--text3);padding:22px 4px;text-align:center}
 .vacio{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:46px 20px;margin-top:10px;
   border:1px dashed var(--border2);border-radius:12px;background:linear-gradient(180deg,var(--bg2),transparent);color:var(--text3)}
 .vacio .ico{font-size:30px;opacity:.5;line-height:1}
@@ -126,6 +160,12 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 .ram-chip:hover{background:#FFF6E0;border-color:var(--oro);color:#8a5c00}
 .rep-sel{font-size:10px;padding:2px 3px;border:1px solid var(--border2);border-radius:5px;background:var(--bg);color:var(--text2);max-width:150px;cursor:pointer}
 .rep-sel.pendiente{border-style:dashed;border-color:#c9a227;color:#9a7400;background:#FFFDF5}
+.sep-fil{width:1px;height:18px;background:var(--border2);margin:0 4px;flex:none}
+.filtro-sel{font-size:11px;font-weight:600;padding:4px 24px 4px 10px;border-radius:14px;border:1px solid var(--border2);
+  background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath fill='%238a94a6' d='M0 0h8L4 5z'/%3E%3C/svg%3E") no-repeat right 9px center;
+  color:var(--text2);cursor:pointer;-webkit-appearance:none;appearance:none;transition:all .15s}
+.filtro-sel:hover{border-color:var(--oro)}
+.filtro-sel.activo{background-color:var(--navy);border-color:var(--navy);color:#fff}
 .filtros-wrap{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap;align-items:center}
 .filtro-btn{padding:4px 11px;border-radius:12px;font-size:11px;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text2);user-select:none;font-weight:500;transition:all .15s}
 .filtro-btn:hover{background:var(--bg2)}
@@ -185,6 +225,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 .ci-ex.crit{color:var(--red);font-weight:700;background:var(--red-l);padding:0 3px;border-radius:3px}
 .pdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--red);vertical-align:middle;margin-left:3px}
 /* TAG RAMIRO */
+.soctag{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:5px;background:#EEF2FA;color:#3C5A8A;vertical-align:middle;letter-spacing:.2px}
 .rtag{display:inline-flex;align-items:center;gap:3px;background:var(--gold-l);border:1px solid var(--gold-b);border-radius:3px;padding:1px 5px;font-size:10px;font-weight:700;color:var(--gold);margin-left:5px;vertical-align:middle}
 .rtag.done{background:var(--bg2);border-color:var(--border);color:#bbb;text-decoration:line-through}
 .rnota{font-size:11px;color:var(--gold);background:var(--gold-l);border-left:3px solid var(--gold-b);padding:3px 8px;border-radius:0 4px 4px 0;margin-top:3px;cursor:pointer;line-height:1.5;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:8px}
@@ -477,7 +518,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 .hojaA4 *{max-width:100%}
 .hojaA4 img{max-width:100%;height:auto}
 .ctrl-com{background:#f6f7fa;border-radius:8px;padding:8px 11px;margin-bottom:6px;font-size:12px}
-.hcard{border:1px solid #e6e8ee;background:#fafbfc;border-radius:11px;padding:15px 13px;cursor:pointer;text-align:center;transition:transform .08s,box-shadow .12s;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:104px;justify-content:center}
+.hcard{transition:transform .15s cubic-bezier(.2,.8,.3,1),box-shadow .15s,border-color .15s;border:1px solid #e6e8ee;background:#fafbfc;border-radius:11px;padding:15px 13px;cursor:pointer;text-align:center;transition:transform .08s,box-shadow .12s;display:flex;flex-direction:column;align-items:center;gap:5px;min-height:104px;justify-content:center}
 .hcard:hover{box-shadow:0 3px 10px rgba(20,33,61,.1);transform:translateY(-1px)}
 .hcard .ht{font-size:12.5px;font-weight:700;line-height:1.2}
 .hcard .hd{font-size:10.5px;color:#9aa1ac;line-height:1.25}
@@ -500,6 +541,10 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
     <div style="margin-top:10px"><label class="fl">Cliente de</label><select class="fi" id="ec-cli" style="width:100%">
       <option value="">— Seleccionar —</option>
       <option>J.P.</option><option>Eugenia</option><option>Yanina</option><option>Reinaldo</option><option>Aldana</option><option>Rosana</option><option>Gabriela P.</option>
+    </select></div>
+    <div style="margin-top:10px"><label class="fl">La llevo con</label><select class="fi" id="ec-socio" style="width:100%">
+      <option value="">— Sin asignar —</option>
+      <option>Mío</option><option>Reinaldo</option><option>Rosana</option><option>Eugenia</option><option>Todos</option>
     </select></div>
     <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-top:12px;cursor:pointer"><input type="checkbox" id="ec-art"> 🦺 Es contra una ART</label>
     <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
@@ -580,6 +625,15 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
             <div class="filtro-btn" onclick="setFiltroEstado('trabajar');swV('reg')">📋 Para trabajar</div>
             <div class="filtro-btn" id="btn-ram-fil" onclick="swV('ram')" style="display:flex;align-items:center;gap:4px">⭐ Ramiro <span class="tbadge y" id="rbadge" style="position:static;margin-left:2px">0</span></div>
             <div class="filtro-btn" id="btn-art-fil" onclick="toggleART()" style="display:none">🦺 Solo ART</div>
+            <span class="sep-fil"></span>
+            <select class="filtro-sel" id="fil-socio" onchange="setSocio(this.value)" title="Filtrar por quién lleva la causa">
+              <option value="">👥 Socios: todas</option>
+              <option value="Mío">Mío</option>
+              <option value="Reinaldo">Reinaldo</option>
+              <option value="Rosana">Rosana</option>
+              <option value="Eugenia">Eugenia</option>
+              <option value="Todos">Del estudio</option>
+            </select>
           </div>
           <div class="view on" id="view-reg">
             <div id="reg-secs"></div>
@@ -725,6 +779,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
       <div class="aud-list" id="aud-list"></div>
     </div>
 
+    <div class="ct panel" id="panel-panorama"><div id="pan-body"></div></div>
     <div class="ct panel" id="panel-gastos">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:flex-end">
         <div style="flex:1;min-width:170px"><label class="fl">Ver gastos de</label>
@@ -782,6 +837,11 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
           <span style="font-size:26px">📁</span>
           <div class="ht">Extrajudiciales <span class="nb" id="cnt-ext" style="display:none">0</span></div>
           <div class="hd">Expedientes extrajudiciales</div>
+        </div>
+        <div onclick="goP('panorama')" class="hcard">
+          <span style="font-size:26px">📊</span>
+          <div class="ht">Panorama</div>
+          <div class="hd">El estudio de un vistazo</div>
         </div>
         <div onclick="goP('gastos')" class="hcard">
           <span style="font-size:36px;font-weight:800;color:#1E8E4E;line-height:26px;display:block;letter-spacing:-1px">$</span>
@@ -883,14 +943,14 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <button class="btn p" onclick="escVistaPrevia()" title="Ctrl+Enter">👁 Vista previa</button>
-        <button class="btn" onclick="escEnviarControl()" style="background:#7A5C99;color:#fff;border-color:#7A5C99">🔍 A control</button>
-        <button class="btn" onclick="escGuardarArchivo()" style="background:var(--green);color:#fff;border-color:var(--green)" title="Lo guarda y lo deja esperando en «Para imprimir»">💾 Guardar</button>
-        <button class="btn" onclick="escImprimir()" style="background:var(--navy);color:#fff;border-color:var(--navy)" title="Ctrl+P">🖨 Imprimir</button>
-        <button class="btn" onclick="escMasAcciones(this)" title="Drive, Word y PDF" style="font-weight:700;padding:5px 12px">+</button>
+        <button class="btn gh gh-azul" onclick="escEnviarControl()">🔍 A control</button>
+        <button class="btn" onclick="escGuardarArchivo()" style="background:#1E6F42;color:#fff;border-color:#1E6F42" title="Lo guarda y lo deja esperando en «Para imprimir»">💾 Guardar</button>
+        <button class="btn gh gh-navy" onclick="escImprimir()" title="Ctrl+P">🖨 Imprimir</button>
+        <button class="btn gh" onclick="escMasAcciones(this)" title="Drive, Word y PDF" style="font-weight:700;padding:5px 13px">+</button>
         <div id="esc-mas" style="display:none;gap:8px;flex-wrap:wrap;align-items:center;width:100%;margin-top:2px;padding-top:8px;border-top:1px dashed var(--border)">
-          <button class="btn" id="btn-drive" onclick="escAbrirEnDrive()" style="background:#0F9D58;color:#fff;border-color:#0F9D58">📤 Abrir en Drive</button>
-          <button class="btn" onclick="escDescargarWord()" style="background:var(--oro);color:#fff;border-color:var(--oro)">⬇ Word</button>
-          <button class="btn" onclick="escDescargarPDF()" style="background:#8b2c2c;color:#fff;border-color:#8b2c2c">⬇ PDF</button>
+          <button class="btn gh gh-verde" id="btn-drive" onclick="escAbrirEnDrive()">📤 Abrir en Drive</button>
+          <button class="btn gh gh-oro" onclick="escDescargarWord()">⬇ Word</button>
+          <button class="btn gh gh-rojo" onclick="escDescargarPDF()">⬇ PDF</button>
         </div>
       </div>
       <div id="esc-guardado-ok" style="display:none;font-size:11px;color:var(--green);font-weight:600;margin-top:6px">✓ Guardado y esperando en «Para imprimir»</div>
@@ -963,6 +1023,11 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
         <div class="fgg"><label class="fl">Cliente de</label><select class="fi" id="f-cli">
           <option value="">— Seleccionar —</option>
           <option>J.P.</option><option>Eugenia</option><option>Yanina</option><option>Reinaldo</option><option>Aldana</option><option>Rosana</option><option>Gabriela P.</option>
+        </select>
+        <label class="fl" style="margin-top:8px;display:block">La llevo con</label>
+        <select class="fi" id="f-socio">
+          <option value="">— Sin asignar —</option>
+          <option>Mío</option><option>Reinaldo</option><option>Rosana</option><option>Eugenia</option><option>Todos</option>
         </select>
         <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-top:8px;cursor:pointer"><input type="checkbox" id="f-art"> 🦺 Es contra una ART</label></div>
         <div class="fgg"><label class="fl">Fuero</label><select class="fi" id="f-fue" onchange="updJuzSelect()">
@@ -1523,10 +1588,11 @@ function goR(){_navRecord('reg');filtroF=null;showRegLayout(true);niOn('reg');do
 function goF(f){_navRecord('fuero:'+f);filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
   _navRecord('panel:'+p);
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'<span style="color:#1E8E4E">$</span> Gastos / Sellados',nueva:'Nueva causa',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos',imprimir:'Para imprimir'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'<span style="color:#1E8E4E">$</span> Gastos / Sellados',nueva:'Nueva causa',panorama:'📊 Panorama del estudio',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos',imprimir:'Para imprimir'};
   document.getElementById('ptitle').innerHTML=t[p]||escH(p);
   showOtherPanel(p);
   niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'her',herramientas:'her',escgen:'her',archivo:'arch',control:'control',imprimir:'imp'}[p]||p);
+  if(p==='panorama')renderPanorama();
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
   if(p==='audiencias'){sincTodasAudiencias();renderCal();}
@@ -1846,7 +1912,7 @@ function rowHTML(c){
   return`<div class="cr ${cls}" id="cr-${c.id}">
     <div class="chk-col" data-mov="${c.id}"><div class="chkbox${on?' on':''}">${on?'✓':''}</div></div>
     <div class="ci">
-      <div class="ci-car">${escH(c.car)}<span class="${exCls(c)}"> · ${c.ex}</span>${(()=>{const etLbl=c.etapa?etapaInfo(c.etapa).n:'+ etapa';const w=(etLbl.length+2.5).toFixed(1);return `<select onchange="setEtapaFila(${c.id},this.value)" onclick="event.stopPropagation()" title="Etapa procesal" style="font-size:10px;font-weight:600;border:none;padding:0 2px;margin-left:5px;cursor:pointer;-webkit-appearance:none;appearance:none;box-sizing:border-box;width:${w}ch;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;background:transparent;opacity:${c.etapa?1:.45};color:${c.etapa?etapaInfo(c.etapa).c:'var(--text3)'}"><option value=""${!c.etapa?' selected':''} disabled hidden>+ etapa</option>${ETAPAS.map(e=>`<option value="${e.k}"${e.k===c.etapa?' selected':''} style="background:#fff;color:#222">${e.n}</option>`).join('')}</select>`;})()}${(()=>{const b=c.etapa==='prueba'?_plazoBadge(c):'';return b||(c.pl?'<span class="pdot" title="Con plazo"></span>':'');})()}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':''}${_pinChip(c)}${_antigBadge(c)}
+      <div class="ci-car">${escH(c.car)}<span class="${exCls(c)}"> · ${c.ex}</span>${(()=>{const etLbl=c.etapa?etapaInfo(c.etapa).n:'+ etapa';const w=(etLbl.length+2.5).toFixed(1);return `<select onchange="setEtapaFila(${c.id},this.value)" onclick="event.stopPropagation()" title="Etapa procesal" style="font-size:10px;font-weight:600;border:none;padding:0 2px;margin-left:5px;cursor:pointer;-webkit-appearance:none;appearance:none;box-sizing:border-box;width:${w}ch;text-overflow:ellipsis;overflow:hidden;vertical-align:middle;background:transparent;opacity:${c.etapa?1:.45};color:${c.etapa?etapaInfo(c.etapa).c:'var(--text3)'}"><option value=""${!c.etapa?' selected':''} disabled hidden>+ etapa</option>${ETAPAS.map(e=>`<option value="${e.k}"${e.k===c.etapa?' selected':''} style="background:#fff;color:#222">${e.n}</option>`).join('')}</select>`;})()}${(()=>{const b=c.etapa==='prueba'?_plazoBadge(c):'';return b||(c.pl?'<span class="pdot" title="Con plazo"></span>':'');})()}${c.socio?`<span class="soctag" title="La lleva con ${escH(c.socio)}">${escH(c.socio==='Todos'?'Estudio':c.socio)}</span>`:''}${c.ram&&!c.rdon?'<span class="rtag">⭐ Ramiro</span>':''}${_pinChip(c)}${_antigBadge(c)}
       </div>
       <div class="ci-tv-tag">${(()=>{
         if(c.tipo_aud&&TIPOS[c.tipo_aud]){
@@ -2239,6 +2305,17 @@ let filtroEstado = '';
 let filtroART=false;
 function esART(c){if(c.esArt===true)return true;if(c.esArt===false)return false;return /ASOCIART|(^|[^A-Za-zÁÉÍÓÚ])ART([^A-Za-zÁÉÍÓÚ]|$)|EXPERTA|PREVENCI[OÓ]N|GALENO|BERKLEY|SEGUNDA\s+ART|PROVINCIA\s+ART|SWISS\s*MEDICAL|OMINT|RIESGOS\s+DEL\s+TRABAJO|\bSRT\b|FED(ERACI[OÓ]N)?\.?\s+PATRONAL|LA\s+CAJA|RECONQUISTA\s+ART/i.test(c.car||'');}
 function toggleART(){filtroART=!filtroART;const b=document.getElementById('btn-art-fil');if(b)b.classList.toggle('on',filtroART);renderR();}
+function _pintarFiltroSocio(){const sel=document.getElementById('fil-socio');if(sel){sel.value=filtroSocio||'';sel.classList.toggle('activo',!!filtroSocio);}}
+/* v351 — con qué socio se lleva cada causa. "Todos" quiere decir que la lleva
+   el estudio en conjunto, así que aparece siempre, filtre por quien filtre. */
+let filtroSocio=localStorage.getItem('ga_socio')||'';
+function setSocio(sc){
+  filtroSocio=sc;
+  localStorage.setItem('ga_socio',sc);
+  const sel=document.getElementById('fil-socio');
+  if(sel){sel.value=sc;sel.classList.toggle('activo',!!sc);}
+  renderR();updBadges();
+}
 function setFiltroEstado(f){
   filtroEstado=f;
   document.querySelectorAll('.filtro-btn').forEach(el=>{
@@ -2529,6 +2606,7 @@ function renderR(){
   const artBtn=document.getElementById('btn-art-fil');
   if(artBtn){artBtn.style.display=(filtroF==='Laboral')?'block':'none';if(filtroF!=='Laboral'&&filtroART){filtroART=false;artBtn.classList.remove('on');}}
   if(filtroART)fl=fl.filter(esART);
+  if(filtroSocio)fl=fl.filter(c=>c.socio===filtroSocio||c.socio==='Todos');
   if(filtroEstado==='trabajar')fl=fl.filter(c=>!movidas.has(c.id));
   if(filtroEstado==='prueba')fl=fl.filter(c=>c.etapa==='prueba');
   if(filtroEstado==='semana'){
@@ -2724,10 +2802,10 @@ function filtrarJuz(){updJuzSelect();}
 function addCausa(){
   const ex=document.getElementById('f-ex').value.trim(),car=document.getElementById('f-car').value.trim();
   if(!ex||!car){alert('Completá expediente y carátula.');return;}
-  causas.push({id:Date.now(),ex,car,cli:document.getElementById('f-cli').value,esArt:document.getElementById('f-art').checked,fue:document.getElementById('f-fue').value,juz:document.getElementById('f-juz').value.trim()||'—',est:document.getElementById('f-est').value,rol:document.getElementById('f-rol').value,ven:'',tv:'',tipo_aud:'',pl:document.getElementById('f-pl').checked,not:document.getElementById('f-not').value.trim(),ram:document.getElementById('f-ram').value.trim(),rdon:document.getElementById('f-rdon').checked});
+  causas.push({id:Date.now(),ex,car,cli:document.getElementById('f-cli').value,socio:(document.getElementById('f-socio')||{}).value||'',esArt:document.getElementById('f-art').checked,fue:document.getElementById('f-fue').value,juz:document.getElementById('f-juz').value.trim()||'—',est:document.getElementById('f-est').value,rol:document.getElementById('f-rol').value,ven:'',tv:'',tipo_aud:'',pl:document.getElementById('f-pl').checked,not:document.getElementById('f-not').value.trim(),ram:document.getElementById('f-ram').value.trim(),rdon:document.getElementById('f-rdon').checked});
   sC();updProgress();
   ['f-ex','f-car','f-juz','f-not','f-ram','f-juz-buscar'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
-  const fcli=document.getElementById('f-cli');if(fcli)fcli.value='';const fart=document.getElementById('f-art');if(fart)fart.checked=false;
+  const fcli=document.getElementById('f-cli');if(fcli)fcli.value='';const fso=document.getElementById('f-socio');if(fso)fso.value='';const fart=document.getElementById('f-art');if(fart)fart.checked=false;
   document.getElementById('f-pl').checked=false;document.getElementById('f-rdon').checked=false;
   const ok=document.getElementById('form-ok');ok.style.display='block';setTimeout(()=>ok.style.display='none',2500);
 }
@@ -2938,6 +3016,160 @@ function addG(){
 }
 function delG(id){if(!confirm('¿Eliminar este gasto?'))return;gastos=gastos.filter(g=>g.id!==id);sG();renderG();}
 function _gPill(q){const n=gSocioNorm(q);const map={'Juan Pablo':'pjp','Euge':'peuge','Yani':'pyani','Rosana':'pros','Aldana':'pald','Reinaldo':'prei','Rami':'pram','Otros':'poth'};return`<span class="ppill ${map[n]||'poth'}">${n}</span>`;}
+/* ═══════ v353 — PANORAMA: el estudio de un vistazo ═══════
+   Todo dibujado a mano en SVG, sin librerías: la app se usa sin internet y
+   una librería de gráficos por CDN la dejaría coja justo cuando no hay señal. */
+const PAN_COL={lab:'#C0912F',civ:'#2C5AA0',fam:'#7A5C99',paz:'#1E8E4E',gris:'#8a94a6',
+  rojo:'#C0392B',ambar:'#B8860B',verde:'#1E8E4E',navy:'#14213D'};
+function _panColorFuero(f){
+  return {Laboral:PAN_COL.lab,Civil:PAN_COL.civ,Familia:PAN_COL.fam,'Juzgado de Paz':PAN_COL.paz}[f]||PAN_COL.gris;
+}
+function _panNum(n){return (n||0).toLocaleString('es-AR');}
+
+/* barras horizontales con etiqueta y valor */
+function _panBarras(datos,opts){
+  opts=opts||{};
+  const max=Math.max(1,...datos.map(d=>d.v));
+  const alto=datos.length*(opts.grosor||30)+6;
+  const anchoEti=opts.anchoEti||150;
+  let sv=`<svg viewBox="0 0 640 ${alto}" style="width:100%;height:${alto}px" role="img">`;
+  datos.forEach((d,i)=>{
+    const y=i*(opts.grosor||30)+4;
+    const w=Math.max(2,(d.v/max)*(600-anchoEti-46));
+    sv+=`<text x="0" y="${y+15}" font-size="12" font-weight="600" fill="var(--text2)" font-family="system-ui">${escH(d.n).slice(0,26)}</text>`;
+    sv+=`<rect x="${anchoEti}" y="${y+4}" width="${w}" height="15" rx="4" fill="${d.c||PAN_COL.navy}" opacity=".92">
+        <animate attributeName="width" from="0" to="${w}" dur=".5s" fill="freeze"/></rect>`;
+    sv+=`<text x="${anchoEti+w+8}" y="${y+16}" font-size="11.5" font-weight="700" fill="var(--text3)" font-family="system-ui">${_panNum(d.v)}${d.suf||''}</text>`;
+  });
+  return sv+'</svg>';
+}
+
+/* columnas verticales con eje inferior */
+function _panColumnas(datos,opts){
+  opts=opts||{};
+  const max=Math.max(1,...datos.map(d=>d.v));
+  const W=640,H=opts.alto||170,base=H-26,paso=W/datos.length;
+  let sv=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" role="img">`;
+  sv+=`<line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="var(--border2)" stroke-width="1"/>`;
+  datos.forEach((d,i)=>{
+    const h=Math.max(1,(d.v/max)*(base-16));
+    const x=i*paso+paso*0.22, w=paso*0.56;
+    sv+=`<rect x="${x}" y="${base-h}" width="${w}" height="${h}" rx="4" fill="${d.c||PAN_COL.navy}" opacity=".9">
+       <animate attributeName="height" from="0" to="${h}" dur=".5s" fill="freeze"/>
+       <animate attributeName="y" from="${base}" to="${base-h}" dur=".5s" fill="freeze"/></rect>`;
+    if(d.v)sv+=`<text x="${x+w/2}" y="${base-h-5}" font-size="11" font-weight="700" text-anchor="middle" fill="var(--text2)" font-family="system-ui">${_panNum(d.v)}</text>`;
+    sv+=`<text x="${x+w/2}" y="${base+15}" font-size="10.5" text-anchor="middle" fill="var(--text3)" font-family="system-ui">${escH(d.n)}</text>`;
+  });
+  return sv+'</svg>';
+}
+
+/* anillo de proporciones */
+function _panAnillo(datos){
+  const tot=datos.reduce((s,d)=>s+d.v,0)||1;
+  const R=54,C=2*Math.PI*R;
+  let off=0;
+  let sv=`<svg viewBox="0 0 150 150" style="width:150px;height:150px;flex:none" role="img"><g transform="translate(75,75) rotate(-90)">`;
+  datos.forEach(d=>{
+    const frac=d.v/tot, largo=frac*C;
+    if(d.v)sv+=`<circle r="${R}" fill="none" stroke="${d.c}" stroke-width="22"
+      stroke-dasharray="${largo} ${C-largo}" stroke-dashoffset="${-off}"/>`;
+    off+=largo;
+  });
+  sv+=`</g><text x="75" y="72" text-anchor="middle" font-size="26" font-weight="800" fill="var(--text)" font-family="system-ui">${_panNum(tot)}</text>`;
+  sv+=`<text x="75" y="90" text-anchor="middle" font-size="10.5" fill="var(--text3)" font-family="system-ui">causas activas</text></svg>`;
+  return sv;
+}
+
+function _panCaja(titulo,sub,contenido){
+  return `<div class="pan-caja"><div class="pan-tit">${titulo}${sub?`<span>${sub}</span>`:''}</div>${contenido}</div>`;
+}
+
+function renderPanorama(){
+  const el=document.getElementById('pan-body');if(!el)return;
+  const act=causas.filter(c=>c.est!=='archivada');
+  const hoy=todayISO();
+  const vencidas=act.filter(c=>c.ven&&c.tipo_venc!=='info'&&c.ven<hoy).length;
+  const en7=act.filter(c=>c.ven&&dLeft(c.ven)>=0&&dLeft(c.ven)<=7).length;
+  const auds=act.filter(c=>c.tipo_aud&&c.ven&&dLeft(c.ven)>=0&&dLeft(c.ven)<=30).length;
+  let encargos=0;act.forEach(c=>{getRams(c);encargos+=c.rams.filter(t=>!t.done).length;});
+  encargos+=extraj.filter(e=>e.ram&&!e.rdon).length;
+  encargos+=_carpetaTasks().length;
+  const enControl=(typeof revisiones!=='undefined'?revisiones:[]).filter(r=>r.estado==='pendiente').length;
+  const dormidas=act.filter(c=>_estaDormida&&_estaDormida(c)).length;
+
+  let h=`<div class="pan-kpis">
+    ${[['Causas activas',act.length,PAN_COL.navy],
+       ['Vencidas',vencidas,PAN_COL.rojo],
+       ['Vencen en 7 días',en7,PAN_COL.ambar],
+       ['Audiencias del mes',auds,PAN_COL.civ],
+       ['Encargos a Ramiro',encargos,PAN_COL.lab],
+       ['Sin movimiento',dormidas,PAN_COL.gris]]
+      .map(([t,v,c])=>`<div class="pan-kpi"><div class="v" style="color:${c}">${_panNum(v)}</div><div class="t">${t}</div></div>`).join('')}
+  </div><div class="pan-grid">`;
+
+  // 1) causas por fuero, con anillo
+  const fueros=['Laboral','Civil','Familia','Juzgado de Paz'];
+  const porFuero=fueros.map(f=>({n:f,v:act.filter(c=>c.fue===f).length,c:_panColorFuero(f)})).filter(d=>d.v);
+  h+=_panCaja('Causas por fuero','',
+    `<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+      ${_panAnillo(porFuero)}
+      <div style="flex:1;min-width:170px">${porFuero.map(d=>
+        `<div class="pan-ley"><span class="pt" style="background:${d.c}"></span>${escH(d.n)}
+          <b>${_panNum(d.v)}</b><span class="pc">${Math.round(d.v/Math.max(1,act.length)*100)}%</span></div>`).join('')}</div>
+    </div>`);
+
+  // 2) vencimientos de las próximas seis semanas
+  const semanas=[{n:'vencidas',v:vencidas,c:PAN_COL.rojo}];
+  for(let i=0;i<5;i++){
+    const d1=new Date(HOY.getTime()+i*7*864e5), d2=new Date(HOY.getTime()+((i+1)*7-1)*864e5);
+    const a=isoD(d1), b=isoD(d2);
+    const n=act.filter(c=>c.ven&&c.tipo_venc!=='info'&&c.ven>=a&&c.ven<=b).length;
+    semanas.push({n:i===0?'esta sem.':(i===1?'próxima':d1.getDate()+'/'+(d1.getMonth()+1)),v:n,
+      c:i===0?PAN_COL.ambar:PAN_COL.navy});
+  }
+  h+=_panCaja('Vencimientos','lo atrasado y las próximas 5 semanas',
+    semanas.some(x=>x.v)?_panColumnas(semanas):'<div class="pan-nada">No hay vencimientos cargados en ese período.</div>');
+
+  // 3) carga por juzgado
+  const porJuz={};
+  act.forEach(c=>{const k=c.juz||'—';porJuz[k]=(porJuz[k]||0)+1;});
+  const topJuz=Object.entries(porJuz).sort((a,b)=>b[1]-a[1]).slice(0,8)
+    .map(([n,v])=>({n:n.replace(/ - .*$/,''),v,c:_panColorFuero((act.find(c=>c.juz===n)||{}).fue)}));
+  h+=_panCaja('Dónde está la carga','8 juzgados con más causas',_panBarras(topJuz,{anchoEti:170}));
+
+  // 4) reparto entre socios
+  const socios=['Mío','Reinaldo','Rosana','Eugenia','Todos'];
+  const porSocio=socios.map(sc=>({n:sc==='Todos'?'Del estudio':sc,v:act.filter(c=>c.socio===sc).length,c:PAN_COL.navy}))
+    .filter(d=>d.v);
+  const sinAsignar=act.filter(c=>!c.socio).length;
+  if(sinAsignar)porSocio.push({n:'Sin asignar',v:sinAsignar,c:PAN_COL.gris});
+  h+=_panCaja('Reparto entre socios',sinAsignar?sinAsignar+' sin asignar':'',
+    porSocio.length?_panBarras(porSocio,{anchoEti:130}):'<div class="pan-nada">Todavía no marcaste con qué socio llevás cada causa.</div>');
+
+  // 5) gastos de los últimos seis meses
+  const meses=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(HOY.getFullYear(),HOY.getMonth()-i,1);
+    const pre=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const tot=(typeof gastos!=='undefined'?gastos:[]).filter(g=>(g.f||'').startsWith(pre))
+      .reduce((s,g)=>s+(parseFloat(g.m)||0),0);
+    meses.push({n:d.toLocaleDateString('es-AR',{month:'short'}).replace('.',''),v:Math.round(tot),c:PAN_COL.verde});
+  }
+  const totGastos=meses.reduce((s,m)=>s+m.v,0);
+  h+=_panCaja('Gastos y sellados','últimos 6 meses · $ '+_panNum(totGastos),
+    totGastos?_panColumnas(meses):'<div class="pan-nada">No hay gastos cargados en el semestre.</div>');
+
+  // 6) etapas procesales
+  const porEtapa={};
+  act.forEach(c=>{if(c.etapa){const n=(etapaInfo(c.etapa)||{}).n||c.etapa;porEtapa[n]=(porEtapa[n]||0)+1;}});
+  const etapas=Object.entries(porEtapa).sort((a,b)=>b[1]-a[1]).slice(0,7).map(([n,v])=>({n,v,c:PAN_COL.civ}));
+  h+=_panCaja('En qué etapa están','',
+    etapas.length?_panBarras(etapas,{anchoEti:150}):'<div class="pan-nada">Todavía no cargaste etapas procesales.</div>');
+
+  h+='</div>';
+  el.innerHTML=h;
+}
+
 function renderG(){
   // poblar filtros
   const fCausaSel=document.getElementById('gflt-causa'),fSocSel=document.getElementById('gflt-socio');
@@ -2984,6 +3216,7 @@ function editarCausaDatos(id){
   document.getElementById('ec-ex').value=c.ex||'';
   document.getElementById('ec-juz').value=c.juz||'';
   const ecCli=document.getElementById('ec-cli');if(ecCli)ecCli.value=c.cli||'';
+  const ecSoc=document.getElementById('ec-socio');if(ecSoc)ecSoc.value=c.socio||'';
   const ecArt=document.getElementById('ec-art');if(ecArt)ecArt.checked=(c.esArt===true)||(c.esArt===undefined&&esART(c));
   document.getElementById('edit-causa-ov').style.display='flex';
 }
@@ -2995,6 +3228,7 @@ function guardarCausaDatos(){
   c.ex=document.getElementById('ec-ex').value.trim();
   c.juz=document.getElementById('ec-juz').value.trim();
   const ecCli=document.getElementById('ec-cli');if(ecCli)c.cli=ecCli.value;
+  const ecSoc=document.getElementById('ec-socio');if(ecSoc)c.socio=ecSoc.value;
   const ecArt=document.getElementById('ec-art');if(ecArt)c.esArt=ecArt.checked;
   sC();
   document.getElementById('edit-causa-ov').style.display='none';
@@ -4776,7 +5010,15 @@ function escActualizar(){
   }
   if(!def.campos.length){cont.innerHTML='<div style="font-size:11px;color:#aaa;padding:6px 2px">Este escrito no requiere datos adicionales.</div>';return;}
   const _resp=def.campos.filter(c=>c.resp);
-  cont.innerHTML='<label class="fl">2 — Datos del escrito</label>'+def.campos.filter(c=>!c.resp).map(c=>
+  const _cc=causas.find(x=>x.id===parseInt((document.getElementById('esc-causa')||{}).value));
+  const _carLarga=_cc?((_cc.carLarga||'').trim()):'';
+  const _blqCar=_cc?`<div style="margin:2px 0 10px;padding:8px 10px;border:1px solid ${_carLarga?'var(--border)':'#e0c48a'};border-radius:8px;background:${_carLarga?'var(--bg2)':'#FFFCF3'}">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px">Carátula completa del expediente
+        <span style="font-weight:400;color:var(--text3)">— la que sale impresa en el escrito${_carLarga?'':'; en el registro figura abreviada'}</span></div>
+      <input class="fi" id="esc-carat" style="width:100%;font-size:12px" placeholder="Ej.: PÉREZ JUAN c/ EMPRESA S.A. s/ DIFERENCIAS SALARIALES"
+        value="${escH(_carLarga||_cc.car||'')}" oninput="escPreviewRefresh()" onchange="escGuardarCaratula()" onblur="escGuardarCaratula()">
+    </div>`:'';
+  cont.innerHTML='<label class="fl">2 — Datos del escrito</label>'+_blqCar+def.campos.filter(c=>!c.resp).map(c=>
     `<div style="font-size:10px;color:#8a94a6;margin:6px 0 1px;font-weight:600">${c.l}${c.op?' <span style="font-weight:400">(opcional)</span>':''}</div>`+
     (c.ta?(['prov','cuerpo','texto','relato','pedido','hechos'].includes(c.k)
       ? `<div class="rich-tb"><button type="button" title="Negrita" onmousedown="richCmd(event,'bold')"><b>N</b></button><button type="button" title="Cursiva" onmousedown="richCmd(event,'italic')"><i>K</i></button><button type="button" title="Subrayado" onmousedown="richCmd(event,'underline')"><u>S</u></button></div>
@@ -5189,7 +5431,7 @@ function escHTML(){
     const modo=(document.getElementById('esc-libre-modo')||{}).value||'apoderado_actora';
     const titulo=(d.titulo_libre||'ESCRITO').toUpperCase();
     const cuerpo=d.cuerpo||'';
-    const autos=`<b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(c.car)}"</b>`;
+    const autos=`<b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(_caratula(c))}"</b>`;
     let encab;
     if(modo==='patroc_cliente'){
       const nom=(d.cli_nombre||'____').toUpperCase(), dni=d.cli_dni||'____';
@@ -5215,7 +5457,7 @@ function escHTML(){
     <p><b>Destinatario:</b> ${d.dest||'________________'}</p>
     <p><b>Domicilio:</b> ${d.dom||'________________'}</p>
     <div class="fit" style="font-size:${fit.fs}pt;line-height:${fit.lh}">
-      <p style="margin-top:14pt;text-align:justify;text-indent:1.25cm;">Comunico a Ud. que en los <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(c.car)}"</b>, que tramitan por ante el <b>${jz.nombre}</b>, se ha dictado una resolución que en su parte pertinente dice: <i>"${d.prov||'________________'}"</i></p>
+      <p style="margin-top:14pt;text-align:justify;text-indent:1.25cm;">Comunico a Ud. que en los <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(_caratula(c))}"</b>, que tramitan por ante el <b>${jz.nombre}</b>, se ha dictado una resolución que en su parte pertinente dice: <i>"${d.prov||'________________'}"</i></p>
       ${d.obs?`<p style="font-weight:bold">${d.obs}</p>`:''}
       ${d.fojas?`<p style="text-align:justify;text-indent:1.25cm;">Se acompañan copias para traslado obrantes en ${d.fojas} (${numALetras(d.fojas)}) fojas útiles doble faz.-</p>`:''}
       ${d.link?`<p style="margin-top:8pt"><b>ENLACE A REPOSITORIO:</b> ${d.link}</p>`:''}
@@ -5243,7 +5485,7 @@ function escHTML(){
     <p style="font-weight:bold">${(d.dest||'________________').toUpperCase()}</p>
     <p>S&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;D</p>
     <div class="fit" style="font-size:${fit.fs}pt;line-height:${fit.lh}">
-    <p style="margin-top:12pt;text-align:justify;${S}">Tengo el agrado de dirigirme a Ud. a fin de comunicarle que en los <b>Autos N° ${c.ex||'____'}</b>, caratulados <b>"${escH(c.car)}"</b>, que se tramitan por ante el <b>${jz.nombre.toUpperCase()}</b>, se ha ${reit?'dispuesto <b>REITERAR</b> el presente oficio':'ordenado librar el presente'} a los fines de que ${d.pedido||'________________'}.-</p>
+    <p style="margin-top:12pt;text-align:justify;${S}">Tengo el agrado de dirigirme a Ud. a fin de comunicarle que en los <b>Autos N° ${c.ex||'____'}</b>, caratulados <b>"${escH(_caratula(c))}"</b>, que se tramitan por ante el <b>${jz.nombre.toUpperCase()}</b>, se ha ${reit?'dispuesto <b>REITERAR</b> el presente oficio':'ordenado librar el presente'} a los fines de que ${d.pedido||'________________'}.-</p>
     ${(esLab||ofiLab)?`<p style="font-weight:bold">PLAZO PARA CONTESTAR OFICIO: ${_plz.num} DÍAS</p>
     <p style="font-weight:bold">REMITIR CONTESTACIÓN A: ${_mailR}</p>`
     :`<p style="text-align:justify;${S}">Responder dentro de los ${_plz.txt} días hábiles, presencialmente en soporte papel en ${_dirR}, o al correo oficial del Juzgado: <b>${_mailR}</b>.-</p>`}
@@ -5257,7 +5499,7 @@ function escHTML(){
   const rolParte=rol==='apoderado'?`apoderado ${parte==='actora'?'del actor':'de la demandada'}`:`letrado patrocinante ${parte==='actora'?'del actor':'de la demandada'}`;
   return `<p style="text-align:center;font-weight:bold;margin-bottom:22pt">${def.titulo}</p>
   <p>${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.nombre)}:</p>
-  <p style="text-align:justify;text-indent:1.25cm;margin-top:10pt"><b>JUAN PABLO GUDIÑO</b>, abogado del foro local, M.P. N° 4683, ${rolParte}, en <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(c.car)}"</b>, a V.S. respetuosamente digo:</p>
+  <p style="text-align:justify;text-indent:1.25cm;margin-top:10pt"><b>JUAN PABLO GUDIÑO</b>, abogado del foro local, M.P. N° 4683, ${rolParte}, en <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(_caratula(c))}"</b>, a V.S. respetuosamente digo:</p>
   <p style="text-align:justify;text-indent:1.25cm">${def.cuerpo(d)}</p>
   <p style="margin-top:16pt;text-align:center">Proveer de conformidad</p>
   <p style="font-weight:bold;text-align:center">SERÁ JUSTICIA</p>`;
@@ -5332,6 +5574,25 @@ function _plazoTxt(v){
   const L={1:'un',2:'dos',3:'tres',4:'cuatro',5:'cinco',6:'seis',7:'siete',8:'ocho',9:'nueve',10:'diez',
     11:'once',12:'doce',13:'trece',14:'catorce',15:'quince',20:'veinte',30:'treinta'}[num];
   return {num:num,txt:L?(L+' ('+num+')'):String(num)};
+}
+/* v350 — en el registro la carátula va abreviada para que entre en el renglón
+   ("GIMENEZ C/OSSE"), pero en una cédula, un oficio o cualquier escrito tiene
+   que salir completa, como figura en el expediente. Se guarda una vez en la
+   causa (c.carLarga) y de ahí en más sale sola en todos los escritos. */
+function _caratula(c){
+  if(!c)return '____________________';
+  const el=document.getElementById('esc-carat');
+  const enPantalla=el&&el.value.trim();
+  const cSel=el?parseInt((document.getElementById('esc-causa')||{}).value):null;
+  if(enPantalla&&cSel===c.id)return el.value.trim();
+  return ((c.carLarga||'').trim())||c.car||'____________________';
+}
+function escGuardarCaratula(){
+  const el=document.getElementById('esc-carat');if(!el)return;
+  const c=causas.find(x=>x.id===parseInt(document.getElementById('esc-causa').value));if(!c)return;
+  const v=el.value.trim();
+  if(v&&v!==(c.carLarga||'')){c.carLarga=v;sC();}
+  escPreviewRefresh();
 }
 function escDefaultsOficio(forzar){
   const tEl=document.getElementById('esc-tipo');if(!tEl)return;
@@ -5482,7 +5743,25 @@ function _imprimirEnIframe(doc){
   if(f.contentWindow.document.readyState==='complete')setTimeout(go,300);
   else f.onload=()=>setTimeout(go,300);
 }
+/* v351 — si la causa todavía no tiene cargada la carátula completa, el escrito
+   saldría con la abreviada del registro. Antes de imprimir o guardar se avisa
+   una sola vez, con el foco puesto en el campo para completarla. */
+function _faltaCaratula(){
+  const cEl=document.getElementById('esc-causa');if(!cEl)return false;
+  const c=causas.find(x=>x.id===parseInt(cEl.value));if(!c)return false;
+  const el=document.getElementById('esc-carat');if(!el)return false;
+  const v=el.value.trim();
+  return !v||v===(c.car||'');
+}
+function _avisarCaratula(){
+  if(!_faltaCaratula())return true;
+  const el=document.getElementById('esc-carat');
+  if(el){el.focus();el.select&&el.select();el.style.borderColor='#c9852a';el.style.boxShadow='0 0 0 3px rgba(201,133,42,.2)';
+    setTimeout(()=>{el.style.boxShadow='';},2500);}
+  return confirm('La carátula completa del expediente todavía no está cargada: el escrito va a salir con la abreviada del registro.\n\n¿Seguir igual?');
+}
 function escImprimir(){
+  if(!_avisarCaratula())return;
   escGuardarGenerado();
   _escMarcarOrigen();
   try{etapaPorEscrito(parseInt(document.getElementById('esc-causa').value),document.getElementById('esc-tipo').value);}catch(e){}
@@ -5505,6 +5784,7 @@ function escMasAcciones(btn){
 /* v342 — Guardar hace las dos cosas de una: archiva el escrito y lo deja
    esperando en la lista «Para imprimir». Antes había que apretar dos botones. */
 function escGuardarArchivo(){
+  if(!_avisarCaratula())return;
   const cid=parseInt(document.getElementById('esc-causa').value);
   const c=causas.find(x=>x.id===cid);
   if(!c){alert('Elegí la causa.');return;}
@@ -6700,7 +6980,13 @@ function _fueCorto(f){return({'Juzgado de Paz':'Paz','Laboral':'Laboral','Civil'
 function ordenSemanaTxt(){return ordenFuerosSemana().map(_fueCorto).join(' → ');}
 function ordenSemanaHTML(){const F=ordenFuerosSemana().map(_fueCorto);
   return `<b style="color:var(--oro)">${F[0]}</b> → `+F.slice(1).join(' → ');}
+/* v355 — el cartel del orden de la semana queda oculto a pedido suyo. El orden
+   sigue funcionando igual (los fueros rotan y el registro se arma con ese
+   criterio); lo único que se saca es el renglón informativo de arriba.
+   Para volver a mostrarlo, poner esta constante en true. */
+const MOSTRAR_ORDEN_SEMANA=false;
 function bannerOrdenSemana(){
+  if(!MOSTRAR_ORDEN_SEMANA)return '';
   return `<div style="display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--text3);padding:3px 4px 7px;border-bottom:1px dashed var(--border);margin-bottom:8px">
     <span style="font-weight:700;color:var(--oro)">🔄 Orden de esta semana:</span>
     <span style="font-weight:600;color:var(--text2)">${ordenSemanaHTML()}</span>
@@ -6984,6 +7270,7 @@ function initAtajos(){
 }
 function initAntiOlvido(){
   try{initAtajos();}catch(e){}
+  try{_pintarFiltroSocio();}catch(e){}
   setTimeout(()=>{try{abrirCheckin(false);}catch(e){}},700);
   setTimeout(()=>{try{chequearAvisos();}catch(e){}},2000);
   setInterval(()=>{try{chequearAvisos();}catch(e){}},30*60*1000);
