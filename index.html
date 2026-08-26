@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v361</title>
+<title>Gudiño Cabrera y Asociados v362</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -447,7 +447,9 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 .tog.off{background:#ddd}
 .tog::after{content:'';width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px;transition:right .15s}
 .tog.off::after{right:17px}
-.tur-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px}
+.tur-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px}
+.tur-sem-lbl{font-size:11px;font-weight:700;color:var(--text2);margin:2px 0 6px;display:flex;align-items:baseline;gap:8px}
+.tur-sem-lbl span{font-size:10.5px;font-weight:500;color:var(--text3)}
 .tur-dia{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px}
 .tur-dia.hoy{border-color:var(--blue);background:var(--blue-l)}
 .tur-dia-hdr{font-size:11px;font-weight:700;color:var(--text);margin-bottom:5px;text-align:center}
@@ -700,7 +702,7 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
         </div>
         <button class="btn p" onclick="abrirTurModal(null,null)" style="font-size:11px">+ Nuevo turno</button>
       </div>
-      <div class="tur-grid" id="tur-grid"></div>
+      <div id="tur-grid"></div>
     </div>
 
     <!-- MODAL TURNERO -->
@@ -1456,7 +1458,7 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos};}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos,turBorrados};}
 function applyPayload(d){
   if(!d)return;
   if(d.causas){
@@ -1484,7 +1486,12 @@ function applyPayload(d){
   if(d.revisiones)revisiones=_limpiarBorradas(d.revisiones);
   if(d.mailCfg)mailCfg=d.mailCfg;
   if(d.tareasRam)tareasRam=d.tareasRam;
-  if(Array.isArray(d.turnos)){turnos=d.turnos;saveTurnos();}
+  if(Array.isArray(d.turBorrados)){
+    const vistos=new Set(turBorrados.map(x=>String(x.id)));
+    d.turBorrados.forEach(x=>{if(x&&!vistos.has(String(x.id))){turBorrados.push(x);vistos.add(String(x.id));}});
+    sTurDel();
+  }
+  if(Array.isArray(d.turnos)){turnos=fusionarTurnos(d.turnos);svl('ga_turnos',turnos);}
   svl('ga_c',causas);svl('ga_m_'+SK,[...movidas]);svl('ga_g',gastos);
   svl('ga_a',audiencias);svl('ga_e',extraj);svl('ga_f',feriados);
   // esto faltaba: lo que bajaba de la nube no se guardaba en el equipo, así que
@@ -3690,6 +3697,28 @@ setSyncStatus('local');
 let turnos = JSON.parse(localStorage.getItem('ga_turnos')||'[]');
 let turSemOff = 0; // semana offset desde hoy
 
+/* v362 — los turnos cargados en otra máquina se perdían porque no viajaban
+   (v361) y porque la copia que llegaba pisaba la local. Ahora se FUSIONAN por
+   id: se quedan los de los dos lados, y si el mismo turno está en ambos gana el
+   editado más tarde. Para que borrar siga funcionando, cada borrado deja su
+   lápida, igual que en el control de escritos. */
+let turBorrados=JSON.parse(localStorage.getItem('ga_turdel')||'[]');
+function sTurDel(){
+  const corte=Date.now()-120*864e5;
+  turBorrados=turBorrados.filter(x=>x&&x.t>corte);
+  localStorage.setItem('ga_turdel',JSON.stringify(turBorrados));
+}
+function fusionarTurnos(remotos){
+  const borrado=new Set(turBorrados.map(x=>String(x.id)));
+  const mapa=new Map();
+  (turnos||[]).forEach(t=>{if(!borrado.has(String(t.id)))mapa.set(String(t.id),t);});
+  (remotos||[]).forEach(t=>{
+    if(!t||borrado.has(String(t.id)))return;
+    const mio=mapa.get(String(t.id));
+    if(!mio||((t.ts||0)>(mio.ts||0)))mapa.set(String(t.id),t);
+  });
+  return [...mapa.values()];
+}
 function saveTurnos(){localStorage.setItem('ga_turnos',JSON.stringify(turnos));try{fbSave();}catch(e){}}
 
 // ═══════════════════════════════════════════════
@@ -3777,31 +3806,43 @@ function isoD(d){return d.toISOString().split('T')[0];}
 const DIAS_SEMANA=['Lun','Mar','Mié','Jue','Vie'];
 const MESES_CORTO=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
+/* v362 — el turnero muestra dos semanas seguidas en vez de una: la de la
+   semana elegida y la siguiente, para ver de una qué se viene. */
 function renderTurnos(){
   const lun=turLunes(turSemOff);
-  const vie=new Date(lun);vie.setDate(vie.getDate()+4);
-  document.getElementById('tur-semana').textContent=
-    `${lun.getDate()} ${MESES_CORTO[lun.getMonth()]} – ${vie.getDate()} ${MESES_CORTO[vie.getMonth()]} ${vie.getFullYear()}`;
-  
+  const finQ=new Date(lun);finQ.setDate(finQ.getDate()+11);   // viernes de la 2ª semana
+  const el=document.getElementById('tur-semana');
+  if(el)el.textContent=`${lun.getDate()} ${MESES_CORTO[lun.getMonth()]} – ${finQ.getDate()} ${MESES_CORTO[finQ.getMonth()]} ${finQ.getFullYear()}`;
+
   const grid=document.getElementById('tur-grid');
   if(!grid)return;
   const todayISO2=isoD(HOY);
-  let html='';
-  for(let i=0;i<5;i++){
-    const d=new Date(lun);d.setDate(d.getDate()+i);
+  const diaHTML=(d)=>{
     const diso=isoD(d);
     const esHoy=diso===todayISO2;
-    const dTurnos=turnos.filter(t=>t.f===diso).sort((a,b)=>a.h.localeCompare(b.h));
-    html+=`<div class="tur-dia${esHoy?' hoy':''}">
-      <div class="tur-dia-hdr">${DIAS_SEMANA[i]}</div>
+    const pasado=diso<todayISO2;
+    const dTurnos=turnos.filter(t=>t.f===diso).sort((a,b)=>(a.h||'').localeCompare(b.h||''));
+    return `<div class="tur-dia${esHoy?' hoy':''}"${pasado?' style="opacity:.55"':''}>
+      <div class="tur-dia-hdr">${DIAS_SEMANA[d.getDay()===0?6:d.getDay()-1]}</div>
       <div class="tur-dia-fecha">${d.getDate()}/${d.getMonth()+1}</div>
       ${dTurnos.map(t=>`<div class="tur-item" onclick="abrirTurModal('${diso}','${t.id}')">
-        <div class="tur-hora">${t.h||'Sin hora'}</div>
-        <div class="tur-cli">${t.cli}</div>
-        ${t.mot?`<div class="tur-mot">${t.mot}</div>`:''}
+        <div class="tur-hora">${escH(t.h||'Sin hora')}</div>
+        <div class="tur-cli">${escH(t.cli||'')}</div>
+        ${t.mot?`<div class="tur-mot">${escH(t.mot)}</div>`:''}
       </div>`).join('')}
       <button class="tur-add" onclick="abrirTurModal('${diso}',null)">+ turno</button>
     </div>`;
+  };
+  let html='';
+  for(let sem=0;sem<2;sem++){
+    const l=new Date(lun);l.setDate(l.getDate()+sem*7);
+    const v=new Date(l);v.setDate(v.getDate()+4);
+    const cuantos=turnos.filter(t=>{const f=t.f;return f>=isoD(l)&&f<=isoD(v);}).length;
+    html+=`<div class="tur-sem-lbl">${sem===0?'Esta semana':'Semana siguiente'}
+      <span>${l.getDate()}/${l.getMonth()+1} al ${v.getDate()}/${v.getMonth()+1}${cuantos?` · ${cuantos} turno${cuantos!==1?'s':''}`:' · sin turnos'}</span></div>
+      <div class="tur-grid">`;
+    for(let i=0;i<5;i++){const d=new Date(l);d.setDate(d.getDate()+i);html+=diaHTML(d);}
+    html+='</div>';
   }
   grid.innerHTML=html;
 }
@@ -3859,6 +3900,7 @@ function guardarTurno(){
   const id=document.getElementById('tur-edit-id').value;
   const turno={
     id:id||String(Date.now()),
+    ts:Date.now(),                 // sirve para saber cuál es la edición más nueva
     f,
     h:document.getElementById('tur-h').value,
     dur:document.getElementById('tur-dur').value,
@@ -3880,6 +3922,7 @@ function borrarTurno(){
   const id=document.getElementById('tur-edit-id').value;
   if(!id)return;
   if(!window.confirm('¿Borrar este turno?'))return;
+  turBorrados.push({id:id,t:Date.now()});sTurDel();
   turnos=turnos.filter(x=>x.id!==id);
   saveTurnos();
   cerrarTurModal();
