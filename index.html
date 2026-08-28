@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v362</title>
+<title>Gudiño Cabrera y Asociados v365</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -134,6 +134,11 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 .pan-ley b{margin-left:auto;color:var(--text);font-variant-numeric:tabular-nums}
 .pan-ley .pc{width:38px;text-align:right;color:var(--text3);font-size:11px}
 .pan-nada{font-size:12px;color:var(--text3);padding:22px 4px;text-align:center}
+.pan-clic{cursor:pointer}
+.pan-clic:hover rect[rx="4"]{opacity:1}
+g.pan-clic:hover text{fill:var(--text)}
+.pan-ley.pan-clic:hover{background:var(--bg2);border-radius:6px}
+.pan-kpi.pan-clic:hover{border-color:var(--oro)}
 .vacio{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:46px 20px;margin-top:10px;
   border:1px dashed var(--border2);border-radius:12px;background:linear-gradient(180deg,var(--bg2),transparent);color:var(--text3)}
 .vacio .ico{font-size:30px;opacity:.5;line-height:1}
@@ -3090,10 +3095,15 @@ function _panBarras(datos,opts){
   datos.forEach((d,i)=>{
     const y=i*(opts.grosor||30)+4;
     const w=Math.max(2,(d.v/max)*(600-anchoEti-46));
-    sv+=`<text x="0" y="${y+15}" font-size="12" font-weight="600" fill="var(--text2)" font-family="system-ui">${escH(d.n).slice(0,26)}</text>`;
-    sv+=`<rect x="${anchoEti}" y="${y+4}" width="${w}" height="15" rx="4" fill="${d.c||PAN_COL.navy}" opacity=".92">
-        <animate attributeName="width" from="0" to="${w}" dur=".5s" fill="freeze"/></rect>`;
-    sv+=`<text x="${anchoEti+w+8}" y="${y+16}" font-size="11.5" font-weight="700" fill="var(--text3)" font-family="system-ui">${_panNum(d.v)}${d.suf||''}</text>`;
+    // cada barra es un atajo: lleva al registro ya filtrado por eso
+    const clic=d.ir?` class="pan-clic" onclick="${d.ir}"`:'';
+    sv+=`<g${clic}><title>${d.ir?'Ver estas causas':''}</title>
+      <rect x="0" y="${y}" width="640" height="${(opts.grosor||30)-2}" fill="transparent"/>
+      <text x="0" y="${y+15}" font-size="12" font-weight="600" fill="var(--text2)" font-family="system-ui">${escH(d.n).slice(0,26)}</text>
+      <rect x="${anchoEti}" y="${y+4}" width="${w}" height="15" rx="4" fill="${d.c||PAN_COL.navy}" opacity=".92">
+        <animate attributeName="width" from="0" to="${w}" dur=".5s" fill="freeze"/></rect>
+      <text x="${anchoEti+w+8}" y="${y+16}" font-size="11.5" font-weight="700" fill="var(--text3)" font-family="system-ui">${_panNum(d.v)}${d.suf||''}</text>
+    </g>`;
   });
   return sv+'</svg>';
 }
@@ -3138,6 +3148,11 @@ function _panCaja(titulo,sub,contenido){
   return `<div class="pan-caja"><div class="pan-tit">${titulo}${sub?`<span>${sub}</span>`:''}</div>${contenido}</div>`;
 }
 
+function panIrAJuzgado(j){
+  goR();
+  const si=document.getElementById('si');
+  if(si){si.value=j;buscarDesdeArriba();}
+}
 function renderPanorama(){
   const el=document.getElementById('pan-body');if(!el)return;
   const act=causas.filter(c=>c.est!=='archivada');
@@ -3152,13 +3167,13 @@ function renderPanorama(){
   const dormidas=act.filter(c=>_estaDormida&&_estaDormida(c)).length;
 
   let h=`<div class="pan-kpis">
-    ${[['Causas activas',act.length,PAN_COL.navy],
-       ['Vencidas',vencidas,PAN_COL.rojo],
-       ['Vencen en 7 días',en7,PAN_COL.ambar],
-       ['Audiencias del mes',auds,PAN_COL.civ],
-       ['Encargos a Ramiro',encargos,PAN_COL.lab],
-       ['Sin movimiento',dormidas,PAN_COL.gris]]
-      .map(([t,v,c])=>`<div class="pan-kpi"><div class="v" style="color:${c}">${_panNum(v)}</div><div class="t">${t}</div></div>`).join('')}
+    ${[['Causas activas',act.length,PAN_COL.navy,"goR()"],
+       ['Vencidas',vencidas,PAN_COL.rojo,"goR();swV('ven')"],
+       ['Vencen en 7 días',en7,PAN_COL.ambar,"goR();swV('ven')"],
+       ['Audiencias del mes',auds,PAN_COL.civ,"goP('audiencias')"],
+       ['Encargos a Ramiro',encargos,PAN_COL.lab,"goR();swV('ram')"],
+       ['Sin movimiento',dormidas,PAN_COL.gris,"goP('inactivas')"]]
+      .map(([t,v,c,ir])=>`<div class="pan-kpi${ir?' pan-clic':''}"${ir?` onclick="${ir}"`:''}><div class="v" style="color:${c}">${_panNum(v)}</div><div class="t">${t}</div></div>`).join('')}
   </div><div class="pan-grid">`;
 
   // 1) causas por fuero, con anillo
@@ -3168,7 +3183,7 @@ function renderPanorama(){
     `<div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
       ${_panAnillo(porFuero)}
       <div style="flex:1;min-width:170px">${porFuero.map(d=>
-        `<div class="pan-ley"><span class="pt" style="background:${d.c}"></span>${escH(d.n)}
+        `<div class="pan-ley pan-clic" onclick="goF('${d.n}')"><span class="pt" style="background:${d.c}"></span>${escH(d.n)}
           <b>${_panNum(d.v)}</b><span class="pc">${Math.round(d.v/Math.max(1,act.length)*100)}%</span></div>`).join('')}</div>
     </div>`);
 
@@ -3188,12 +3203,13 @@ function renderPanorama(){
   const porJuz={};
   act.forEach(c=>{const k=c.juz||'—';porJuz[k]=(porJuz[k]||0)+1;});
   const topJuz=Object.entries(porJuz).sort((a,b)=>b[1]-a[1]).slice(0,8)
-    .map(([n,v])=>({n:n.replace(/ - .*$/,''),v,c:_panColorFuero((act.find(c=>c.juz===n)||{}).fue)}));
+    .map(([n,v])=>({n:n.replace(/ - .*$/,''),v,c:_panColorFuero((act.find(c=>c.juz===n)||{}).fue),
+      ir:`panIrAJuzgado(${JSON.stringify(n).replace(/"/g,'&quot;')})`}));
   h+=_panCaja('Dónde está la carga','8 juzgados con más causas',_panBarras(topJuz,{anchoEti:170}));
 
   // 4) reparto entre socios
   const socios=['Del estudio','Reinaldo','Rosana','Eugenia'];
-  const porSocio=socios.map(sc=>({n:sc,v:act.filter(c=>c.socio===sc).length,c:PAN_COL.navy})).filter(d=>d.v);
+  const porSocio=socios.map(sc=>({n:sc,v:act.filter(c=>c.socio===sc).length,c:PAN_COL.navy,ir:`goR();setSocio('${sc}')`})).filter(d=>d.v);
   const sinAsignar=act.filter(c=>!c.socio).length;
   if(sinAsignar)porSocio.push({n:'Sin asignar',v:sinAsignar,c:PAN_COL.gris});
   h+=_panCaja('Reparto entre socios',sinAsignar?sinAsignar+' sin asignar':'',
@@ -5150,7 +5166,7 @@ function escPreviewRefresh(){const pv=document.getElementById('esc-preview');if(
 /* ═══════════ CONTROL DE ESCRITOS (revisión interna) ═══════════ */
 function escEnviarControl(){
   escGuardarGenerado();
-  const h=escHTML();if(!h){alert('Completá el escrito antes de enviarlo a control.');return;}
+  const h=escHTMLFinal();if(!h){alert('Completá el escrito antes de enviarlo a control.');return;}
   const cid=parseInt(document.getElementById('esc-causa').value);
   const c=causas.find(x=>x.id===cid);
   const tipo=document.getElementById('esc-tipo').value;
@@ -5764,9 +5780,10 @@ function escCalcularFit(){
   ifr.remove();
 }
 function escCerrarPreview(){const pv=document.getElementById('esc-preview');if(pv){pv.style.display='none';pv.innerHTML='';}}
-function escVistaPrevia(){
+function escVistaPrevia(limpia){
+  if(!limpia)_escTomarEdicion();      // si la hoja estaba abierta, se conserva lo escrito
   escCalcularFit();
-  const h=escHTML();if(!h)return;
+  const h=(!limpia&&_escManual)||escHTML();if(!h)return;
   const pv=document.getElementById('esc-preview');
   pv.style.cssText='margin-top:14px;display:block;background:#4a4d52;padding:22px 0;border-radius:10px;max-height:640px;overflow:auto';
   const maxPag=document.getElementById('esc-maxpag')?parseInt(document.getElementById('esc-maxpag').value):1;
@@ -5775,7 +5792,19 @@ function escVistaPrevia(){
   const _aviso=!_escEntra
     ?`<div style="text-align:center;color:#ffb3ad;font-size:11px;margin-top:10px;font-weight:700">⚠ No entra en ${maxPag} página${maxPag>1?'s':''} dejando lugar para la firma, ni reducido al ${_pc}% (el límite): ocupa ${_escPags}. Recortá texto o subí el máximo.</div>`
     :`<div style="text-align:center;font-size:11px;margin-top:10px;color:${_ll>85?'#ffcf9e':'#ddd'}">${_pc<100?`Reducido al ${_pc}% (cuerpo ${String(_escInfo.fs).replace('.',',')} pt, interlineado ${String(_escInfo.lh).replace('.',',')}) · `:''}entra en ${_escPags} página${_escPags>1?'s':''} · el texto ocupa el ${_ll}% de la última hoja, con ${FIRMA_CM.toString().replace('.',',')} cm libres abajo para sellar y firmar</div>`;
-  pv.innerHTML=`<style>#esc-sheet p{margin:0 0 6pt 0}</style><div style="text-align:right;padding:0 16px 10px"><button onclick="escCerrarPreview()" style="background:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;color:#333;cursor:pointer">✕ Cerrar vista previa</button></div><div id="esc-wrap" style="margin:0 auto"><div id="esc-sheet" style="width:210mm;min-height:297mm;background:#fff;box-shadow:0 8px 34px rgba(0,0,0,.55);padding:45mm 20mm 45mm 45mm;font-family:Arial,sans-serif;font-size:12pt;line-height:2;box-sizing:border-box;transform-origin:top left;color:#000">${h}</div></div>
+  pv.innerHTML=`<style>#esc-sheet p{margin:0 0 6pt 0}
+    #esc-sheet:focus{outline:2px solid rgba(192,145,47,.55);outline-offset:3px}
+    .esc-fsel{font-size:11px;padding:2px 4px;border-radius:6px;border:1px solid #6b6f76;background:#3a3d42;color:#eee}
+    .esc-fbtn{font-size:11.5px;padding:3px 8px;border-radius:6px;border:1px solid #6b6f76;background:#3a3d42;color:#eee;cursor:pointer}
+    .esc-fbtn:hover{background:#50545b}</style>
+  <div style="display:flex;align-items:center;padding:0 16px 8px">
+    <span style="color:#cfd3da;font-size:11px">${_escManual?'✎ Hoja retocada a mano — es la que se imprime':'Hoja tal como va a imprimirse'}</span>
+    <span style="flex:1"></span>
+    <button onclick="escCerrarPreview()" style="background:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;color:#333;cursor:pointer">✕ Cerrar vista previa</button>
+  </div>
+  ${escBarraFormato()}
+  <div id="esc-wrap" style="margin:0 auto"><div id="esc-sheet" contenteditable="true" spellcheck="true"
+    style="width:210mm;min-height:297mm;background:#fff;box-shadow:0 8px 34px rgba(0,0,0,.55);padding:45mm 20mm 45mm 45mm;font-family:Arial,sans-serif;font-size:12pt;line-height:2;box-sizing:border-box;transform-origin:top left;color:#000">${h}</div></div>
   ${_aviso}`;
   // Escalar la hoja A4 para que entre completa en el panel (vista de impresión)
   const wrap=document.getElementById('esc-wrap'),sheet=document.getElementById('esc-sheet');
@@ -5789,9 +5818,161 @@ function escVistaPrevia(){
   }
   pv.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
+/* v364 — la vista previa es una hoja de Word chiquita en la que se puede
+   escribir: se edita ahí mismo (contentEditable) y lo que quede en la hoja es
+   exactamente lo que se imprime, se guarda y se baja en Word. Se acompaña con
+   una barra para cambiar interlineado, espacio entre párrafos, cuerpo y
+   alineación, sobre lo seleccionado o sobre todo el escrito. */
+let _escManual=null;          // HTML editado a mano; null = generado automático
+function escHojaEditada(){
+  const sh=document.getElementById('esc-sheet');
+  return (sh&&sh.isContentEditable)?sh.innerHTML:null;
+}
+function _escTomarEdicion(){
+  const h=escHojaEditada();
+  if(h!==null)_escManual=h;
+  return _escManual;
+}
+function escHTMLFinal(){
+  const edit=escHojaEditada();
+  if(edit!==null){_escManual=edit;return edit;}
+  if(_escManual)return _escManual;
+  return escHTML();
+}
+function escDescartarEdicion(){
+  if(!_escManual&&escHojaEditada()===null)return;
+  if(!confirm('Se van a perder los retoques hechos a mano sobre la hoja y vuelve al texto generado. ¿Seguir?'))return;
+  _escManual=null;
+  const sh=document.getElementById('esc-sheet');
+  if(sh)sh.removeAttribute('contenteditable');   // si no, la vista previa lo vuelve a tomar
+  escVistaPrevia(true);toast('Volvió al texto generado');
+}
+/* ── barra de tipografía sobre la hoja ── */
+function _escSelEnHoja(){
+  const sh=document.getElementById('esc-sheet');if(!sh)return null;
+  const sel=window.getSelection();
+  if(!sel||sel.rangeCount===0||sel.isCollapsed)return null;
+  const r=sel.getRangeAt(0);
+  return sh.contains(r.commonAncestorContainer)?r:null;
+}
+function _escParrafosDestino(){
+  const sh=document.getElementById('esc-sheet');if(!sh)return [];
+  const todos=[...sh.querySelectorAll('p')];
+  const r=_escSelEnHoja();
+  if(!r)return todos;                                  // sin selección: todo el escrito
+  const dentro=todos.filter(p=>r.intersectsNode(p));
+  return dentro.length?dentro:todos;
+}
+/* v365 — la barra sólo junta o separa el texto. Los márgenes son los del
+   Acuerdo 69/2020 y no se tocan desde acá: lo único que se cambia es el
+   interlineado y el aire entre párrafos, para hacer entrar el escrito en la
+   cantidad de hojas que se quiera. */
+const _LH_PASOS=[1,1.15,1.3,1.5,1.75,2,2.25,2.5];
+const _ESP_PASOS=[0,3,6,9,12,18,24];
+function _escLeerLH(p){
+  const v=parseFloat(p.style.lineHeight||getComputedStyle(p).lineHeight);
+  if(!isNaN(v)&&v<10)return v;
+  const fs=parseFloat(getComputedStyle(p).fontSize)||16;
+  return Math.round((parseFloat(getComputedStyle(p).lineHeight)||fs*2)/fs*100)/100;
+}
+function _escLeerEsp(p){
+  const v=parseFloat(p.style.marginBottom);
+  if(!isNaN(v))return v;
+  return 6;
+}
+function _escVecino(lista,actual,dir){
+  // se busca el valor más parecido al actual y se corre un paso en la escala
+  let iMejor=0,dMejor=Infinity;
+  lista.forEach((v,i)=>{const d=Math.abs(v-actual);if(d<dMejor){dMejor=d;iMejor=i;}});
+  const i=iMejor+(dir>0?1:-1);
+  if(i<0||i>=lista.length)return null;
+  return lista[i];
+}
+function escApretar(dir){          // dir -1 = más junto, +1 = más separado
+  const sh=document.getElementById('esc-sheet');if(!sh)return;
+  const ps=_escParrafosDestino();
+  if(!ps.length)return;
+  let tocados=0;
+  ps.forEach(p=>{
+    const lh=_escVecino(_LH_PASOS,_escLeerLH(p),dir);
+    if(lh!==null){p.style.lineHeight=String(lh);tocados++;}
+    const esp=_escVecino(_ESP_PASOS,_escLeerEsp(p),dir);
+    if(esp!==null)p.style.marginBottom=esp+'pt';
+  });
+  _escManual=sh.innerHTML;
+  const total=sh.querySelectorAll('p').length;
+  _escActualizarHojas(ps.length===total?'todo el escrito':ps.length+' párrafo'+(ps.length!==1?'s':''));
+}
+function escFormato(que,valor){
+  const sh=document.getElementById('esc-sheet');if(!sh)return;
+  const ps=_escParrafosDestino();
+  if(!ps.length||valor==='')return;
+  ps.forEach(p=>{
+    if(que==='lh')p.style.lineHeight=valor;
+    if(que==='esp')p.style.marginBottom=valor+'pt';
+  });
+  _escManual=sh.innerHTML;
+  const total=sh.querySelectorAll('p').length;
+  _escActualizarHojas(ps.length===total?'todo el escrito':ps.length+' párrafo'+(ps.length!==1?'s':''));
+}
+/* cuántas hojas ocupa la hoja tal como quedó, midiendo igual que el impreso */
+function _escHojasDe(html){
+  try{
+    const MM=3.7795, anchoPx=Math.round(145*MM), altoPag=207*MM;
+    const ifr=document.createElement('iframe');
+    ifr.style.cssText=`position:absolute;left:-9999px;top:0;width:${anchoPx+40}px;height:2600px;border:0;visibility:hidden`;
+    document.body.appendChild(ifr);
+    const d=ifr.contentDocument;d.open();
+    d.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+      body{margin:0;width:${anchoPx}px;font-family:Arial,sans-serif;font-size:12pt;color:#000}
+      p{margin:0 0 6pt 0;line-height:200%;font-family:Arial,sans-serif;font-size:12pt;color:#000;text-align:justify;break-inside:avoid}
+      #c{height:${Math.floor(altoPag)-30}px;column-width:${anchoPx}px;column-gap:0;column-fill:auto}
+    </style></head><body><div id="c"></div></body></html>`);
+    d.close();
+    const c=d.getElementById('c');c.innerHTML=html+_espacioFirma();
+    const n=Math.max(1,Math.round(c.scrollWidth/anchoPx));
+    ifr.remove();
+    return n;
+  }catch(e){return 0;}
+}
+function _escActualizarHojas(aQuien){
+  const sh=document.getElementById('esc-sheet');if(!sh)return;
+  const n=_escHojasDe(sh.innerHTML);
+  const tope=parseInt((document.getElementById('esc-maxpag')||{}).value||'2');
+  const el=document.getElementById('esc-hojas');
+  if(el){
+    const ok=n&&n<=tope;
+    el.innerHTML=n?`<b style="color:${ok?'#9fe0b6':'#ffb3ad'}">${n} hoja${n!==1?'s':''}</b> <span style="opacity:.7">(tope ${tope})</span>`:'';
+  }
+  toast('Aplicado a '+aQuien+(n?' · ahora ocupa '+n+' hoja'+(n!==1?'s':''):''));
+}
+function escBarraFormato(){
+  return `<div id="esc-fmt" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:0 16px 10px;color:#e8e8e8;font-size:11px">
+    <span style="font-weight:700;letter-spacing:.4px">✍ Se puede escribir en la hoja</span>
+    <span style="opacity:.6">— seleccioná un tramo y apretalo o separalo; sin selección, va a todo</span>
+    <span id="esc-hojas" style="margin-left:8px"></span>
+    <span style="flex:1"></span>
+    <button class="esc-fbtn" onclick="escApretar(-1)" title="Juntar el texto (menos interlineado y menos aire)">↕− Más junto</button>
+    <button class="esc-fbtn" onclick="escApretar(1)" title="Separar el texto (más interlineado y más aire)">↕+ Más separado</button>
+    <label style="display:flex;align-items:center;gap:4px;margin-left:6px">Interlineado
+      <select class="esc-fsel" onchange="escFormato('lh',this.value);this.value=''">
+        <option value="">—</option><option value="1">Simple</option><option value="1.15">1,15</option>
+        <option value="1.5">1,5</option><option value="2">Doble</option><option value="2.5">2,5</option>
+      </select></label>
+    <label style="display:flex;align-items:center;gap:4px">Espacio
+      <select class="esc-fsel" onchange="escFormato('esp',this.value);this.value=''">
+        <option value="">—</option><option value="0">Sin espacio</option><option value="6">6 pt</option>
+        <option value="12">12 pt</option><option value="18">18 pt</option><option value="24">24 pt</option>
+      </select></label>
+    <button class="esc-fbtn" onclick="document.execCommand('bold')" title="Negrita" style="font-weight:800">N</button>
+    <button class="esc-fbtn" onclick="document.execCommand('italic')" title="Cursiva" style="font-style:italic">K</button>
+    <button class="esc-fbtn" onclick="document.execCommand('underline')" title="Subrayado" style="text-decoration:underline">S</button>
+    <button class="esc-fbtn" onclick="escDescartarEdicion()" title="Volver al texto generado">↺ Original</button>
+  </div>`;
+}
 function _escDocCompleto(){
   escCalcularFit();
-  const h=escHTML();if(!h)return null;
+  const h=escHTMLFinal();if(!h)return null;
   return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Escrito</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]--><style>
 @page Section1{size:21cm 29.7cm;margin:4.5cm 2cm 4.5cm 4.5cm;mso-page-orientation:portrait}
 div.Section1{page:Section1}
@@ -5804,7 +5985,7 @@ function escDescargarPDF(){
   escGuardarGenerado();
   try{etapaPorEscrito(parseInt(document.getElementById('esc-causa').value),document.getElementById('esc-tipo').value);}catch(e){}
   escCalcularFit();
-  const h=escHTML();if(!h)return;
+  const h=escHTMLFinal();if(!h)return;
   const cid=parseInt(document.getElementById('esc-causa').value);
   const c=causas.find(x=>x.id===cid);
   const tipo=document.getElementById('esc-tipo').value;
@@ -5887,12 +6068,13 @@ function escGuardarArchivo(){
   const ok=document.getElementById('esc-guardado-ok');
   if(ok){ok.style.display='block';setTimeout(()=>{ok.style.display='none';},3500);}
 }
+function _escHTMLParaGuardar(){return escHTMLFinal();}
 function escGuardarGenerado(){
   const cid=parseInt(document.getElementById('esc-causa').value);
   const c=causas.find(x=>x.id===cid);if(!c)return;
   const tipo=document.getElementById('esc-tipo').value;
   const def=ESC_TIPOS[tipo];if(!def)return;
-  const h=escHTML();if(!h)return;
+  const h=escHTMLFinal();if(!h)return;
   if(!Array.isArray(c.escritos))c.escritos=[];
   // clave: mismo tipo+destinatario se actualiza en vez de duplicar
   const d=escDatos();
@@ -6072,7 +6254,7 @@ async function escAbrirEnDrive(){
   const btn=document.getElementById('btn-drive');
   try{
     escGuardarGenerado();_escMarcarOrigen();
-    const h=escHTML();if(!h)return;
+    const h=escHTMLFinal();if(!h)return;
     const tok=await _driveToken();if(!tok)return;
     if(btn){btn._t=btn.textContent;btn.textContent='⏳ Subiendo...';}
     const blob=_htmlADocx(h);
@@ -6100,7 +6282,7 @@ function escDescargarWord(){
   escGuardarGenerado();
   _escMarcarOrigen();
   try{etapaPorEscrito(parseInt(document.getElementById('esc-causa').value),document.getElementById('esc-tipo').value);}catch(e){}
-  const h=escHTML();if(!h)return;
+  const h=escHTMLFinal();if(!h)return;
   const blob=_htmlADocx(h);
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
