@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v365</title>
+<title>Gudiño Cabrera y Asociados v369</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -101,6 +101,17 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
    punta a punta; se centra en una columna de lectura cómoda */
 #panel-control,#panel-escgen,#panel-imprimir,#panel-archivo,#panel-pendientes,#panel-inactivas{max-width:1120px;margin:0 auto;width:100%}
 #panel-panorama{max-width:1180px;margin:0 auto;width:100%}
+#panel-caratulas{max-width:1100px;margin:0 auto;width:100%}
+.car-fila{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-bottom:1px solid var(--border);border-radius:8px}
+.car-fila:hover{background:var(--bg2)}
+.car-fila.falta{background:#FFFCF3}
+.car-corta{width:265px;flex:none;font-size:12px;font-weight:700;color:var(--text);line-height:1.35}
+.car-corta small{display:block;font-weight:500;color:var(--text3);font-size:10.5px;margin-top:2px}
+.car-larga{flex:1}
+.car-larga textarea{width:100%;font-size:12px;padding:7px 9px;border:1px solid var(--border2);border-radius:8px;
+  background:var(--bg);color:var(--text);resize:vertical;min-height:38px;line-height:1.4;font-family:inherit}
+.car-larga textarea:focus{border-color:var(--oro);box-shadow:0 0 0 3px rgba(192,145,47,.15);outline:none}
+.car-ok{color:var(--green);font-size:15px;width:20px;flex:none;text-align:center;padding-top:7px}
 /* Panorama */
 .hcard:hover{transform:translateY(-3px);box-shadow:0 10px 26px -12px rgba(20,33,61,.45);border-color:var(--oro)}
 .hcard:active{transform:translateY(-1px) scale(.99)}
@@ -166,6 +177,36 @@ g.pan-clic:hover text{fill:var(--text)}
 .rep-sel{font-size:10px;padding:2px 3px;border:1px solid var(--border2);border-radius:5px;background:var(--bg);color:var(--text2);max-width:150px;cursor:pointer}
 .rep-sel.pendiente{border-style:dashed;border-color:#c9a227;color:#9a7400;background:#FFFDF5}
 .sep-fil{width:1px;height:18px;background:var(--border2);margin:0 4px;flex:none}
+/* ── Agenda (compromisos de los próximos 7 días) ── */
+.ag-caja{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:9px 4px 5px;
+  margin:0 0 8px;box-shadow:0 1px 2px rgba(20,33,61,.05),0 8px 20px -14px rgba(20,33,61,.35);overflow:hidden}
+.ag-caja.urg{border-color:#eccfc9}
+.ag-cab{display:flex;align-items:center;gap:9px;padding:0 10px 8px;border-bottom:1px solid var(--border)}
+.ag-tag{font-size:10px;font-weight:800;letter-spacing:1.4px;color:#fff;background:var(--navy);
+  padding:3px 9px;border-radius:20px}
+.ag-res{font-size:11.5px;font-weight:600;color:var(--text2)}
+.ag-urg{margin-left:auto;font-size:10.5px;font-weight:700;color:#A03A2C;background:#FBEDEA;
+  border-radius:20px;padding:3px 10px}
+.ag-fila{display:flex;align-items:center;gap:10px;padding:7px 10px 7px 12px;position:relative;
+  border-bottom:1px solid var(--border);transition:background .14s}
+.ag-fila:last-child{border-bottom:none}
+.ag-fila:hover{background:var(--bg2)}
+.ag-fila::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:0 3px 3px 0;background:transparent}
+.ag-fila.hoy::before{background:#C0392B}
+.ag-fila.man::before{background:#D98324}
+.ag-fila.pronto::before{background:#C0912F}
+.ag-fila.tur::before{background:#3A5378}
+.ag-cuando{font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  min-width:74px;color:var(--text3)}
+.ag-fila.hoy .ag-cuando{color:#C0392B}
+.ag-fila.man .ag-cuando{color:#B36B14}
+.ag-fila.tur .ag-cuando{color:#3A5378}
+.ag-hora{font-size:11.5px;color:var(--text2);min-width:118px;font-variant-numeric:tabular-nums}
+.ag-sin{color:#C0392B;font-weight:700}
+.ag-tit{flex:1;min-width:0;font-size:12.5px;font-weight:700;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.1px}
+.ag-tipo{font-size:10.5px;color:var(--text3);white-space:nowrap;max-width:270px;overflow:hidden;text-overflow:ellipsis}
+.ag-mas{font-size:10.5px;color:var(--text3);padding:7px 12px 3px}
 .filtro-sel{font-size:11px;font-weight:600;padding:4px 24px 4px 10px;border-radius:14px;border:1px solid var(--border2);
   background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath fill='%238a94a6' d='M0 0h8L4 5z'/%3E%3C/svg%3E") no-repeat right 9px center;
   color:var(--text2);cursor:pointer;-webkit-appearance:none;appearance:none;transition:all .15s}
@@ -786,6 +827,7 @@ g.pan-clic:hover text{fill:var(--text)}
       <div class="aud-list" id="aud-list"></div>
     </div>
 
+    <div class="ct panel" id="panel-caratulas"><div id="car-body"></div></div>
     <div class="ct panel" id="panel-panorama"><div id="pan-body"></div></div>
     <div class="ct panel" id="panel-gastos">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:flex-end">
@@ -844,6 +886,11 @@ g.pan-clic:hover text{fill:var(--text)}
           <span style="font-size:26px">📁</span>
           <div class="ht">Extrajudiciales <span class="nb" id="cnt-ext" style="display:none">0</span></div>
           <div class="hd">Expedientes extrajudiciales</div>
+        </div>
+        <div onclick="goP('caratulas')" class="hcard">
+          <span style="font-size:26px">📋</span>
+          <div class="ht">Carátulas completas <span class="nb" id="cnt-car" style="display:none">0</span></div>
+          <div class="hd">Las que salen impresas en los escritos</div>
         </div>
         <div onclick="goP('panorama')" class="hcard">
           <span style="font-size:26px">📊</span>
@@ -1620,10 +1667,11 @@ function goR(){_navRecord('reg');filtroF=null;showRegLayout(true);niOn('reg');do
 function goF(f){_navRecord('fuero:'+f);filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
   _navRecord('panel:'+p);
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'<span style="color:#1E8E4E">$</span> Gastos / Sellados',nueva:'Nueva causa',panorama:'📊 Panorama del estudio',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos',imprimir:'Para imprimir'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'<span style="color:#1E8E4E">$</span> Gastos / Sellados',nueva:'Nueva causa',caratulas:'📋 Carátulas completas',panorama:'📊 Panorama del estudio',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos',imprimir:'Para imprimir'};
   document.getElementById('ptitle').innerHTML=t[p]||escH(p);
   showOtherPanel(p);
   niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'tur',herramientas:'her',escgen:'her',archivo:'arch',control:'control',imprimir:'imp'}[p]||p);
+  if(p==='caratulas')renderCaratulas();
   if(p==='panorama')renderPanorama();
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
@@ -3152,6 +3200,53 @@ function panIrAJuzgado(j){
   goR();
   const si=document.getElementById('si');
   if(si){si.value=j;buscarDesdeArriba();}
+}
+/* v366 — pantalla para cargar de una sola vez la carátula completa de todas las
+   causas. La corta se sigue usando en el registro; la completa es la que sale
+   impresa en cédulas, oficios y escritos. */
+function _carFaltan(){
+  return causas.filter(c=>c.est!=='archivada'&&!((c.carLarga||'').trim())).length;
+}
+function renderCaratulas(){
+  const el=document.getElementById('car-body');if(!el)return;
+  const act=causas.filter(c=>c.est!=='archivada');
+  const faltan=act.filter(c=>!((c.carLarga||'').trim()));
+  const listas=act.filter(c=>(c.carLarga||'').trim());
+  const fila=(c)=>{
+    const larga=(c.carLarga||'').trim();
+    return `<div class="car-fila${larga?'':' falta'}">
+      <div class="car-ok">${larga?'✓':'<span style="color:#c9a227">●</span>'}</div>
+      <div class="car-corta">${escH(c.car)}<small>${escH(c.juz||'')}${c.ex?' · '+escH(c.ex):''}</small></div>
+      <div class="car-larga">
+        <textarea rows="1" placeholder="Carátula completa, como figura en el expediente"
+          onfocus="this.rows=2" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,140)+'px'"
+          onchange="carGuardar(${c.id},this.value)" onblur="carGuardar(${c.id},this.value)">${escH(larga)}</textarea>
+      </div>
+    </div>`;
+  };
+  let h=`<div style="font-size:12px;color:var(--text2);margin-bottom:4px">
+      La de la izquierda es la abreviada que ves en el registro. La de la derecha es la que sale impresa en las cédulas, los oficios y los escritos.
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Se guarda sola al salir de cada campo.</div>`;
+  if(faltan.length){
+    h+=`<div class="seccion-car" style="font-size:12px;font-weight:800;color:#8a6400;background:#FFF6E0;border:1px solid #e8d9ae;
+      border-radius:8px;padding:7px 11px;margin:10px 0 6px">⚠ Faltan cargar ${faltan.length} — mientras tanto esos escritos salen con la abreviada</div>`;
+    h+=faltan.map(fila).join('');
+  }
+  if(listas.length){
+    h+=`<div style="font-size:12px;font-weight:800;color:var(--green);margin:18px 0 6px">✓ Ya cargadas (${listas.length})</div>`;
+    h+=listas.map(fila).join('');
+  }
+  if(!act.length)h='<div class="vacio"><div class="ico">📋</div><div class="tit">No hay causas activas</div></div>';
+  el.innerHTML=h;
+}
+function carGuardar(id,val){
+  const c=causas.find(x=>x.id===id);if(!c)return;
+  const v=(val||'').trim();
+  if(v===(c.carLarga||'').trim())return;
+  c.carLarga=v;sC();updToolsCounts();
+  const n=_carFaltan();
+  toast(v?('Carátula guardada'+(n?' · faltan '+n:' · ya están todas')):'Carátula completa borrada');
 }
 function renderPanorama(){
   const el=document.getElementById('pan-body');if(!el)return;
@@ -7166,6 +7261,26 @@ function escGenAbrir(cid,idx){
   const c=causas.find(x=>x.id===cid);if(!c)return;const e=(c.escritos||[])[idx];if(!e)return;
   _imprimirEnIframe(_escGenDoc(e.html));
 }
+/* v366 — bajar en PDF un escrito ya guardado, desde "Para imprimir" y desde
+   "Escritos generados". Usa el mismo camino que el PDF del generador. */
+function escGenPDF(cid,idx){
+  const c=causas.find(x=>x.id===cid);if(!c)return;const e=(c.escritos||[])[idx];if(!e)return;
+  if(typeof html2pdf==='undefined'){
+    alert('El generador de PDF necesita internet.\n\nSin conexión, usá 🖨 Imprimir y elegí "Guardar como PDF" en el cuadro de impresión.');
+    return;
+  }
+  const cont=document.createElement('div');
+  cont.style.cssText='font-family:Arial,sans-serif;font-size:12pt;line-height:2;width:160mm';
+  cont.innerHTML=e.html||'';
+  const nombre=`${e.titulo||'Escrito'} - ${c.car.split(' ')[0]} ${c.ex?c.ex.replace('/','-'):''}.pdf`;
+  toast('Armando el PDF…');
+  html2pdf().set({
+    margin:[40,25,40,25],filename:nombre,
+    image:{type:'jpeg',quality:.96},
+    html2canvas:{scale:2,useCORS:true},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(cont).save();
+}
 function escGenWord(cid,idx){
   const c=causas.find(x=>x.id===cid);if(!c)return;const e=(c.escritos||[])[idx];if(!e)return;
   const blob=new Blob(['\ufeff'+_escGenDoc(e.html)],{type:'application/msword'});
@@ -7181,6 +7296,10 @@ function escGenBorrar(cid,idx){
 function updToolsCounts(){
   let n=0;causas.forEach(c=>n+=(c.escritos||[]).length);
   const el=document.getElementById('cnt-escgen');if(el)el.textContent=n;
+  // cuántas causas siguen sin la carátula completa
+  const cc=document.getElementById('cnt-car');
+  if(cc){const f=_carFaltan();cc.textContent=f;cc.style.display=f?'':'none';
+    cc.style.background=f?'#c9a227':'';cc.style.color=f?'#fff':'';}
   updCntImp();
 }
 
@@ -7226,6 +7345,7 @@ function renderImp(){
         </span>
         <button class="btn-mini" onclick="escGenVer(${c.id},${idx})" title="Ver">👁</button>
         <button class="btn-mini" onclick="escGenAbrir(${c.id},${idx})" title="Imprimir">🖨</button>
+        <button class="btn-mini" onclick="escGenPDF(${c.id},${idx})" title="Bajar en PDF" style="color:#A03A2C;font-weight:700">PDF</button>
         <button class="btn-mini" onclick="impMarcarImpreso(${c.id},${idx})" title="Ya lo imprimí — sacarlo de la lista" style="color:var(--green);font-weight:700">✓ Impreso</button>
       </div>`;
     });
@@ -7311,46 +7431,50 @@ function _turnosDeManana(){
 function bannerAudienciasProximas(){
   const L=audienciasProximas(7);
   const T=_turnosDeManana();
-  const avisosOff=(typeof Notification!=='undefined'&&Notification&&Notification.permission!=='granted');
   if(!L.length&&!T.length)return '';
   const _cap=L.slice(0,10),_resto=L.length-_cap.length;
+
+  /* v367 — la agenda se ve como una tarjeta limpia: cada compromiso es un
+     renglón con una pastilla de cuándo, la hora en números tabulares y una
+     franja de color a la izquierda según qué tan cerca está. Sin botones:
+     el .ics y los avisos viven en Herramientas y en el Repaso del día. */
+  const reng=(o)=>`<div class="ag-fila ${o.cls}"${o.click?` onclick="${o.click}" style="cursor:pointer"`:''}>
+      <span class="ag-cuando">${o.cuando}</span>
+      <span class="ag-hora">${o.hora}</span>
+      <span class="ag-tit">${o.tit}</span>
+      <span class="ag-tipo">${o.tipo}</span>
+    </div>`;
+
+  const filasTur=T.map(t=>reng({
+    cls:'tur',
+    cuando:'Mañana',
+    hora:t.h?escH(t.h)+' hs':'<span class="ag-sin">sin hora</span>',
+    tit:escH(t.cli||t.nom||'(sin nombre)'),
+    tipo:'🗓 '+escH(t.mot||'turno en el estudio')
+  })).join('');
+
   const filas=_cap.map(a=>{
     const n=_faltan(a.f);
-    const crit=n<=1;
-    const col=crit?'#e24b4a':n<=3?'#BA7517':'#5A6472';
-    const hora=a.h?a.h+' hs':'<span style="color:#e24b4a;font-weight:700">SIN HORA</span>';
-    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid rgba(0,0,0,.06);cursor:${a.id?'pointer':'default'}" ${a.id?`onclick="irACausa(${a.id})"`:''}>
-      <span style="font-size:10.5px;font-weight:800;color:${col};min-width:66px${crit?';animation:vence-hoy-pulse 1.5s ease-in-out infinite':''}">${_txtFaltan(n)}</span>
-      <span style="font-size:11px;color:var(--text2);min-width:96px">${fmtSD(a.f)} · ${hora}</span>
-      <span style="font-size:11.5px;font-weight:700;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escH(a.car)}</span>
-      <span style="font-size:10px;color:var(--text3);white-space:nowrap">${escH(a.tipo)}${a.juz?' · '+escH(a.juz):''}</span>
-    </div>`;
+    return reng({
+      cls:n<=0?'hoy':(n===1?'man':(n<=3?'pronto':'')),
+      cuando:_txtFaltan(n),
+      hora:fmtSD(a.f)+' · '+(a.h?escH(a.h)+' hs':'<span class="ag-sin">falta la hora</span>'),
+      tit:escH(a.car),
+      tipo:'📅 '+escH(a.tipo||'audiencia')+(a.juz?' · '+escH(a.juz):''),
+      click:a.id?`irACausa(${a.id})`:''
+    });
   }).join('');
-  const hoyMan=L.filter(a=>_faltan(a.f)<=1).length;
-  const filasTur=T.map(t=>{
-    const cli=t.cli||t.nom||'(sin nombre)';
-    return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid rgba(0,0,0,.06)">
-      <span style="font-size:10.5px;font-weight:800;color:#3A5378;min-width:66px">MAÑANA</span>
-      <span style="font-size:11px;color:var(--text2);min-width:96px">${t.h?escH(t.h)+' hs':'sin hora'}${t.dur?' · '+escH(t.dur)+"'":''}</span>
-      <span style="font-size:11.5px;font-weight:700;color:var(--text);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escH(cli)}</span>
-      <span style="font-size:10px;color:var(--text3);white-space:nowrap">${escH(t.mot||'turno en el estudio')}</span>
-    </div>`;
-  }).join('');
-  const _subt=[T.length?T.length+' turno'+(T.length!==1?'s':'')+' mañana':'',
-               L.length?L.length+' audiencia'+(L.length!==1?'s':'')+' en 7 días':'']
-              .filter(Boolean).join(' · ');
-  return `<div class="ban ${hoyMan?'rojo':'amber'}" style="padding:8px 11px">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
-      <strong style="font-size:12px">📌 AGENDA</strong>
-      <span style="font-size:10.5px;color:var(--text3);font-weight:600">${_subt}</span>
-      <span style="margin-left:auto;display:flex;gap:6px">
-        <span onclick="event.stopPropagation();bajarICS(60)" title="Bajar al calendario del celular, con alarma 1 día antes y 2 horas antes" style="cursor:pointer;border:1px solid var(--border2);background:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--text2)">📅 Al celular (.ics)</span>
-        ${avisosOff?'<span onclick="event.stopPropagation();pedirNotif()" style="cursor:pointer;border:1px solid var(--border2);background:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--text2)">🔔 Activar avisos</span>':''}
-      </span>
+
+  const total=T.length+L.length;
+  const urgentes=L.filter(a=>_faltan(a.f)<=1).length+T.length;
+  return `<div class="ag-caja${urgentes?' urg':''}">
+    <div class="ag-cab">
+      <span class="ag-tag">AGENDA</span>
+      <span class="ag-res">${total} compromiso${total!==1?'s':''} — próximos 7 días</span>
+      ${urgentes?`<span class="ag-urg">${urgentes} para hoy o mañana</span>`:''}
     </div>
-    ${filasTur}
-    ${filas}
-    ${_resto>0?`<div style="font-size:10px;color:var(--text3);padding-top:4px">y ${_resto} audiencia${_resto!==1?'s':''} más esta semana…</div>`:''}
+    ${filasTur}${filas}
+    ${_resto>0?`<div class="ag-mas">y ${_resto} más esta semana…</div>`:''}
   </div>`;
 }
 
