@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v369</title>
+<title>Gudiño Cabrera y Asociados v370</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1557,33 +1557,77 @@ async function fbSave(){
   try{
     const payload=getPayload();
     const r=await fetch(FB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    if(r.ok){setSyncStatus('ok');lastRemoteTS=payload.v;pendingOfflineSync=false;localStorage.removeItem('ga_pending_sync');}
+    if(r.ok){setSyncStatus('ok');lastRemoteTS=payload.v;_miUltimaSubida=payload.v;
+      pendingOfflineSync=false;localStorage.removeItem('ga_pending_sync');
+      _fallosSeguidos=0;}
     else{setSyncStatus('err');pendingOfflineSync=true;localStorage.setItem('ga_pending_sync','1');}
   }catch(e){setSyncStatus('err');pendingOfflineSync=true;localStorage.setItem('ga_pending_sync','1');}
   isSaving=false;if(saveQueue)fbSave();
 }
 
-async function pollSync(){
+/* v370 — la sincronización ya no compara marcas de tiempo con "mayor que".
+   Antes, si el reloj de una computadora estaba adelantado, esa máquina
+   guardaba con una marca alta y después ignoraba para siempre lo que subía la
+   otra (su remote.v nunca era "mayor"), y encima le sobreescribía los datos
+   con su copia vieja. Ahora se compara por IDENTIDAD: si lo que hay en la nube
+   es distinto de lo último que apliqué y distinto de lo último que subí yo,
+   me lo traigo. El reloj deja de importar. */
+let _miUltimaSubida=0, _fallosSeguidos=0;
+async function pollSync(forzado){
   if(isSaving)return;
-  if(openCID!==null)return; // No pisar datos mientras hay un popup abierto
-  if(Date.now()-lastSaveTS<8000)return;
+  if(!forzado&&openCID!==null)return;              // no pisar con un popup abierto
+  if(!forzado&&hojaEditandoEscrito())return;       // ni mientras se retoca un escrito
+  if(!forzado&&Date.now()-lastSaveTS<8000)return;
   try{
-    const r=await fetch(FB_URL);if(!r.ok)return;
+    const r=await fetch(FB_URL,{cache:'no-store'});if(!r.ok)return;
     const remote=await r.json();if(!remote||!remote.v)return;
-    if(remote.v>lastRemoteTS){
-      // v340 — nunca pisar cambios propios que todavía no se subieron: si quedó
-      // algo pendiente (guardado que falló, sin internet), primero se sube lo
-      // local y recién en la próxima vuelta se baja lo remoto. Antes, la
-      // sincronización de cada 10 segundos podía revertir lo recién cargado.
-      if(pendingOfflineSync||localStorage.getItem('ga_pending_sync')){fbSave();return;}
+    const esNuevo=(remote.v!==lastRemoteTS)&&(remote.v!==_miUltimaSubida);
+    if(esNuevo||forzado){
+      // primero subir lo propio que quedó sin mandar; recién en la vuelta
+      // siguiente se baja lo remoto (así no se pisan cambios no sincronizados)
+      if(!forzado&&(pendingOfflineSync||localStorage.getItem('ga_pending_sync'))){
+        _fallosSeguidos++;
+        if(_fallosSeguidos>6){                     // el aviso quedó trabado: se destraba
+          pendingOfflineSync=false;localStorage.removeItem('ga_pending_sync');_fallosSeguidos=0;
+          console.warn('Sincronización: el pendiente quedó trabado, se destrabó solo');
+        }
+        fbSave();return;
+      }
       lastRemoteTS=remote.v;applyPayload(remote);updProgress();renderBan();renderR();updBadges();
       if(curView==='ram')renderRam();
+      if(curView==='resolver')renderResolver();
+      const pl=document.querySelector('.panel.on');
+      if(pl){
+        if(pl.id==='panel-pendientes')renderPendientes();
+        if(pl.id==='panel-control')renderControl();
+        if(pl.id==='panel-imprimir')renderImp();
+        if(pl.id==='panel-turnero')renderTurnos();
+        if(pl.id==='panel-audiencias')renderCal();
+      }
+      _ultimaBajada=Date.now();
     }
     if(pendingOfflineSync)fbSave();else setSyncStatus('ok');
   }catch(e){setSyncStatus('err');}
 }
+let _ultimaBajada=0;
+/* Al volver a la pestaña o a la máquina, traer lo último sin esperar los 10 s */
+function hojaEditandoEscrito(){
+  const sh=document.getElementById('esc-sheet');
+  return !!(sh&&sh.isContentEditable&&document.activeElement===sh);
+}
+function sincronizarAhora(){
+  setSyncStatus('saving');
+  pollSync(true).then(()=>{toast('Datos actualizados desde la nube');});
+}
 
-function startSync(){if(pollTimer)clearInterval(pollTimer);pollTimer=setInterval(pollSync,10000);}
+function startSync(){
+  if(pollTimer)clearInterval(pollTimer);
+  pollTimer=setInterval(pollSync,10000);
+  // al volver a la pestaña (típico cuando se cambia de computadora) se trae lo
+  // último de inmediato, sin esperar la vuelta del reloj
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(()=>pollSync(),300);});
+  window.addEventListener('focus',()=>{setTimeout(()=>pollSync(),300);});
+}
 
 window.addEventListener('online',()=>{if(pendingOfflineSync||localStorage.getItem('ga_pending_sync')){setSyncStatus('saving');setTimeout(fbSave,2000);}});
 setInterval(()=>{if((pendingOfflineSync||localStorage.getItem('ga_pending_sync'))&&navigator.onLine)fbSave();},120000);
@@ -5176,8 +5220,16 @@ function escActualizar(){
   const rr=document.getElementById('esc-rol-row');if(rr)rr.style.display=def.libre?'none':'flex';
   _escFit=null;
   if(def.libre){
+    const _cl=causas.find(x=>x.id===parseInt((document.getElementById('esc-causa')||{}).value));
+    const _cLarga=_cl?((_cl.carLarga||'').trim()):'';
     cont.innerHTML=`
     <label class="fl">2 — Escrito libre</label>
+    ${_cl?`<div style="margin:6px 0 10px;padding:8px 10px;border:1px solid ${_cLarga?'var(--border)':'#e0c48a'};border-radius:8px;background:${_cLarga?'var(--bg2)':'#FFFCF3'}">
+      <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px">Carátula completa del expediente
+        <span style="font-weight:400;color:var(--text3)">— la que sale impresa${_cLarga?'':'; todavía está la abreviada'}</span></div>
+      <input class="fi" id="esc-carat" style="width:100%;font-size:12px" placeholder="Ej.: PÉREZ JUAN c/ EMPRESA S.A. s/ DIFERENCIAS SALARIALES"
+        value="${escH(_cLarga||_cl.car||'')}" oninput="escPreviewRefresh()" onchange="escGuardarCaratula()" onblur="escGuardarCaratula()">
+    </div>`:''}
     <div style="font-size:10px;color:#8a94a6;margin:6px 0 1px;font-weight:600">Título del escrito (va centrado y en negrita arriba)</div>
     <input class="fi" id="esc-f-titulo_libre" placeholder="Ej: CONTESTA VISTA — SOLICITA — INTERPONE RECURSO" style="width:100%;font-size:12px;font-weight:700" oninput="escPreviewRefresh()">
     <div style="font-size:10px;color:#8a94a6;margin:10px 0 3px;font-weight:600">¿Cómo firmás?</div>
@@ -6481,7 +6533,11 @@ function _escLbl(){
   const cs=document.getElementById('esc-causa'),lbl=document.getElementById('esc-causa-lbl');
   if(!cs||!lbl)return;
   const cc=causas.find(x=>x.id===parseInt(cs.value));
-  lbl.textContent=cc?cc.car+' ('+(cc.ex||'s/n')+')':'—';
+  if(!cc){lbl.textContent='—';return;}
+  // se muestra la carátula que realmente va a salir impresa, no la abreviada
+  const larga=(cc.carLarga||'').trim();
+  lbl.innerHTML=escH(larga||cc.car)+' <span style="font-weight:500;color:var(--text3)">('+escH(cc.ex||'s/n')+')</span>'+
+    (larga?'':' <span style="font-size:10.5px;font-weight:700;color:#9a7400;background:#FFF6E0;border:1px solid #e8d9ae;border-radius:10px;padding:1px 7px;margin-left:6px">carátula abreviada — cargala completa</span>');
 }
 function irAEscrito(cid,tipo,campos,faltan){
   if(!campos||!campos._fromFila)_escOrigen=null;
