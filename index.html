@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v370</title>
+<title>Gudiño Cabrera y Asociados v371</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1172,6 +1172,11 @@ g.pan-clic:hover text{fill:var(--text)}
           <label class="btn" style="cursor:pointer">⬆️ Restaurar copia<input type="file" accept=".json" style="display:none" onchange="bkImportar(this)"></label>
         </div>
         <div style="font-size:10.5px;color:#8a94a6;margin-top:6px">Guarda todas las causas, etapas, prueba, historial, biblioteca de organismos y configuración. Restaurar reemplaza todo lo actual.</div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)">
+          <div style="font-size:11.5px;font-weight:700;color:var(--text2);margin-bottom:6px">🕐 Copias automáticas de esta computadora</div>
+          <div id="cfg-copias"></div>
+          <div style="font-size:10.5px;color:#8a94a6;margin-top:6px">La app guarda sola una copia por día (las últimas cinco) antes de bajar datos de la nube. "Recuperar" no borra nada: fusiona y devuelve lo que falte.</div>
+        </div>
       </div>
       <div class="cfg-blk">
         <h3>📅 Feriados</h3>
@@ -1511,10 +1516,78 @@ function setSyncStatus(s){
 }
 
 function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos,turBorrados};}
+/* v371 — antes, lo que bajaba de la nube REEMPLAZABA la lista de causas entera.
+   Si la otra computadora tenía una copia sin lo último cargado acá (por ejemplo
+   las carátulas completas), ese trabajo se perdía sin aviso. Ahora se fusiona
+   causa por causa y campo por campo: si un dato existe de un lado y del otro
+   está vacío, se conserva el que tiene contenido. Sólo se pisa un dato con otro
+   dato cuando los dos existen, y ahí gana la copia tocada más recientemente. */
+const _CAMPOS_TEXTO=['carLarga','car','ex','juz','fue','cli','socio','not','obs','tv','etapa','est','rol','tipo_aud','aud_h','aud_mod','aud_obs','ven','tipo_venc'];
+function _fusionarCausa(mia,remota){
+  if(!mia)return remota;
+  if(!remota)return mia;
+  const mNueva=(mia.lastTouch||0)>(remota.lastTouch||0);
+  const base=Object.assign({},mNueva?remota:mia,mNueva?mia:remota);   // gana la más nueva
+  // pero nunca se pierde un dato por uno vacío
+  _CAMPOS_TEXTO.forEach(k=>{
+    const a=(mia[k]==null?'':String(mia[k])).trim();
+    const b=(remota[k]==null?'':String(remota[k])).trim();
+    if(a&&!b)base[k]=mia[k];
+    else if(b&&!a)base[k]=remota[k];
+  });
+  // listas: se queda la más larga si la otra está vacía
+  ['rams','escritos','vencs','hist'].forEach(k=>{
+    const a=Array.isArray(mia[k])?mia[k]:null, b=Array.isArray(remota[k])?remota[k]:null;
+    if(a&&a.length&&(!b||!b.length))base[k]=a;
+    else if(b&&b.length&&(!a||!a.length))base[k]=b;
+  });
+  if(mia.prueba&&!remota.prueba)base.prueba=mia.prueba;
+  base.lastTouch=Math.max(mia.lastTouch||0,remota.lastTouch||0);
+  return base;
+}
+function fusionarCausas(remotas){
+  const mapa=new Map();
+  (causas||[]).forEach(c=>mapa.set(String(c.id),c));
+  (remotas||[]).forEach(r=>{
+    const k=String(r.id);
+    mapa.set(k,_fusionarCausa(mapa.get(k),r));
+  });
+  return [...mapa.values()];
+}
+/* Copia de seguridad automática antes de aplicar lo que baja de la nube.
+   Guarda las últimas 5; sirve para volver atrás si algo se borró. */
+function _copiaAuto(){
+  try{
+    const hoy=isoD(HOY);
+    const idx=JSON.parse(localStorage.getItem('ga_bk_idx')||'[]');
+    if(idx.includes(hoy))return;                  // una por día alcanza
+    localStorage.setItem('ga_bk_'+hoy,JSON.stringify({f:hoy,causas,turnos,pendientes,revisiones,tareasRam}));
+    idx.push(hoy);
+    while(idx.length>5){const v=idx.shift();localStorage.removeItem('ga_bk_'+v);}
+    localStorage.setItem('ga_bk_idx',JSON.stringify(idx));
+  }catch(e){}
+}
+function copiasDisponibles(){
+  try{return JSON.parse(localStorage.getItem('ga_bk_idx')||'[]');}catch(e){return [];}
+}
+function restaurarCopia(f){
+  try{
+    const b=JSON.parse(localStorage.getItem('ga_bk_'+f)||'null');
+    if(!b){alert('No encuentro esa copia.');return;}
+    const n=(b.causas||[]).filter(c=>(c.carLarga||'').trim()).length;
+    if(!confirm('Copia del '+f+': '+(b.causas||[]).length+' causas, '+n+' con carátula completa.\n\n'+
+      'Se van a fusionar con lo que hay ahora (no se borra nada, sólo se recupera lo que falte). ¿Seguir?'))return;
+    causas=fusionarCausas(b.causas||[]);
+    if(b.turnos)turnos=fusionarTurnos(b.turnos);
+    sC();saveTurnos();renderR();updBadges();updToolsCounts();
+    alert('Listo. Recuperado desde la copia del '+f+'.');
+  }catch(e){alert('No se pudo restaurar: '+e.message);}
+}
 function applyPayload(d){
   if(!d)return;
   if(d.causas){
-    causas=d.causas;
+    _copiaAuto();
+    causas=fusionarCausas(d.causas);
     // Restaurar fechas pendientes que el usuario seleccionó pero aún no guardó
     Object.keys(pendingVen).forEach(sid=>{
       const pid=parseInt(sid);
@@ -1715,6 +1788,7 @@ function goP(p){
   document.getElementById('ptitle').innerHTML=t[p]||escH(p);
   showOtherPanel(p);
   niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'tur',herramientas:'her',escgen:'her',archivo:'arch',control:'control',imprimir:'imp'}[p]||p);
+  if(p==='config'){const cc=document.getElementById('cfg-copias');if(cc)cc.innerHTML=panelCopias();}
   if(p==='caratulas')renderCaratulas();
   if(p==='panorama')renderPanorama();
   if(p==='gastos')renderG();
@@ -3291,6 +3365,20 @@ function carGuardar(id,val){
   c.carLarga=v;sC();updToolsCounts();
   const n=_carFaltan();
   toast(v?('Carátula guardada'+(n?' · faltan '+n:' · ya están todas')):'Carátula completa borrada');
+}
+function panelCopias(){
+  const l=copiasDisponibles();
+  if(!l.length)return '<div style="font-size:11.5px;color:var(--text3)">Todavía no hay copias automáticas.</div>';
+  return l.slice().reverse().map(f=>{
+    let n=0,cl=0;
+    try{const b=JSON.parse(localStorage.getItem('ga_bk_'+f)||'{}');n=(b.causas||[]).length;
+      cl=(b.causas||[]).filter(c=>(c.carLarga||'').trim()).length;}catch(e){}
+    return `<div style="display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <b style="font-size:12px">${f.split('-').reverse().join('/')}</b>
+      <span style="font-size:11px;color:var(--text3)">${n} causas · ${cl} con carátula completa</span>
+      <button class="btn gh gh-navy" style="margin-left:auto;font-size:11px;padding:3px 10px" onclick="restaurarCopia('${f}')">Recuperar</button>
+    </div>`;
+  }).join('');
 }
 function renderPanorama(){
   const el=document.getElementById('pan-body');if(!el)return;
