@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v371</title>
+<title>Gudiño Cabrera y Asociados v372</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1175,6 +1175,12 @@ g.pan-clic:hover text{fill:var(--text)}
         <div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border)">
           <div style="font-size:11.5px;font-weight:700;color:var(--text2);margin-bottom:6px">🕐 Copias automáticas de esta computadora</div>
           <div id="cfg-copias"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+            <button class="btn gh gh-navy" onclick="verCopiasNube()">☁ Copias de la nube</button>
+            <button class="btn gh gh-verde" onclick="recuperarDelDiario()">🧾 Recuperar del diario de cambios</button>
+            <button class="btn gh" onclick="sincronizarAhora()">🔄 Sincronizar ahora</button>
+          </div>
+          <div style="font-size:10.5px;color:#8a94a6;margin-top:6px">El diario guarda cada cambio hecho en cualquier computadora, sólo agrega y nunca se pisa: es el último recurso para recuperar algo que se haya perdido.</div>
           <div style="font-size:10.5px;color:#8a94a6;margin-top:6px">La app guarda sola una copia por día (las últimas cinco) antes de bajar datos de la nube. "Recuperar" no borra nada: fusiona y devuelve lo que falte.</div>
         </div>
       </div>
@@ -1421,7 +1427,7 @@ let extFiltro='';
 // Guardado local siempre
 const svl=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 // Guardado individual
-function sC(){svl('ga_c',causas);fbSave();}
+function sC(){svl('ga_c',causas);fbSave();try{subirCausasCambiadas();}catch(e){}}
 function sM(){svl('ga_m_'+SK,[...movidas]);fbSave();}
 function sH(){svl('ga_h',historial);} // historial no sincroniza para evitar conflictos
 function sG(){svl('ga_g',gastos);fbSave();}
@@ -1493,6 +1499,149 @@ function vBtnTxt(c){
 // SYNC — Firebase Realtime Database
 // ═══════════════════════════════════════════════
 const FB_URL='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoza40/datos.json';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPALDO v372 — tres capas para que un dato cargado no se pierda nunca
+
+   1) CAUSAS UNA POR UNA (no todo junto). Antes se subía un único paquete con
+      todo adentro: cualquier máquina con una copia vieja lo reemplazaba entero
+      y borraba lo que las otras habían cargado. Ahora cada causa se guarda en
+      su propia dirección y se escribe SÓLO la que cambió (PATCH). Una máquina
+      desactualizada ya no puede tocar lo que no editó.
+   2) DIARIO DE CAMBIOS, sólo se agrega, nunca se pisa. Cada cambio queda
+      registrado con fecha, máquina y contenido. Aunque algo se rompa, el dato
+      sigue estando ahí y se puede recuperar.
+   3) COPIA DIARIA COMPLETA en la nube, una por fecha (nunca se sobreescriben
+      entre ellas), más la copia diaria local que ya existía.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const FB_RAIZ='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoza40';
+const FB_CAUSAS=FB_RAIZ+'/causas.json';
+const FB_DIARIO=FB_RAIZ+'/diario.json';
+const FB_COPIAS=FB_RAIZ+'/copias';
+const EQUIPO_ID=(function(){
+  let d=localStorage.getItem('ga_equipo');
+  if(!d){d=(navigator.platform||'pc').slice(0,3).toLowerCase()+'-'+Math.random().toString(36).slice(2,7);
+    localStorage.setItem('ga_equipo',d);}
+  return d;
+})();
+let _subidas=(function(){try{return JSON.parse(localStorage.getItem('ga_subidas')||'{}');}catch(e){return {};}})();
+let _colaFallidas=(function(){try{return JSON.parse(localStorage.getItem('ga_cola')||'[]');}catch(e){return [];}})();
+let _ultCopiaNube=localStorage.getItem('ga_copia_nube')||'';
+
+function _huella(c){
+  // marca compacta del contenido: cambia si cambia cualquier cosa de la causa
+  try{
+    const t=JSON.stringify(c);
+    let h=0;for(let i=0;i<t.length;i++){h=((h<<5)-h+t.charCodeAt(i))|0;}
+    return t.length+':'+h;
+  }catch(e){return String(Date.now());}
+}
+function _guardarSubidas(){try{localStorage.setItem('ga_subidas',JSON.stringify(_subidas));}catch(e){}}
+function _guardarCola(){try{localStorage.setItem('ga_cola',JSON.stringify(_colaFallidas.slice(-400)));}catch(e){}}
+
+/* Sube SÓLO las causas que cambiaron. Lo que no se tocó no se escribe. */
+async function subirCausasCambiadas(){
+  const cambios={},huellas={};
+  (causas||[]).forEach(c=>{
+    if(!c||c.id==null)return;
+    const h=_huella(c);
+    if(_subidas[c.id]!==h){cambios[String(c.id)]=c;huellas[String(c.id)]=h;}
+  });
+  const ids=Object.keys(cambios);
+  if(!ids.length)return true;
+  try{
+    const r=await fetch(FB_CAUSAS,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(cambios)});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    ids.forEach(id=>{_subidas[id]=huellas[id];});_guardarSubidas();
+    // diario: sólo se agrega, nunca se reemplaza
+    fetch(FB_DIARIO,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({t:Date.now(),equipo:EQUIPO_ID,ids:ids,datos:cambios})}).catch(()=>{});
+    return true;
+  }catch(e){
+    // si falla, queda en cola en el disco de esta máquina y se reintenta
+    _colaFallidas.push({t:Date.now(),datos:cambios});_guardarCola();
+    return false;
+  }
+}
+async function reintentarCola(){
+  if(!_colaFallidas.length)return;
+  const pend=_colaFallidas.slice();
+  for(const it of pend){
+    try{
+      const r=await fetch(FB_CAUSAS,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(it.datos)});
+      if(r.ok){
+        _colaFallidas=_colaFallidas.filter(x=>x!==it);_guardarCola();
+        // lo que se cargó sin internet también queda asentado en el diario
+        fetch(FB_DIARIO,{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({t:it.t||Date.now(),equipo:EQUIPO_ID,ids:Object.keys(it.datos),datos:it.datos,demorado:true})}).catch(()=>{});
+      }
+      else break;
+    }catch(e){break;}
+  }
+}
+/* Baja las causas una por una y las fusiona (nunca reemplaza en bloque) */
+async function bajarCausas(){
+  try{
+    const r=await fetch(FB_CAUSAS,{cache:'no-store'});
+    if(!r.ok)return false;
+    const m=await r.json();
+    if(!m||typeof m!=='object')return false;
+    const lista=Object.keys(m).map(k=>m[k]).filter(x=>x&&x.id!=null);
+    if(!lista.length)return false;
+    const antes=(causas||[]).length;
+    causas=fusionarCausas(lista);
+    svl('ga_c',causas);
+    // lo fusionado que difiera de lo remoto se vuelve a subir en la próxima vuelta
+    causas.forEach(c=>{const h=_huella(c);if(_subidas[c.id]&&_subidas[c.id]!==h)delete _subidas[c.id];});
+    _guardarSubidas();
+    return causas.length>=antes;
+  }catch(e){return false;}
+}
+/* Copia completa diaria en la nube, cada fecha en su propia dirección */
+async function copiaDiariaNube(){
+  const hoy=isoD(HOY);
+  if(_ultCopiaNube===hoy)return;
+  try{
+    const r=await fetch(FB_COPIAS+'/'+hoy+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({f:hoy,equipo:EQUIPO_ID,t:Date.now(),causas,turnos,pendientes,revisiones,tareasRam,gastos,extraj})});
+    if(r.ok){_ultCopiaNube=hoy;localStorage.setItem('ga_copia_nube',hoy);}
+  }catch(e){}
+}
+/* Recuperación: rearma las causas desde el diario de cambios */
+async function recuperarDelDiario(){
+  if(!confirm('Voy a leer el diario de cambios de la nube y recuperar todo lo que se haya cargado desde cualquier máquina.\n\nNo borra nada: sólo suma lo que falte. ¿Seguir?'))return;
+  toast('Leyendo el diario de cambios…');
+  try{
+    const r=await fetch(FB_DIARIO+'?orderBy="t"&limitToLast=800',{cache:'no-store'});
+    const m=await r.json();
+    if(!m){alert('El diario todavía está vacío.');return;}
+    const entradas=Object.keys(m).map(k=>m[k]).filter(Boolean).sort((a,b)=>(a.t||0)-(b.t||0));
+    let n=0;
+    entradas.forEach(e=>{
+      const d=e.datos||{};
+      Object.keys(d).forEach(id=>{n++;causas=fusionarCausas([d[id]]);});
+    });
+    sC();renderR();updBadges();updToolsCounts();
+    alert('Listo: se revisaron '+entradas.length+' registros del diario y se recuperaron '+n+' versiones de causas.\n\nRevisá las carátulas completas en Herramientas.');
+  }catch(e){alert('No se pudo leer el diario: '+e.message);}
+}
+async function verCopiasNube(){
+  try{
+    const r=await fetch(FB_COPIAS+'.json?shallow=true',{cache:'no-store'});
+    const m=await r.json();
+    const fechas=m?Object.keys(m).sort().reverse():[];
+    if(!fechas.length){alert('Todavía no hay copias en la nube.');return;}
+    const f=prompt('Copias disponibles en la nube:\n\n'+fechas.join('\n')+'\n\nEscribí la fecha que querés recuperar (no borra nada, suma lo que falte):',fechas[0]);
+    if(!f)return;
+    const r2=await fetch(FB_COPIAS+'/'+f+'.json',{cache:'no-store'});
+    const b=await r2.json();
+    if(!b||!b.causas){alert('No encontré esa copia.');return;}
+    causas=fusionarCausas(b.causas);
+    if(b.turnos)turnos=fusionarTurnos(b.turnos);
+    sC();saveTurnos();renderR();updBadges();updToolsCounts();
+    alert('Recuperado desde la copia del '+f+' ('+b.causas.length+' causas).');
+  }catch(e){alert('No se pudo: '+e.message);}
+}
 let JSONBIN_ID='x';let JSONBIN_KEY='x'; // legacy — no used
 let pollTimer=null,lastSaveTS=0,lastRemoteTS=0,isSaving=false,saveQueue=false;
 let pendingOfflineSync=localStorage.getItem('ga_pending_sync')==='1';
@@ -1666,7 +1815,9 @@ async function pollSync(forzado){
         }
         fbSave();return;
       }
-      lastRemoteTS=remote.v;applyPayload(remote);updProgress();renderBan();renderR();updBadges();
+      lastRemoteTS=remote.v;applyPayload(remote);
+      try{await bajarCausas();}catch(e){}          // las causas mandan desde su propia dirección
+      updProgress();renderBan();renderR();updBadges();
       if(curView==='ram')renderRam();
       if(curView==='resolver')renderResolver();
       const pl=document.querySelector('.panel.on');
@@ -7838,6 +7989,13 @@ function initAtajos(){
 function initAntiOlvido(){
   try{initAtajos();}catch(e){}
   try{_migrarSocios();_pintarFiltroSocio();}catch(e){}
+  // respaldo: al abrir se sube lo que quedó pendiente, se bajan las causas una
+  // por una y se deja la copia del día en la nube
+  setTimeout(()=>{try{reintentarCola();}catch(e){}},1500);
+  setTimeout(()=>{try{bajarCausas().then(ok=>{if(ok){renderR();updBadges();updToolsCounts();}});}catch(e){}},2500);
+  setTimeout(()=>{try{subirCausasCambiadas();}catch(e){}},4000);
+  setTimeout(()=>{try{copiaDiariaNube();}catch(e){}},6000);
+  setInterval(()=>{try{reintentarCola();}catch(e){}},60000);
   setTimeout(()=>{try{abrirCheckin(false);}catch(e){}},700);
   setTimeout(()=>{try{chequearAvisos();}catch(e){}},2000);
   setInterval(()=>{try{chequearAvisos();}catch(e){}},30*60*1000);
