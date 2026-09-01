@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v372</title>
+<title>Gudiño Cabrera y Asociados v373</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1179,6 +1179,7 @@ g.pan-clic:hover text{fill:var(--text)}
             <button class="btn gh gh-navy" onclick="verCopiasNube()">☁ Copias de la nube</button>
             <button class="btn gh gh-verde" onclick="recuperarDelDiario()">🧾 Recuperar del diario de cambios</button>
             <button class="btn gh" onclick="sincronizarAhora()">🔄 Sincronizar ahora</button>
+            <button class="btn gh gh-rojo" onclick="deshacerRecuperacion()">↩ Deshacer la última recuperación</button>
           </div>
           <div style="font-size:10.5px;color:#8a94a6;margin-top:6px">El diario guarda cada cambio hecho en cualquier computadora, sólo agrega y nunca se pisa: es el último recurso para recuperar algo que se haya perdido.</div>
           <div style="font-size:10.5px;color:#8a94a6;margin-top:6px">La app guarda sola una copia por día (las últimas cinco) antes de bajar datos de la nube. "Recuperar" no borra nada: fusiona y devuelve lo que falte.</div>
@@ -1527,6 +1528,13 @@ const EQUIPO_ID=(function(){
 let _subidas=(function(){try{return JSON.parse(localStorage.getItem('ga_subidas')||'{}');}catch(e){return {};}})();
 let _colaFallidas=(function(){try{return JSON.parse(localStorage.getItem('ga_cola')||'[]');}catch(e){return [];}})();
 let _ultCopiaNube=localStorage.getItem('ga_copia_nube')||'';
+/* v373 — lo que se borra a propósito no tiene que volver. Cada borrado
+   definitivo deja su lápida; la fusión y la recuperación del diario la
+   respetan, así que una causa borrada no resucita ni desde la nube ni desde
+   el diario de cambios. */
+let causasBorradas=(function(){try{return JSON.parse(localStorage.getItem('ga_causadel')||'[]');}catch(e){return [];}})();
+function sCausaDel(){try{localStorage.setItem('ga_causadel',JSON.stringify(causasBorradas));}catch(e){}}
+function _causaEstaBorrada(id){return causasBorradas.some(x=>String(x.id)===String(id));}
 
 function _huella(c){
   // marca compacta del contenido: cambia si cambia cualquier cosa de la causa
@@ -1609,7 +1617,13 @@ async function copiaDiariaNube(){
 }
 /* Recuperación: rearma las causas desde el diario de cambios */
 async function recuperarDelDiario(){
-  if(!confirm('Voy a leer el diario de cambios de la nube y recuperar todo lo que se haya cargado desde cualquier máquina.\n\nNo borra nada: sólo suma lo que falte. ¿Seguir?'))return;
+  const traerTodo=confirm('RECUPERAR DEL DIARIO DE CAMBIOS\n\n'+
+    'Aceptar = completar SOLO las causas que tenés hoy (recomendado: recupera carátulas, notas y datos perdidos sin resucitar expedientes viejos).\n\n'+
+    'Cancelar = te pregunto si querés además traer de vuelta causas que hoy no están.')
+    ?false
+    :confirm('¿Traer también las causas que hoy NO están en la lista?\n\nAceptar = sí, traerlas (puede devolver expedientes viejos que ya no usás).\nCancelar = no hacer nada.');
+  if(traerTodo===false&&!confirm('Voy a completar las causas actuales con lo que encuentre en el diario. No borra nada. ¿Seguir?'))return;
+  _copiaAntesDeRecuperar();
   toast('Leyendo el diario de cambios…');
   try{
     const r=await fetch(FB_DIARIO+'?orderBy="t"&limitToLast=800',{cache:'no-store'});
@@ -1619,10 +1633,10 @@ async function recuperarDelDiario(){
     let n=0;
     entradas.forEach(e=>{
       const d=e.datos||{};
-      Object.keys(d).forEach(id=>{n++;causas=fusionarCausas([d[id]]);});
+      Object.keys(d).forEach(id=>{n++;causas=fusionarCausas([d[id]],!traerTodo);});
     });
     sC();renderR();updBadges();updToolsCounts();
-    alert('Listo: se revisaron '+entradas.length+' registros del diario y se recuperaron '+n+' versiones de causas.\n\nRevisá las carátulas completas en Herramientas.');
+    alert('Listo: se revisaron '+entradas.length+' registros del diario y se aplicaron '+n+' versiones de causas.\n\nSi algo no te gustó, en Config. está "↩ Deshacer la última recuperación".');
   }catch(e){alert('No se pudo leer el diario: '+e.message);}
 }
 async function verCopiasNube(){
@@ -1694,11 +1708,14 @@ function _fusionarCausa(mia,remota){
   base.lastTouch=Math.max(mia.lastTouch||0,remota.lastTouch||0);
   return base;
 }
-function fusionarCausas(remotas){
+function fusionarCausas(remotas,soloExistentes){
   const mapa=new Map();
-  (causas||[]).forEach(c=>mapa.set(String(c.id),c));
+  (causas||[]).forEach(c=>{if(!_causaEstaBorrada(c.id))mapa.set(String(c.id),c);});
   (remotas||[]).forEach(r=>{
+    if(!r||r.id==null)return;
     const k=String(r.id);
+    if(_causaEstaBorrada(r.id))return;                 // borrada a propósito: no vuelve
+    if(soloExistentes&&!mapa.has(k))return;            // no crear causas que hoy no están
     mapa.set(k,_fusionarCausa(mapa.get(k),r));
   });
   return [...mapa.values()];
@@ -1715,6 +1732,20 @@ function _copiaAuto(){
     while(idx.length>5){const v=idx.shift();localStorage.removeItem('ga_bk_'+v);}
     localStorage.setItem('ga_bk_idx',JSON.stringify(idx));
   }catch(e){}
+}
+/* copia de emergencia justo antes de recuperar, para poder volver atrás */
+function _copiaAntesDeRecuperar(){
+  try{localStorage.setItem('ga_antes_recuperar',JSON.stringify({t:Date.now(),causas}));}catch(e){}
+}
+function deshacerRecuperacion(){
+  try{
+    const b=JSON.parse(localStorage.getItem('ga_antes_recuperar')||'null');
+    if(!b){alert('No hay ninguna recuperación para deshacer.');return;}
+    if(!confirm('Vuelve la lista de causas a como estaba justo antes de la última recuperación ('+
+      new Date(b.t).toLocaleString('es-AR')+'), con '+(b.causas||[]).length+' causas. ¿Seguir?'))return;
+    causas=b.causas||[];sC();renderR();updBadges();updToolsCounts();
+    alert('Listo, volvió a como estaba.');
+  }catch(e){alert('No se pudo deshacer: '+e.message);}
 }
 function copiasDisponibles(){
   try{return JSON.parse(localStorage.getItem('ga_bk_idx')||'[]');}catch(e){return [];}
@@ -2798,6 +2829,8 @@ function borrarDefinitivo(id,btn){
     setTimeout(()=>{if(btn){btn.dataset.confirm='';btn.textContent='🗑 Borrar definitivo';btn.style.background='';btn.style.color='';}},3000);
     return;
   }
+  causasBorradas.push({id:id,t:Date.now()});sCausaDel();
+  try{fetch(FB_RAIZ+'/causas/'+id+'.json',{method:'DELETE'});}catch(e){}
   causas=causas.filter(x=>x.id!==id);
   sC();updBadges();if(typeof renderArchivo==='function')renderArchivo();
 }
