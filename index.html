@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v373</title>
+<title>Gudiño Cabrera y Asociados v375</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -102,6 +102,19 @@ body{background:var(--bg2);color:var(--text);font-size:13px;font-family:'Roboto'
 #panel-control,#panel-escgen,#panel-imprimir,#panel-archivo,#panel-pendientes,#panel-inactivas{max-width:1120px;margin:0 auto;width:100%}
 #panel-panorama{max-width:1180px;margin:0 auto;width:100%}
 #panel-caratulas{max-width:1100px;margin:0 auto;width:100%}
+#panel-informe{max-width:1100px;margin:0 auto;width:100%}
+.inf-tabs{display:flex;gap:6px;margin-bottom:12px}
+.inf-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--bg);
+  font-size:12px;font-weight:600;color:var(--text2);cursor:pointer}
+.inf-tab.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.inf-fila{display:flex;gap:9px;align-items:flex-start;padding:7px 9px;border-bottom:1px solid var(--border);border-radius:7px}
+.inf-fila:hover{background:var(--bg2)}
+.inf-fila input{margin-top:3px;width:16px;height:16px;flex:none;cursor:pointer}
+.inf-tit{font-size:12.5px;font-weight:700;color:var(--text);line-height:1.3}
+.inf-sub{font-size:10.5px;color:var(--text3);margin-top:2px}
+.inf-der{margin-left:auto;text-align:right;font-size:11px;color:var(--text2);white-space:nowrap}
+.inf-barra{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px;display:flex;gap:8px;
+  align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:8px}
 .car-fila{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-bottom:1px solid var(--border);border-radius:8px}
 .car-fila:hover{background:var(--bg2)}
 .car-fila.falta{background:#FFFCF3}
@@ -827,6 +840,7 @@ g.pan-clic:hover text{fill:var(--text)}
       <div class="aud-list" id="aud-list"></div>
     </div>
 
+    <div class="ct panel" id="panel-informe"><div id="inf-body"></div></div>
     <div class="ct panel" id="panel-caratulas"><div id="car-body"></div></div>
     <div class="ct panel" id="panel-panorama"><div id="pan-body"></div></div>
     <div class="ct panel" id="panel-gastos">
@@ -886,6 +900,11 @@ g.pan-clic:hover text{fill:var(--text)}
           <span style="font-size:26px">📁</span>
           <div class="ht">Extrajudiciales <span class="nb" id="cnt-ext" style="display:none">0</span></div>
           <div class="hd">Expedientes extrajudiciales</div>
+        </div>
+        <div onclick="goP('informe')" class="hcard">
+          <span style="font-size:26px">📄</span>
+          <div class="ht">Informe para socios</div>
+          <div class="hd">Estado de causas y gastos, elegís cuáles</div>
         </div>
         <div onclick="goP('caratulas')" class="hcard">
           <span style="font-size:26px">📋</span>
@@ -1966,11 +1985,12 @@ function goR(){_navRecord('reg');filtroF=null;showRegLayout(true);niOn('reg');do
 function goF(f){_navRecord('fuero:'+f);filtroF=f;showRegLayout(true);document.getElementById('ptitle').textContent='Registro — '+({Civil:'Civil','Juzgado de Paz':'Paz Letrado'}[f]||f);niOn({Laboral:'lab',Civil:'civ',Familia:'fam','Juzgado de Paz':'paz'}[f]||'reg');document.getElementById('si').value='';renderBan();renderR();}
 function goP(p){
   _navRecord('panel:'+p);
-  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'<span style="color:#1E8E4E">$</span> Gastos / Sellados',nueva:'Nueva causa',caratulas:'📋 Carátulas completas',panorama:'📊 Panorama del estudio',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos',imprimir:'Para imprimir'};
+  const t={extrajudiciales:'Extrajudiciales',audiencias:'Audiencias',gastos:'<span style="color:#1E8E4E">$</span> Gastos / Sellados',nueva:'Nueva causa',informe:'📄 Informe para socios',caratulas:'📋 Carátulas completas',panorama:'📊 Panorama del estudio',config:'Configuración / Online','vencemañana':'Vencimientos próximos',turnero:'Turnos',herramientas:'Herramientas',pendientes:'Anotador',inactivas:'Causas sin movimiento',histmes:'Historial por mes',mev:'Importar resolución MEV',escritos:'Generador de escritos',prueba:'Etapa de la causa',escgen:'Escritos generados',archivo:'Archivo de causas',control:'Control de escritos',imprimir:'Para imprimir'};
   document.getElementById('ptitle').innerHTML=t[p]||escH(p);
   showOtherPanel(p);
   niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'tur',herramientas:'her',escgen:'her',archivo:'arch',control:'control',imprimir:'imp'}[p]||p);
   if(p==='config'){const cc=document.getElementById('cfg-copias');if(cc)cc.innerHTML=panelCopias();}
+  if(p==='informe')renderInforme();
   if(p==='caratulas')renderCaratulas();
   if(p==='panorama')renderPanorama();
   if(p==='gastos')renderG();
@@ -2389,6 +2409,33 @@ function rowHTML(c){
 /* v359 — cambiar el socio a cargo desde el panelito de la causa: antes había
    que entrar a editar los datos y no era evidente, así que las asignaciones
    equivocadas quedaban trabadas. */
+/* v375 — detalle de gastos de la causa dentro del panelito: lo que se lleva
+   gastado en ese expediente, sin salir de la fila. */
+function _gcpGastos(c){
+  const cont=document.getElementById('gcp-gastos');if(!cont)return;
+  const l=(gastos||[]).filter(g=>g.p&&c.car&&String(g.p).trim()===String(c.car).trim());
+  if(!l.length){
+    cont.innerHTML=`<div style="font-size:10px;color:#9aa;padding:3px 0">Sin gastos cargados
+      <span onclick="goP('gastos')" style="color:var(--blue);cursor:pointer;text-decoration:underline;margin-left:4px">cargar uno</span></div>`;
+    return;
+  }
+  const tot=l.reduce((a,g)=>a+(parseFloat(g.m)||0),0);
+  const porSocio={};l.forEach(g=>{const q=g.q||'—';porSocio[q]=(porSocio[q]||0)+(parseFloat(g.m)||0);});
+  cont.innerHTML=`<div style="border-top:1px solid var(--border);margin-top:6px;padding-top:5px">
+    <div style="display:flex;align-items:center;font-size:10px;font-weight:700;color:var(--text2)">
+      <span>💲 Gastos de la causa</span>
+      <b style="margin-left:auto;color:var(--green)">$ ${Math.round(tot).toLocaleString('es-AR')}</b>
+    </div>
+    <div style="max-height:96px;overflow:auto;margin-top:3px">
+      ${l.slice(-6).reverse().map(g=>`<div style="display:flex;gap:6px;font-size:10px;color:var(--text3);padding:1px 0">
+        <span>${escH(_dv(g.f))}</span>
+        <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH((g.rubros||[]).join(', ')||g.esp||'gasto')}${g.q?' · '+escH(g.q):''}</span>
+        <b style="color:var(--text2)">$ ${(parseFloat(g.m)||0).toLocaleString('es-AR')}</b>
+      </div>`).join('')}
+    </div>
+    <div style="font-size:9.5px;color:var(--text3);margin-top:3px">${Object.keys(porSocio).map(q=>escH(q)+': $ '+Math.round(porSocio[q]).toLocaleString('es-AR')).join(' · ')}</div>
+  </div>`;
+}
 function gcpSetSocio(v){
   const c=causas.find(x=>x.id===openCID);if(!c)return;
   c.socio=v;c.lastTouch=Date.now();
@@ -2415,6 +2462,7 @@ function openCP(id,e){
   const gcli=document.getElementById('gcp-cli');
   if(gcli)gcli.innerHTML=c.cli?`👤 Cliente de <b>${c.cli}</b>`:'<span style="color:#c9a227;cursor:pointer" onclick="editarCausaDatos(openCID)">+ asignar cliente</span>';
   const gsoc=document.getElementById('gcp-socio');if(gsoc)gsoc.value=c.socio||'';
+  _gcpGastos(c);
   document.getElementById('gcp-aud').value=c.tipo_aud||'';
   const addWrap=document.getElementById('gcp-add-wrap');
   if(addWrap)addWrap.style.display=c.ven?'block':'none';
@@ -3508,6 +3556,145 @@ function panIrAJuzgado(j){
    impresa en cédulas, oficios y escritos. */
 function _carFaltan(){
   return causas.filter(c=>c.est!=='archivada'&&!((c.carLarga||'').trim())).length;
+}
+/* ═══════ v375 — INFORME PARA SOCIOS ═══════
+   Sábana imprimible del estado de las causas y de los gastos, eligiendo a mano
+   cuáles entran. Sale por impresora, en PDF liviano (texto de verdad) o en
+   Word para retocarlo. */
+let infPestana='causas', infSel={};
+function infClave(t,id){return t+'_'+id;}
+function infMarcada(t,id){const k=infClave(t,id);return infSel[k]!==false;}
+function infToggle(t,id){infSel[infClave(t,id)]=!infMarcada(t,id);renderInforme();}
+function infTodos(v){
+  (infPestana==='causas'?_infCausas():_infGastos()).forEach(x=>{infSel[infClave(infPestana,x.id)]=v;});
+  renderInforme();
+}
+function infPestanaSet(t){infPestana=t;renderInforme();}
+function _infCausas(){
+  return causas.filter(c=>c.est!=='archivada').sort((a,b)=>(a.juz||'').localeCompare(b.juz||'')||(a.car||'').localeCompare(b.car||''));
+}
+function _infGastos(){
+  return (gastos||[]).slice().sort((a,b)=>(b.f||'').localeCompare(a.f||''));
+}
+function _infProxVenc(c){
+  const v=[];
+  if(c.ven)v.push({f:c.ven,t:c.tv||(c.tipo_aud?'Audiencia':'Vencimiento')});
+  (c.vencs||[]).forEach(x=>{if(x&&x.f)v.push({f:x.f,t:x.tit||x.t||'Vencimiento'});});
+  v.sort((a,b)=>a.f.localeCompare(b.f));
+  return v[0]||null;
+}
+function renderInforme(){
+  const el=document.getElementById('inf-body');if(!el)return;
+  const lista=infPestana==='causas'?_infCausas():_infGastos();
+  const marcadas=lista.filter(x=>infMarcada(infPestana,x.id)).length;
+  let h=`<div class="inf-tabs">
+      <div class="inf-tab ${infPestana==='causas'?'on':''}" onclick="infPestanaSet('causas')">Estado de causas</div>
+      <div class="inf-tab ${infPestana==='gastos'?'on':''}" onclick="infPestanaSet('gastos')">Gastos</div>
+    </div>
+    <div class="inf-barra">
+      <span style="font-size:12px;font-weight:700">${marcadas} de ${lista.length} seleccionada${marcadas!==1?'s':''}</span>
+      <button class="btn gh" style="font-size:11px" onclick="infTodos(true)">Marcar todas</button>
+      <button class="btn gh" style="font-size:11px" onclick="infTodos(false)">Desmarcar</button>
+      <span style="flex:1"></span>
+      <button class="btn gh gh-navy" style="font-size:11px" onclick="infSalida('imprimir')">🖨 Imprimir</button>
+      <button class="btn gh gh-rojo" style="font-size:11px" onclick="infSalida('pdf')">⬇ PDF</button>
+      <button class="btn gh gh-oro" style="font-size:11px" onclick="infSalida('word')">⬇ Word</button>
+    </div>`;
+  if(infPestana==='causas'){
+    let juzAct='';
+    lista.forEach(c=>{
+      if((c.juz||'—')!==juzAct){juzAct=c.juz||'—';
+        h+=`<div style="font-size:11px;font-weight:800;color:var(--text2);margin:12px 0 4px">${escH(juzAct)}</div>`;}
+      const v=_infProxVenc(c);
+      h+=`<div class="inf-fila">
+        <input type="checkbox" ${infMarcada('causas',c.id)?'checked':''} onchange="infToggle('causas',${c.id})">
+        <div style="flex:1;min-width:0">
+          <div class="inf-tit">${escH((c.carLarga||'').trim()||c.car)}</div>
+          <div class="inf-sub">${c.ex?'Expte. '+escH(c.ex)+' · ':''}${escH(c.fue||'')}${c.etapa?' · '+escH((etapaInfo(c.etapa)||{}).n||c.etapa):''}${c.socio?' · '+escH(c.socio):''}</div>
+        </div>
+        <div class="inf-der">${v?escH(_dv(v.f))+'<br><span style="font-size:10px;color:var(--text3)">'+escH(String(v.t).slice(0,34))+'</span>':'<span style="color:var(--text3)">sin fecha</span>'}</div>
+      </div>`;
+    });
+  }else{
+    let tot=0;
+    lista.forEach(g=>{if(infMarcada('gastos',g.id))tot+=parseFloat(g.m)||0;});
+    h+=`<div style="font-size:12px;font-weight:700;color:var(--green);margin:4px 0 8px">Total seleccionado: $ ${(Math.round(tot)).toLocaleString('es-AR')}</div>`;
+    lista.forEach(g=>{
+      h+=`<div class="inf-fila">
+        <input type="checkbox" ${infMarcada('gastos',g.id)?'checked':''} onchange="infToggle('gastos',${g.id})">
+        <div style="flex:1;min-width:0">
+          <div class="inf-tit">${escH(g.p||'(sin causa)')}</div>
+          <div class="inf-sub">${escH(_dv(g.f))} · ${escH((g.rubros||[]).join(', ')||g.esp||'gasto')}${g.q?' · pagó '+escH(g.q):''}${g.o?' · '+escH(g.o):''}</div>
+        </div>
+        <div class="inf-der"><b>$ ${(parseFloat(g.m)||0).toLocaleString('es-AR')}</b></div>
+      </div>`;
+    });
+    if(!lista.length)h+='<div class="vacio"><div class="ico">💲</div><div class="tit">No hay gastos cargados</div></div>';
+  }
+  el.innerHTML=h;
+}
+/* documento imprimible, en párrafos para que sirva igual en papel, PDF y Word */
+function infDocumento(){
+  const hoy=new Date().toLocaleDateString('es-AR');
+  const P=(txt,est)=>`<p style="${est||'margin:0 0 6pt 0;font-size:11pt;line-height:1.35;text-align:left'}">${txt}</p>`;
+  let h=P(`<b>${infPestana==='causas'?'ESTADO DE LAS CAUSAS':'GASTOS DEL ESTUDIO'}</b>`,
+    'margin:0 0 4pt 0;font-size:13pt;text-align:center;line-height:1.2');
+  h+=P(`<span style="font-size:9pt">Gudiño Cabrera y Asociados · ${hoy}</span>`,
+    'margin:0 0 14pt 0;font-size:9pt;text-align:center;line-height:1.2');
+  if(infPestana==='causas'){
+    const l=_infCausas().filter(c=>infMarcada('causas',c.id));
+    let juzAct='';
+    l.forEach(c=>{
+      if((c.juz||'—')!==juzAct){juzAct=c.juz||'—';
+        h+=P(`<b>${escH(juzAct)}</b>`,'margin:10pt 0 4pt 0;font-size:11pt;line-height:1.2;text-align:left');}
+      const v=_infProxVenc(c);
+      h+=P(`<b>${escH((c.carLarga||'').trim()||c.car)}</b>${c.ex?' — Expte. '+escH(c.ex):''}`);
+      const datos=[];
+      if(c.etapa)datos.push('Etapa: '+escH((etapaInfo(c.etapa)||{}).n||c.etapa));
+      if(v)datos.push('Próximo: '+escH(_dv(v.f))+' — '+escH(String(v.t)));
+      if(c.socio)datos.push('A cargo: '+escH(c.socio));
+      if(datos.length)h+=P(`<span style="font-size:10pt">${datos.join(' · ')}</span>`,'margin:0 0 3pt 0;font-size:10pt;line-height:1.3;text-align:left');
+      if(c.not)h+=P(`<span style="font-size:10pt"><i>${escH(String(c.not).slice(0,300))}</i></span>`,'margin:0 0 8pt 0;font-size:10pt;line-height:1.3;text-align:left');
+    });
+    h+=P(`<span style="font-size:9pt">Total: ${l.length} causa${l.length!==1?'s':''}</span>`,'margin:14pt 0 0 0;font-size:9pt;text-align:right;line-height:1.2');
+  }else{
+    const l=_infGastos().filter(g=>infMarcada('gastos',g.id));
+    let tot=0;const porSocio={};
+    l.forEach(g=>{
+      const m=parseFloat(g.m)||0;tot+=m;
+      const q=g.q||'—';porSocio[q]=(porSocio[q]||0)+m;
+      h+=P(`${escH(_dv(g.f))} — <b>${escH(g.p||'(sin causa)')}</b> — ${escH((g.rubros||[]).join(', ')||g.esp||'gasto')}${g.q?' — pagó '+escH(g.q):''} — <b>$ ${m.toLocaleString('es-AR')}</b>`,
+        'margin:0 0 5pt 0;font-size:10.5pt;line-height:1.3;text-align:left');
+    });
+    h+=P(`<b>TOTAL: $ ${Math.round(tot).toLocaleString('es-AR')}</b>`,'margin:12pt 0 4pt 0;font-size:11.5pt;text-align:right;line-height:1.2');
+    Object.keys(porSocio).sort().forEach(q=>{
+      h+=P(`<span style="font-size:10pt">${escH(q)}: $ ${Math.round(porSocio[q]).toLocaleString('es-AR')}</span>`,
+        'margin:0 0 3pt 0;font-size:10pt;text-align:right;line-height:1.2');
+    });
+  }
+  return h;
+}
+function infSalida(modo){
+  const cuerpo=infDocumento();
+  const nombre=(infPestana==='causas'?'Estado de causas':'Gastos')+' - '+new Date().toLocaleDateString('es-AR').replace(/\//g,'-');
+  if(modo==='pdf'){_pdfBajar(cuerpo,nombre+'.pdf');return;}
+  const doc=`<html><head><meta charset="utf-8"><style>
+    @page{size:21cm 29.7cm;margin:2.5cm 2cm}
+    body{font-family:Arial,sans-serif;color:#000}
+    p{margin:0 0 6pt 0}
+  </style></head><body>${_membreteInforme()}${cuerpo}</body></html>`;
+  if(modo==='word'){
+    const blob=new Blob(['\ufeff'+doc],{type:'application/msword'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nombre+'.doc';a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+    toast('Word descargado');
+    return;
+  }
+  _imprimirEnIframe(doc);
+}
+function _membreteInforme(){
+  try{return `<div style="text-align:center;margin-bottom:14pt"><img src="${MEMBRETE_BN}" style="width:6.5cm;height:${(_memAltoCm()*6.5/7.5).toFixed(2)}cm"></div>`;}
+  catch(e){return '';}
 }
 function renderCaratulas(){
   const el=document.getElementById('car-body');if(!el)return;
@@ -5933,8 +6120,12 @@ function escJuzgadoInfo(c){
   let nombre=juzNum;
   const mm=juzNum.match(/^(\d+°)\s+(.+)$/);
   if(mm)nombre=`${ORD[mm[1]]||mm[1]} Juzgado ${mm[2]==='Laboral'?'Laboral':mm[2]==='Civil'?'Civil':mm[2]}`;
+  const corto=nombre;
   if(nombre&&!/san\s+juan/i.test(nombre))nombre+=' de la Provincia de San Juan';
-  return {nombre,titular,gen:_generoTitular(titular)};
+  // "corto" es el que va en los escritos dirigidos al juez: alcanza con
+  // identificar el juzgado. El largo se sigue usando en cédulas y oficios,
+  // que van a terceros y necesitan la referencia completa.
+  return {nombre,corto,titular,gen:_generoTitular(titular)};
 }
 function escConMembrete(){const el=document.getElementById('esc-membrete');return !el||el.checked;}
 function escLibreModo(){
@@ -5968,7 +6159,7 @@ function escHTML(){
       encab=`<b>JUAN PABLO GUDIÑO CABRERA</b>, abogado del foro local, M.P. N° 4683, apoderado ${modo==='apoderado_demandada'?'de la parte demandada':'de la parte actora'}, en ${autos}, a V.S. respetuosamente digo:`;
     }
     return `<p style="text-align:center;font-weight:bold;margin-bottom:22pt">${escH(titulo)}</p>
-    <p>${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.nombre)}:</p>
+    <p>${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.corto||jz.nombre)}:</p>
     <p style="text-align:justify;text-indent:1.25cm;margin-top:10pt">${encab}</p>
     <div style="text-align:justify;text-indent:1.25cm">${cuerpo}</div>
     <p style="margin-top:16pt;text-align:center">Proveer de conformidad,</p>
@@ -6024,7 +6215,7 @@ function escHTML(){
   // Escrito de mero trámite estándar
   const rolParte=rol==='apoderado'?`apoderado ${parte==='actora'?'del actor':'de la demandada'}`:`letrado patrocinante ${parte==='actora'?'del actor':'de la demandada'}`;
   return `<p style="text-align:center;font-weight:bold;margin-bottom:22pt">${def.titulo}</p>
-  <p>${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.nombre)}:</p>
+  <p>${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.corto||jz.nombre)}:</p>
   <p style="text-align:justify;text-indent:1.25cm;margin-top:10pt"><b>JUAN PABLO GUDIÑO</b>, abogado del foro local, M.P. N° 4683, ${rolParte}, en <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(_caratula(c))}"</b>, a V.S. respetuosamente digo:</p>
   <p style="text-align:justify;text-indent:1.25cm">${def.cuerpo(d)}</p>
   <p style="margin-top:16pt;text-align:center">Proveer de conformidad</p>
@@ -6400,6 +6591,188 @@ p{margin:0 0 6pt 0;line-height:200%;mso-line-height-rule:auto;font-family:Arial,
 b,i,strong,em{font-family:Arial,sans-serif;color:#000}
 </style></head><body><div class="Section1">${h}</div></body></html>`;
 }
+/* ═══════════════════════════════════════════════════════════════════════
+   PDF DE VERDAD (v374)
+
+   Hasta ahora el PDF se armaba sacándole una FOTO a la pantalla: por eso el
+   texto salía grisáceo (era una imagen con antialias), la letra no era Arial
+   sino un dibujo de la pantalla, los márgenes no coincidían y el archivo
+   pesaba varios megas — un problema para subirlo al MEV.
+
+   Ahora el PDF se escribe a mano, con el texto como TEXTO: negro absoluto,
+   Helvetica (las mismas medidas que Arial), márgenes exactos del Acuerdo
+   69/2020 y archivos de unos pocos kilobytes. Además queda seleccionable y
+   buscable, que es lo que el MEV necesita.
+   ═══════════════════════════════════════════════════════════════════════ */
+const PDF_PT=(cm)=>cm*28.3465;                    // centímetros a puntos
+const PDF_A4={w:595.28,h:841.89};
+const PDF_MARG={top:PDF_PT(4.5),bot:PDF_PT(4.5),izq:PDF_PT(4.5),der:PDF_PT(2)};
+
+function _pdfEsc(t){
+  return String(t).split('\\').join('\\\\').split('(').join('\(').split(')').join('\)');
+}
+/* Los acentos se escriben en WinAnsi, que es lo que entiende el PDF */
+function _pdfTxt(t){
+  // en el PDF los acentos van en octal WinAnsi: en la cadena JS se escriben con doble barra
+  const m={'á':'\\341','é':'\\351','í':'\\355','ó':'\\363','ú':'\\372','ñ':'\\361','ü':'\\374',
+    'Á':'\\301','É':'\\311','Í':'\\315','Ó':'\\323','Ú':'\\332','Ñ':'\\321','Ü':'\\334',
+    '°':'\\260','·':'\\267','€':'\\200','º':'\\272','ª':'\\252','“':'\\223','”':'\\224','‘':'\\221','’':'\\222',
+    '—':'\\227','–':'\\226','…':'\\205','«':'\\253','»':'\\273','¿':'\\277','¡':'\\241'};
+  return _pdfEsc(t).replace(/[^\x00-\x7F]/g,function(ch){return m[ch]!==undefined?m[ch]:'?';});
+}
+
+/* medidor: usa el propio navegador con Arial, así el corte de línea es idéntico */
+let _pdfCanvas=null;
+function _pdfAncho(txt,pt,bold,ital){
+  if(!_pdfCanvas)_pdfCanvas=document.createElement('canvas').getContext('2d');
+  _pdfCanvas.font=(ital?'italic ':'')+(bold?'bold ':'')+pt+'px Arial, Helvetica, sans-serif';
+  return _pdfCanvas.measureText(txt).width;
+}
+/* parte un párrafo en renglones que entran en el ancho útil */
+function _pdfRenglones(runs,ancho,pt){
+  const palabras=[];
+  runs.forEach(r=>{
+    r.t.split(/(\s+)/).forEach(w=>{if(w!=='')palabras.push({t:w,b:r.b,i:r.i,u:r.u});});
+  });
+  const lineas=[];let act=[],w=0;
+  palabras.forEach(p=>{
+    const esEspacio=/^\s+$/.test(p.t);
+    const aw=_pdfAncho(p.t,pt,p.b,p.i);
+    if(!esEspacio&&w+aw>ancho&&act.length){
+      while(act.length&&/^\s+$/.test(act[act.length-1].t))act.pop();
+      lineas.push(act);act=[];w=0;
+    }
+    if(esEspacio&&!act.length)return;
+    act.push(Object.assign({},p,{w:aw}));w+=aw;
+  });
+  if(act.length){while(act.length&&/^\s+$/.test(act[act.length-1].t))act.pop();if(act.length)lineas.push(act);}
+  return lineas;
+}
+/* lee la hoja del escrito y la convierte en párrafos con sus estilos */
+function _pdfParrafos(html){
+  const box=document.createElement('div');
+  box.style.cssText='position:absolute;left:-99999px;width:'+Math.round(14.5*37.795)+'px';
+  box.innerHTML=html;
+  document.body.appendChild(box);
+  const out=[];
+  const leerRuns=(nodo,est)=>{
+    const runs=[];
+    const rec=(n,e)=>{
+      if(n.nodeType===3){const t=n.nodeValue.replace(/\s+/g,' ');if(t.trim()!==''||runs.length)runs.push({t,b:e.b,i:e.i,u:e.u});return;}
+      if(n.nodeType!==1)return;
+      const tag=n.tagName.toLowerCase();
+      const st=getComputedStyle(n);
+      const e2={b:e.b||tag==='b'||tag==='strong'||parseInt(st.fontWeight)>=600,
+                i:e.i||tag==='i'||tag==='em'||st.fontStyle==='italic',
+                u:e.u||tag==='u'||st.textDecorationLine.includes('underline')};
+      [...n.childNodes].forEach(h=>rec(h,e2));
+    };
+    rec(nodo,est);
+    return runs;
+  };
+  box.querySelectorAll('p').forEach(p=>{
+    const st=getComputedStyle(p);
+    const pt=Math.round(parseFloat(st.fontSize)*0.75*10)/10;        // px → pt
+    let lh=parseFloat(st.lineHeight);
+    if(isNaN(lh))lh=pt*2; else lh=lh*0.75;
+    const runs=leerRuns(p,{b:false,i:false,u:false}).filter(r=>r.t!=='');
+    const texto=runs.map(r=>r.t).join('').trim();
+    out.push({runs,pt,lh,
+      align:st.textAlign==='center'?'center':(st.textAlign==='right'?'right':(st.textAlign==='justify'?'justify':'left')),
+      sangria:parseFloat(st.textIndent)||0,
+      espAbajo:(parseFloat(st.marginBottom)||0)*0.75,
+      vacio:texto===''});
+  });
+  const esp=box.querySelector('.esp-firma');
+  const altoFirma=esp?(parseFloat(getComputedStyle(esp).height)||0)*0.75:0;
+  box.remove();
+  return {parrafos:out,altoFirma};
+}
+/* arma el archivo PDF */
+function _pdfArmar(html){
+  const {parrafos,altoFirma}=_pdfParrafos(html);
+  const anchoUtil=PDF_A4.w-PDF_MARG.izq-PDF_MARG.der;
+  const topeY=PDF_A4.h-PDF_MARG.top;
+  const pisoY=PDF_MARG.bot;
+  const paginas=[];let cont=[];let y=topeY;
+  const nuevaPag=()=>{paginas.push(cont.join('\n'));cont=[];y=topeY;};
+
+  parrafos.forEach((p,idx)=>{
+    const sangriaPt=p.sangria*0.75;
+    const lineas=p.vacio?[[]]:_pdfRenglones(p.runs,anchoUtil-sangriaPt,p.pt);
+    lineas.forEach((ln,i)=>{
+      if(y-p.lh<pisoY)nuevaPag();
+      y-=p.lh;
+      if(!ln.length)return;
+      const primera=(i===0);
+      const anchoLinea=ln.reduce((a,w)=>a+w.w,0);
+      const ultima=(i===lineas.length-1);
+      let x=PDF_MARG.izq+(primera?sangriaPt:0);
+      let extra=0;
+      const dispo=anchoUtil-(primera?sangriaPt:0);
+      if(p.align==='center')x=PDF_MARG.izq+(anchoUtil-anchoLinea)/2;
+      else if(p.align==='right')x=PDF_MARG.izq+anchoUtil-anchoLinea;
+      else if(p.align==='justify'&&!ultima&&ln.length>1)
+        extra=(dispo-anchoLinea)/(ln.length-1);
+      ln.forEach(w=>{
+        const fuente=w.b&&w.i?'/F4':(w.b?'/F2':(w.i?'/F3':'/F1'));
+        cont.push('BT '+fuente+' '+p.pt+' Tf 0 0 0 rg 1 0 0 1 '+x.toFixed(2)+' '+y.toFixed(2)+' Tm ('+_pdfTxt(w.t)+') Tj ET');
+        if(w.u){
+          const gy=(y-p.pt*0.13).toFixed(2);
+          cont.push('0 0 0 RG '+(p.pt*0.055).toFixed(2)+' w '+x.toFixed(2)+' '+gy+' m '+(x+w.w).toFixed(2)+' '+gy+' l S');
+        }
+        x+=w.w+extra;
+      });
+    });
+    y-=p.espAbajo;
+  });
+  // el espacio de firma no puede quedar partido
+  if(altoFirma&&y-altoFirma<pisoY)nuevaPag();
+  paginas.push(cont.join('\n'));
+
+  // ── ensamblado del archivo ──
+  const objs=[];
+  const F=['/F1 4 0 R','/F2 5 0 R','/F3 6 0 R','/F4 7 0 R'];
+  const nPag=paginas.length;
+  const idPag=i=>8+i*2, idCont=i=>9+i*2;
+  objs[1]='<< /Type /Catalog /Pages 2 0 R >>';
+  objs[2]='<< /Type /Pages /Count '+nPag+' /Kids ['+paginas.map((_,i)=>idPag(i)+' 0 R').join(' ')+'] >>';
+  objs[3]='<< /Font << '+F.map((f,i)=>'/F'+(i+1)+' '+(4+i)+' 0 R').join(' ')+' >> >>';
+  objs[4]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
+  objs[5]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
+  objs[6]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Oblique /Encoding /WinAnsiEncoding >>';
+  objs[7]='<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-BoldOblique /Encoding /WinAnsiEncoding >>';
+  paginas.forEach((c,i)=>{
+    objs[idPag(i)]='<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+PDF_A4.w+' '+PDF_A4.h+'] /Resources 3 0 R /Contents '+idCont(i)+' 0 R >>';
+    objs[idCont(i)]='<< /Length '+c.length+' >>\nstream\n'+c+'\nendstream';
+  });
+  let pdf='%PDF-1.4\n';const off=[];
+  for(let i=1;i<objs.length;i++){
+    if(!objs[i])continue;
+    off[i]=pdf.length;
+    pdf+=i+' 0 obj\n'+objs[i]+'\nendobj\n';
+  }
+  const xref=pdf.length;
+  const total=objs.length;
+  pdf+='xref\n0 '+total+'\n0000000000 65535 f \n';
+  for(let i=1;i<total;i++){
+    pdf+=(off[i]!==undefined?String(off[i]).padStart(10,'0'):'0000000000')+' 00000 '+(off[i]!==undefined?'n':'f')+' \n';
+  }
+  pdf+='trailer\n<< /Size '+total+' /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF';
+  return pdf;
+}
+function _pdfBajar(html,nombre){
+  try{
+    const txt=_pdfArmar(html);
+    const bytes=new Uint8Array(txt.length);
+    for(let i=0;i<txt.length;i++)bytes[i]=txt.charCodeAt(i)&0xFF;
+    const blob=new Blob([bytes],{type:'application/pdf'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nombre;a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    toast('PDF listo — '+Math.max(1,Math.round(blob.size/1024))+' KB, texto seleccionable');
+    return true;
+  }catch(e){alert('No se pudo armar el PDF: '+e.message);return false;}
+}
 function escDescargarPDF(){
   escGuardarGenerado();
   try{etapaPorEscrito(parseInt(document.getElementById('esc-causa').value),document.getElementById('esc-tipo').value);}catch(e){}
@@ -6408,18 +6781,8 @@ function escDescargarPDF(){
   const cid=parseInt(document.getElementById('esc-causa').value);
   const c=causas.find(x=>x.id===cid);
   const tipo=document.getElementById('esc-tipo').value;
-  const cont=document.createElement('div');
-  cont.style.cssText='font-family:Arial,sans-serif;font-size:12pt;line-height:2;width:160mm';
-  cont.innerHTML=h;
   const nombre=`${ESC_TIPOS[tipo].titulo} - ${c?c.car.split(' ')[0]:''} ${c&&c.ex?c.ex.replace('/','-'):''}.pdf`;
-  if(typeof html2pdf==='undefined'){alert('El generador de PDF necesita internet. Usá Imprimir → Guardar como PDF.');return;}
-  html2pdf().set({
-    margin:[40,25,40,25],
-    filename:nombre,
-    image:{type:'jpeg',quality:.96},
-    html2canvas:{scale:2,useCORS:true},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-  }).from(cont).save();
+  _pdfBajar(h,nombre);
 }
 function _imprimirEnIframe(doc){
   let f=document.getElementById('_print-frame');
@@ -7593,21 +7956,7 @@ function escGenAbrir(cid,idx){
    "Escritos generados". Usa el mismo camino que el PDF del generador. */
 function escGenPDF(cid,idx){
   const c=causas.find(x=>x.id===cid);if(!c)return;const e=(c.escritos||[])[idx];if(!e)return;
-  if(typeof html2pdf==='undefined'){
-    alert('El generador de PDF necesita internet.\n\nSin conexión, usá 🖨 Imprimir y elegí "Guardar como PDF" en el cuadro de impresión.');
-    return;
-  }
-  const cont=document.createElement('div');
-  cont.style.cssText='font-family:Arial,sans-serif;font-size:12pt;line-height:2;width:160mm';
-  cont.innerHTML=e.html||'';
-  const nombre=`${e.titulo||'Escrito'} - ${c.car.split(' ')[0]} ${c.ex?c.ex.replace('/','-'):''}.pdf`;
-  toast('Armando el PDF…');
-  html2pdf().set({
-    margin:[40,25,40,25],filename:nombre,
-    image:{type:'jpeg',quality:.96},
-    html2canvas:{scale:2,useCORS:true},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-  }).from(cont).save();
+  _pdfBajar(e.html||'',`${e.titulo||'Escrito'} - ${c.car.split(' ')[0]} ${c.ex?c.ex.replace('/','-'):''}.pdf`);
 }
 function escGenWord(cid,idx){
   const c=causas.find(x=>x.id===cid);if(!c)return;const e=(c.escritos||[])[idx];if(!e)return;
@@ -8042,6 +8391,7 @@ try{updToolsCounts();}catch(e){}
 <div class="cpop" id="global-cpop" onclick="_gcpClickInterno=true" style="display:none">
   <div id="gcp-car" style="font-size:10px;font-weight:700;color:#555;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
   <div id="gcp-cli" style="font-size:10px;color:#777;margin:-2px 0 4px"></div>
+  <div id="gcp-gastos"></div>
   <div style="display:flex;align-items:center;gap:5px;margin:0 0 7px">
     <span style="font-size:10px;color:#777">👥</span>
     <select class="fi" id="gcp-socio" onchange="gcpSetSocio(this.value)" title="Socio a cargo de la causa"
