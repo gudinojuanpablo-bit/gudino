@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v375</title>
+<title>Gudiño Cabrera y Asociados v376</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1551,6 +1551,40 @@ let _ultCopiaNube=localStorage.getItem('ga_copia_nube')||'';
    definitivo deja su lápida; la fusión y la recuperación del diario la
    respetan, así que una causa borrada no resucita ni desde la nube ni desde
    el diario de cambios. */
+/* v376 — los encargos de Ramiro borrados en una computadora reaparecían en la
+   otra: viajan dentro de la causa (c.rams) y de la lista general, y al fusionar
+   se conservaba la lista más larga. Ahora cada borrado deja lápida, la lápida
+   viaja con los datos y la fusión de encargos se hace por identificador,
+   descartando lo que figure borrado. Si el encargo está cumplido de un lado,
+   queda cumplido de los dos. */
+let ramBorrados=(function(){try{return JSON.parse(localStorage.getItem('ga_ramdel')||'[]');}catch(e){return [];}})();
+function sRamDel(){
+  const corte=Date.now()-120*864e5;
+  ramBorrados=ramBorrados.filter(x=>x&&x.t>corte);
+  try{localStorage.setItem('ga_ramdel',JSON.stringify(ramBorrados));}catch(e){}
+}
+function _ramEstaBorrado(id){return ramBorrados.some(x=>String(x.id)===String(id));}
+function _claveTareaGen(t){return 'g'+(t&&(t.ts||t.id)||0)+'|'+String((t&&t.txt)||'').slice(0,40);}
+/* fusiona dos listas de encargos por identificador, respetando borrados */
+function fusionarRams(a,b){
+  const mapa=new Map();
+  const meter=(l)=>{(l||[]).forEach(t=>{
+    if(!t)return;
+    const k=String(t.id!=null?t.id:_claveTareaGen(t));
+    if(_ramEstaBorrado(k)||_ramEstaBorrado(_claveTareaGen(t)))return;
+    const prev=mapa.get(k);
+    if(!prev)mapa.set(k,Object.assign({},t));
+    else{
+      // el cumplido manda, y se conserva el texto y la repartición que existan
+      prev.done=prev.done||t.done;
+      if(!prev.txt&&t.txt)prev.txt=t.txt;
+      if(!prev.rep&&t.rep)prev.rep=t.rep;
+      if(t.repFija)prev.repFija=true;
+    }
+  });};
+  meter(a);meter(b);
+  return [...mapa.values()];
+}
 let causasBorradas=(function(){try{return JSON.parse(localStorage.getItem('ga_causadel')||'[]');}catch(e){return [];}})();
 function sCausaDel(){try{localStorage.setItem('ga_causadel',JSON.stringify(causasBorradas));}catch(e){}}
 function _causaEstaBorrada(id){return causasBorradas.some(x=>String(x.id)===String(id));}
@@ -1697,7 +1731,7 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos,turBorrados};}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos,turBorrados,ramBorrados};}
 /* v371 — antes, lo que bajaba de la nube REEMPLAZABA la lista de causas entera.
    Si la otra computadora tenía una copia sin lo último cargado acá (por ejemplo
    las carátulas completas), ese trabajo se perdía sin aviso. Ahora se fusiona
@@ -1718,7 +1752,8 @@ function _fusionarCausa(mia,remota){
     else if(b&&!a)base[k]=remota[k];
   });
   // listas: se queda la más larga si la otra está vacía
-  ['rams','escritos','vencs','hist'].forEach(k=>{
+  base.rams=fusionarRams(mia.rams,remota.rams);
+  ['escritos','vencs','hist'].forEach(k=>{
     const a=Array.isArray(mia[k])?mia[k]:null, b=Array.isArray(remota[k])?remota[k]:null;
     if(a&&a.length&&(!b||!b.length))base[k]=a;
     else if(b&&b.length&&(!a||!a.length))base[k]=b;
@@ -1809,7 +1844,13 @@ function applyPayload(d){
   }
   if(d.revisiones)revisiones=_limpiarBorradas(d.revisiones);
   if(d.mailCfg)mailCfg=d.mailCfg;
-  if(d.tareasRam)tareasRam=d.tareasRam;
+  if(Array.isArray(d.ramBorrados)){
+    const vistos=new Set(ramBorrados.map(x=>String(x.id)));
+    d.ramBorrados.forEach(x=>{if(x&&!vistos.has(String(x.id))){ramBorrados.push(x);vistos.add(String(x.id));}});
+    sRamDel();
+  }
+  if(d.tareasRam)tareasRam=fusionarRams(tareasRam,d.tareasRam);
+  else tareasRam=fusionarRams(tareasRam,[]);
   if(Array.isArray(d.turBorrados)){
     const vistos=new Set(turBorrados.map(x=>String(x.id)));
     d.turBorrados.forEach(x=>{if(x&&!vistos.has(String(x.id))){turBorrados.push(x);vistos.add(String(x.id));}});
@@ -2277,9 +2318,12 @@ function ramGuardarRapido(id){
 function ramBorrarLinea(id,idx){
   id=parseInt(id);
   const c=causas.find(x=>x.id===id);if(!c||!c.rams)return;
+  const t=c.rams[idx];
+  if(t&&t.id!=null){ramBorrados.push({id:String(t.id),t:Date.now()});sRamDel();}
   c.rams.splice(idx,1);
   c.ram=c.rams.length?c.rams[0].txt:'';
   c.rdon=c.rams.length?c.rams[0].done:false;
+  c.lastTouch=Date.now();
   sC();refRow(id);updBadges();if(curView==='ram')renderRam();
 }
 function ramGuardar(id){
@@ -4273,7 +4317,15 @@ function addTareaRam(){
   inp.value='';saveTareasRam();renderRam();
 }
 function toggleTareaRam(i){tareasRam[i].done=!tareasRam[i].done;saveTareasRam();renderRam();}
-function delTareaRam(i){tareasRam.splice(i,1);saveTareasRam();renderRam();}
+function delTareaRam(i){
+  const t=tareasRam[i];
+  if(t){
+    ramBorrados.push({id:_claveTareaGen(t),t:Date.now()});
+    if(t.id!=null)ramBorrados.push({id:String(t.id),t:Date.now()});
+    sRamDel();
+  }
+  tareasRam.splice(i,1);saveTareasRam();renderRam();
+}
 
 function renderResolver(){
   const el=document.getElementById('resolver-body');
@@ -8371,6 +8423,17 @@ function initAtajos(){
 function initAntiOlvido(){
   try{initAtajos();}catch(e){}
   try{_migrarSocios();_pintarFiltroSocio();}catch(e){}
+  // v376 — barrido de encargos borrados que hayan quedado en alguna copia vieja
+  try{
+    let limpio=false;
+    causas.forEach(c=>{
+      if(!Array.isArray(c.rams))return;
+      const antes=c.rams.length;
+      c.rams=c.rams.filter(t=>!_ramEstaBorrado(String(t.id!=null?t.id:_claveTareaGen(t))));
+      if(c.rams.length!==antes)limpio=true;
+    });
+    if(limpio){svl('ga_c',causas);updBadges();if(curView==='ram')renderRam();}
+  }catch(e){}
   // respaldo: al abrir se sube lo que quedó pendiente, se bajan las causas una
   // por una y se deja la copia del día en la nube
   setTimeout(()=>{try{reintentarCola();}catch(e){}},1500);
