@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v377</title>
+<title>Gudiño Cabrera y Asociados v378</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -988,6 +988,7 @@ g.pan-clic:hover text{fill:var(--text)}
               <option value="provea">Solicita se provea demanda</option>
               <option value="decaido">Se dé por decaído el derecho</option>
               <option value="fije_fecha">Se fije fecha (audiencia inicial)</option>
+              <option value="zoom">💻 Autorización para conectarse por Zoom</option>
               <option value="autos_resolver">Se llamen autos a resolver</option>
               <option value="pase_despacho">Pase a despacho</option>
             </optgroup>
@@ -5590,6 +5591,26 @@ const ESC_TIPOS={
     cuerpo:d=>`Que atento el tiempo transcurrido desde la presentación de la demanda sin que la misma haya sido proveída, vengo a solicitar a S.S. se sirva proveerla, imprimiéndole el trámite de ley que corresponda.`},
   decaido:{titulo:'SOLICITA SE DÉ POR DECAÍDO EL DERECHO',campos:[],
     cuerpo:d=>`Que atento al vencimiento del término para que la contraria conteste el traslado conferido, solicito se le dé por decaído el derecho a contestarlo.`},
+  zoom:{titulo:'SOLICITA AUTORIZACIÓN PARA CONECTARSE POR ZOOM',
+    campos:[
+      {k:'tipo_aud_zoom',l:'Tipo de audiencia',sel:['audiencia inicial','audiencia final','audiencia de vista de causa','audiencia de conciliación','audiencia (sin especificar)']},
+      {k:'fecha_aud',l:'Fecha de la audiencia',tipo:'date',op:true},
+      {k:'hora_aud',l:'Hora',ph:'09.00',op:true}
+    ],
+    cuerpo:d=>{
+      const t=(d.tipo_aud_zoom||'audiencia (sin especificar)');
+      const cual=/sin especificar/.test(t)?'audiencia':t;
+      let cuando='';
+      if(d.fecha_aud){
+        const f=new Date(d.fecha_aud+'T12:00:00');
+        const dia=f.toLocaleDateString('es-AR',{weekday:'long'});
+        const mes=f.toLocaleDateString('es-AR',{month:'long'});
+        cuando=`para el ${dia} ${f.getDate()} de ${mes} de ${f.getFullYear()}`+
+          (d.hora_aud?` a las ${escH(d.hora_aud)} horas`:'');
+      }
+      return `Que habiéndose fijado fecha de ${cual} ${cuando?cuando+' ':''}, y de conformidad con las aclaraciones efectuadas por el Sr. Presidente de la Corte de Justicia en nota formal dirigida al Foro de Abogados en fecha 18/05/2026, y conforme Acuerdo General N° 88/2020 en plena vigencia, solicito se provean los datos de conexión (ID y código de acceso), a fin de posibilitar la comparecencia remota de las partes y sus letrados a la audiencia.-`
+        .replace(/\s+,/,',').replace(/\s{2,}/g,' ');
+    }},
   fije_fecha:{titulo:'SE FIJE FECHA',campos:[],
     cuerpo:d=>`Que atento al estado de autos, solicito se fije fecha para la celebración de la audiencia inicial.`},
   autos_resolver:{titulo:'SE LLAMEN AUTOS A RESOLVER',campos:[],
@@ -5787,7 +5808,10 @@ function escActualizar(){
       ? `<div class="rich-tb"><button type="button" title="Negrita" onmousedown="richCmd(event,'bold')"><b>N</b></button><button type="button" title="Cursiva" onmousedown="richCmd(event,'italic')"><i>K</i></button><button type="button" title="Subrayado" onmousedown="richCmd(event,'underline')"><u>S</u></button></div>
          <div class="fi rich" id="esc-f-${c.k}" contenteditable="true" data-ph="${c.ph}" style="width:100%;min-height:${c.k==='aperc'?'46':'70'}px;font-size:${c.k==='aperc'?'10':'12'}px" oninput="escPreviewRefresh()" onpaste="richPaste(event)"></div>`
       : `<textarea class="fi" id="esc-f-${c.k}" placeholder="${c.ph}" style="width:100%;height:${c.k==='aperc'?'46':'70'}px;resize:vertical;font-size:${c.k==='aperc'?'10':'12'}px"></textarea>`)
-       :`<input class="fi" id="esc-f-${c.k}" placeholder="${c.ph}" style="width:100%;font-size:12px">`)
+       : c.sel
+         ? `<select class="fi" id="esc-f-${c.k}" style="width:100%;font-size:12px" onchange="escPreviewRefresh()">${
+             c.sel.map(o=>`<option value="${escH(o)}">${escH(o)}</option>`).join('')}</select>`
+       : `<input class="fi" id="esc-f-${c.k}" type="${c.tipo||'text'}" placeholder="${c.ph||''}" style="width:100%;font-size:12px" oninput="escPreviewRefresh()">`)
   ).join('')
   +(_resp.length?`<div style="margin-top:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2)">
       <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:5px">Cómo contestar el oficio
