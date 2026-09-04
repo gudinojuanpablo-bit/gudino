@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v376</title>
+<title>Gudiño Cabrera y Asociados v377</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -6530,6 +6530,7 @@ function _escParrafosDestino(){
    interlineado y el aire entre párrafos, para hacer entrar el escrito en la
    cantidad de hojas que se quiera. */
 const _LH_PASOS=[1,1.15,1.3,1.5,1.75,2,2.25,2.5];
+const _FS_PASOS=[9,9.5,10,10.5,11,11.5,12,12.5,13,14];
 const _ESP_PASOS=[0,3,6,9,12,18,24];
 function _escLeerLH(p){
   const v=parseFloat(p.style.lineHeight||getComputedStyle(p).lineHeight);
@@ -6549,6 +6550,41 @@ function _escVecino(lista,actual,dir){
   const i=iMejor+(dir>0?1:-1);
   if(i<0||i>=lista.length)return null;
   return lista[i];
+}
+/* v377 — subir o bajar el cuerpo de letra un escalón, sobre lo seleccionado o
+   sobre todo. El estándar del Acuerdo 69/2020 es Arial 12; se puede bajar para
+   hacer entrar un escrito largo, y el cartel de hojas se recalcula solo. */
+function _escLeerFS(p){
+  const v=parseFloat(p.style.fontSize);
+  if(!isNaN(v)&&/pt/.test(p.style.fontSize))return v;
+  return Math.round((parseFloat(getComputedStyle(p).fontSize)||16)*0.75*10)/10;
+}
+function escCuerpo(dir){
+  const sh=document.getElementById('esc-sheet');if(!sh)return;
+  const ps=_escParrafosDestino();
+  if(!ps.length)return;
+  // fuera de la escala (títulos grandes, letra chica de los apercibimientos) se
+  // corre de a un punto, para que no pegue un salto
+  const paso=(act)=>{
+    if(act>_FS_PASOS[_FS_PASOS.length-1]||act<_FS_PASOS[0]){
+      const v=Math.round((act+dir)*10)/10;
+      return (v>=6&&v<=26)?v:null;
+    }
+    return _escVecino(_FS_PASOS,act,dir);
+  };
+  ps.forEach(p=>{
+    const fs=paso(_escLeerFS(p));
+    if(fs===null)return;
+    p.style.fontSize=fs+'pt';
+    p.querySelectorAll('[style*="font-size"]').forEach(x=>{
+      const act=parseFloat(x.style.fontSize)||fs;
+      const nue=paso(act);
+      if(nue!==null)x.style.fontSize=nue+'pt';
+    });
+  });
+  _escManual=sh.innerHTML;
+  const total=sh.querySelectorAll('p').length;
+  _escActualizarHojas(ps.length===total?'todo el escrito':ps.length+' párrafo'+(ps.length!==1?'s':''));
 }
 function escApretar(dir){          // dir -1 = más junto, +1 = más separado
   const sh=document.getElementById('esc-sheet');if(!sh)return;
@@ -6572,6 +6608,11 @@ function escFormato(que,valor){
   ps.forEach(p=>{
     if(que==='lh')p.style.lineHeight=valor;
     if(que==='esp')p.style.marginBottom=valor+'pt';
+    if(que==='fs'){
+      p.style.fontSize=valor+'pt';
+      // los pedacitos con tamaño propio (títulos, "C 11") se acompañan
+      p.querySelectorAll('[style*="font-size"]').forEach(x=>{x.style.fontSize=valor+'pt';});
+    }
   });
   _escManual=sh.innerHTML;
   const total=sh.querySelectorAll('p').length;
@@ -6620,6 +6661,14 @@ function escBarraFormato(){
       <select class="esc-fsel" onchange="escFormato('lh',this.value);this.value=''">
         <option value="">—</option><option value="1">Simple</option><option value="1.15">1,15</option>
         <option value="1.5">1,5</option><option value="2">Doble</option><option value="2.5">2,5</option>
+      </select></label>
+    <button class="esc-fbtn" onclick="escCuerpo(-1)" title="Achicar la letra un escalón">A−</button>
+    <button class="esc-fbtn" onclick="escCuerpo(1)" title="Agrandar la letra un escalón">A+</button>
+    <label style="display:flex;align-items:center;gap:4px">Cuerpo
+      <select class="esc-fsel" onchange="escFormato('fs',this.value);this.value=''">
+        <option value="">—</option><option value="9">9</option><option value="10">10</option>
+        <option value="10.5">10,5</option><option value="11">11</option><option value="11.5">11,5</option>
+        <option value="12">12 (estándar)</option><option value="13">13</option><option value="14">14</option>
       </select></label>
     <label style="display:flex;align-items:center;gap:4px">Espacio
       <select class="esc-fsel" onchange="escFormato('esp',this.value);this.value=''">
