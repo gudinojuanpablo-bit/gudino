@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v384</title>
+<title>Gudiño Cabrera y Asociados v387</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -681,7 +681,7 @@ g.pan-clic:hover text{fill:var(--text)}
     <span id="presencia-indicator" style="font-size:11px;color:#aaa;margin-left:8px"></span>
     <div class="srch" style="position:relative">🔍 <input id="si" placeholder="Buscar causas, escritos, turnos, encargos…" oninput="buscarDesdeArriba()" onblur="setTimeout(()=>{const r=document.getElementById('busca-mas');if(r)r.style.display='none';},180)">
       <div id="busca-mas"></div>
-      <span id="sync-hace" style="position:absolute;right:8px;top:-16px;font-size:9.5px;color:#8a94a6;cursor:pointer" onclick="sincronizarAhora()"></span>
+
     </div>
   </div>
 
@@ -1737,7 +1737,11 @@ function setSyncStatus(s){
   dot.className='sync-dot '+s;
   const offline=pendingOfflineSync||localStorage.getItem('ga_pending_sync');
   const labels={ok:'sincronizado',saving:'guardando...',err:offline?'guardado local':'error',local:'local (sin sync)'};
-  lbl.textContent=labels[s]||s;
+  const hace=_textoUltimaSync();
+  lbl.innerHTML=escH(labels[s]||s)+(hace?` <span style="opacity:.65">· ${escH(hace)}</span>`:'');
+  lbl.title=hace?'Tocá para traer los últimos cambios de la nube':'';
+  lbl.style.cursor='pointer';
+  lbl.onclick=()=>sincronizarAhora();
   let banner=document.getElementById('offline-banner');
   if(!banner){
     banner=document.createElement('div');banner.id='offline-banner';
@@ -1999,12 +2003,13 @@ function sincronizarAhora(){
   pollSync(true).then(()=>{_ultimaBajada=Date.now();_pintarUltimaSync();toast('Actualizado con la nube');});
 }
 /* indicador discreto: hace cuánto se trajo lo último, y un clic para traerlo ya */
-function _pintarUltimaSync(){
-  const el=document.getElementById('sync-hace');
-  if(!el)return;
-  if(!_ultimaBajada){el.textContent='sin actualizar';return;}
+function _textoUltimaSync(){
+  if(!_ultimaBajada)return '';
   const min=Math.round((Date.now()-_ultimaBajada)/60000);
-  el.textContent=min<1?'actualizado recién':(min<60?'actualizado hace '+min+' min':'actualizado hace '+Math.round(min/60)+' h');
+  return min<1?'recién':(min<60?'hace '+min+' min':'hace '+Math.round(min/60)+' h');
+}
+function _pintarUltimaSync(){
+  try{setSyncStatus(pendingOfflineSync?'err':'ok');}catch(e){}
 }
 
 /* v379 — al cerrar la ventana: si quedó algo sin subir, se manda igual con
@@ -6449,18 +6454,18 @@ function escHTML(){
     let encab;
     if(modo==='patroc_cliente'){
       const nom=(d.cli_nombre||'____').toUpperCase(), dni=d.cli_dni||'____';
-      encab=`<b>${nom}</b>, D.N.I. N° ${dni}, por derecho propio, con el patrocinio letrado del Dr. <b>JUAN PABLO GUDIÑO CABRERA</b>, abogado del foro local, M.P. N° 4683, en ${autos}, a V.S. respetuosamente digo:`;
+      encab=`<b>${nom}</b>, D.N.I. N° ${dni}, por derecho propio, con el patrocinio letrado del Dr. <b>JUAN PABLO GUDIÑO CABRERA</b>, abogado del foro local, M.P.&nbsp;N°&nbsp;4683, en ${autos}, a V.S. respetuosamente digo:`;
     } else if(modo==='patroc_mero'){
-      encab=`<b>JUAN PABLO GUDIÑO CABRERA</b>, abogado del foro local, M.P. N° 4683, invocando las facultades que el artículo 45 del C.P.C. confiere a los letrados patrocinantes, en ${autos}, a V.S. respetuosamente digo:`;
+      encab=`<b>JUAN PABLO GUDIÑO CABRERA</b>, abogado del foro local, M.P.&nbsp;N°&nbsp;4683, invocando las facultades que el artículo 45 del C.P.C. confiere a los letrados patrocinantes, en ${autos}, a V.S. respetuosamente digo:`;
     } else {
-      encab=`<b>JUAN PABLO GUDIÑO CABRERA</b>, abogado del foro local, M.P. N° 4683, apoderado ${modo==='apoderado_demandada'?'de la parte demandada':'de la parte actora'}, en ${autos}, a V.S. respetuosamente digo:`;
+      encab=`<b>JUAN PABLO GUDIÑO CABRERA</b>, abogado del foro local, M.P.&nbsp;N°&nbsp;4683, apoderado ${modo==='apoderado_demandada'?'de la parte demandada':'de la parte actora'}, en ${autos}, a V.S. respetuosamente digo:`;
     }
     return `<p style="text-align:center;font-weight:bold;margin-bottom:22pt">${escH(titulo)}</p>
     <p>${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.corto||jz.nombre)}:</p>
     <p style="text-align:justify;text-indent:1.25cm;margin-top:10pt">${encab}</p>
     <div style="text-align:justify;text-indent:1.25cm">${cuerpo}</div>
-    <p style="margin-top:16pt;text-align:center">Proveer de conformidad,</p>
-    <p style="font-weight:bold;text-align:center">SERÁ JUSTICIA.-</p>`;
+    <p style="margin-top:16pt;text-align:center">Proveer de conformidad</p>
+    <p style="font-weight:bold;text-align:center">SERÁ JUSTICIA</p>`;
   }
   const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
 
@@ -6513,7 +6518,7 @@ function escHTML(){
   const rolParte=rol==='apoderado'?`apoderado ${parte==='actora'?'del actor':'de la demandada'}`:`letrado patrocinante ${parte==='actora'?'del actor':'de la demandada'}`;
   return `<p style="text-align:center;font-weight:bold;margin-bottom:22pt">${def.titulo}</p>
   <p>${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.corto||jz.nombre)}:</p>
-  <p style="text-align:justify;text-indent:1.25cm;margin-top:10pt"><b>JUAN PABLO GUDIÑO</b>, abogado del foro local, M.P. N° 4683, ${rolParte}, en <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(_caratula(c))}"</b>, a V.S. respetuosamente digo:</p>
+  <p style="text-align:justify;text-indent:1.25cm;margin-top:10pt"><b>JUAN PABLO GUDIÑO</b>, abogado del foro local, M.P.&nbsp;N°&nbsp;4683, ${rolParte}, en <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(_caratula(c))}"</b>, a V.S. respetuosamente digo:</p>
   <p style="text-align:justify;text-indent:1.25cm">${def.cuerpo(d)}</p>
   <p style="margin-top:16pt;text-align:center">Proveer de conformidad</p>
   <p style="font-weight:bold;text-align:center">SERÁ JUSTICIA</p>`;
@@ -7002,16 +7007,16 @@ function _pdfRenglones(runs,ancho,pt){
   });
   const lineas=[];let act=[],w=0;
   palabras.forEach(p=>{
-    const esEspacio=/^\s+$/.test(p.t);
+    const esEspacio=/^[ \t\n\r]+$/.test(p.t);
     const aw=_pdfAncho(p.t,pt,p.b,p.i);
     if(!esEspacio&&w+aw>ancho&&act.length){
-      while(act.length&&/^\s+$/.test(act[act.length-1].t))act.pop();
+      while(act.length&&/^[ \t\n\r]+$/.test(act[act.length-1].t))act.pop();
       lineas.push(act);act=[];w=0;
     }
     if(esEspacio&&!act.length)return;
     act.push(Object.assign({},p,{w:aw}));w+=aw;
   });
-  if(act.length){while(act.length&&/^\s+$/.test(act[act.length-1].t))act.pop();if(act.length)lineas.push(act);}
+  if(act.length){while(act.length&&/^[ \t\n\r]+$/.test(act[act.length-1].t))act.pop();if(act.length)lineas.push(act);}
   return lineas;
 }
 /* lee la hoja del escrito y la convierte en párrafos con sus estilos */
@@ -8581,7 +8586,13 @@ function _turnosDeManana(){
 }
 /* Banner fijo arriba de todo (turnos de mañana y audiencias de los 7 días) */
 function bannerAudienciasProximas(){
-  const L=audienciasProximas(7);
+  let L=audienciasProximas(15);
+  let _rango='próximos 15 días';
+  if(!L.length){
+    // nada cerca: se muestran igual las tres que vienen, aunque falten meses
+    L=todasAudiencias().filter(a=>_faltan(a.f)>=0).sort((a,b)=>String(a.f).localeCompare(String(b.f))).slice(0,3);
+    _rango=L.length?'lo que viene':'';
+  }
   const T=_turnosDeManana();
   if(!L.length&&!T.length)return '';
   const _cap=L.slice(0,10),_resto=L.length-_cap.length;
@@ -8622,11 +8633,11 @@ function bannerAudienciasProximas(){
   return `<div class="ag-caja${urgentes?' urg':''}">
     <div class="ag-cab">
       <span class="ag-tag">AGENDA</span>
-      <span class="ag-res">${total} compromiso${total!==1?'s':''} — próximos 7 días</span>
+      <span class="ag-res">${total} compromiso${total!==1?'s':''}${_rango?' — '+_rango:''}</span>
       ${urgentes?`<span class="ag-urg">${urgentes} para hoy o mañana</span>`:''}
     </div>
     ${filasTur}${filas}
-    ${_resto>0?`<div class="ag-mas">y ${_resto} más esta semana…</div>`:''}
+    ${_resto>0?`<div class="ag-mas">y ${_resto} más en el período…</div>`:''}
   </div>`;
 }
 
