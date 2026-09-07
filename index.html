@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v378</title>
+<title>Gudiño Cabrera y Asociados v381</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -190,6 +190,17 @@ g.pan-clic:hover text{fill:var(--text)}
 .rep-sel{font-size:10px;padding:2px 3px;border:1px solid var(--border2);border-radius:5px;background:var(--bg);color:var(--text2);max-width:150px;cursor:pointer}
 .rep-sel.pendiente{border-style:dashed;border-color:#c9a227;color:#9a7400;background:#FFFDF5}
 .sep-fil{width:1px;height:18px;background:var(--border2);margin:0 4px;flex:none}
+#busca-mas{display:none;position:absolute;top:calc(100% + 6px);right:0;width:420px;max-height:340px;overflow:auto;
+  background:var(--bg);border:1px solid var(--border2);border-radius:12px;z-index:60;
+  box-shadow:0 12px 34px -10px rgba(20,33,61,.45);padding:5px}
+.bm-it{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;cursor:pointer}
+.bm-it:hover{background:var(--bg2)}
+.bm-ico{font-size:14px;flex:none}
+.bm-tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.bm-tx b{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bm-tx small{font-size:10.5px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bm-tipo{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);
+  background:var(--bg2);border-radius:10px;padding:2px 7px;flex:none}
 /* ── Agenda (compromisos de los próximos 7 días) ── */
 .ag-caja{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:9px 4px 5px;
   margin:0 0 8px;box-shadow:0 1px 2px rgba(20,33,61,.05),0 8px 20px -14px rgba(20,33,61,.35);overflow:hidden}
@@ -668,7 +679,10 @@ g.pan-clic:hover text{fill:var(--text)}
     <span class="sync-dot" id="sync-dot" title="Estado de sincronización"></span>
     <span class="sync-label" id="sync-label">local</span>
     <span id="presencia-indicator" style="font-size:11px;color:#aaa;margin-left:8px"></span>
-    <div class="srch">🔍 <input id="si" placeholder="Buscar..." oninput="buscarDesdeArriba()"></div>
+    <div class="srch" style="position:relative">🔍 <input id="si" placeholder="Buscar causas, escritos, turnos, encargos…" oninput="buscarDesdeArriba()" onblur="setTimeout(()=>{const r=document.getElementById('busca-mas');if(r)r.style.display='none';},180)">
+      <div id="busca-mas"></div>
+      <span id="sync-hace" style="position:absolute;right:8px;top:-16px;font-size:9.5px;color:#8a94a6;cursor:pointer" onclick="sincronizarAhora()"></span>
+    </div>
   </div>
 
   <!-- PANELS CON LAYOUT ESPECIAL PARA REGISTRO -->
@@ -849,7 +863,8 @@ g.pan-clic:hover text{fill:var(--text)}
           <select class="fi" id="gflt-causa" onchange="renderG()"><option value="">— Todas las causas —</option></select></div>
         <div style="min-width:130px"><label class="fl">Socio</label>
           <select class="fi" id="gflt-socio" onchange="renderG()"><option value="">— Todos —</option></select></div>
-        <button class="btn" onclick="gImprimir('causa')" style="font-size:11px" title="Extracto formal de una causa (elegí la causa arriba)">🖨 Extracto por causa</button>
+        <button class="btn gh gh-navy" onclick="gImprimirTodos()" style="font-size:11px;font-weight:700" title="Sábana con todos los gastos cargados hasta hoy">🖨 TODOS los gastos al día</button>
+        <button class="btn gh" onclick="gImprimir('causa')" style="font-size:11px" title="Extracto formal de una causa (elegí la causa arriba)">🖨 Extracto por causa</button>
         <button class="btn p" onclick="toggleGF()" style="font-size:11px">+ Agregar gasto</button>
       </div>
 
@@ -1933,9 +1948,63 @@ function hojaEditandoEscrito(){
 }
 function sincronizarAhora(){
   setSyncStatus('saving');
-  pollSync(true).then(()=>{toast('Datos actualizados desde la nube');});
+  pollSync(true).then(()=>{_ultimaBajada=Date.now();_pintarUltimaSync();toast('Actualizado con la nube');});
+}
+/* indicador discreto: hace cuánto se trajo lo último, y un clic para traerlo ya */
+function _pintarUltimaSync(){
+  const el=document.getElementById('sync-hace');
+  if(!el)return;
+  if(!_ultimaBajada){el.textContent='sin actualizar';return;}
+  const min=Math.round((Date.now()-_ultimaBajada)/60000);
+  el.textContent=min<1?'actualizado recién':(min<60?'actualizado hace '+min+' min':'actualizado hace '+Math.round(min/60)+' h');
 }
 
+/* v379 — al cerrar la ventana: si quedó algo sin subir, se manda igual con
+   sendBeacon (viaja aunque la pestaña se esté cerrando) y el navegador avisa
+   antes de salir. Al abrir: se pregunta si traer lo último de la nube. */
+function _hayPendientes(){
+  try{
+    if(pendingOfflineSync||localStorage.getItem('ga_pending_sync'))return true;
+    return (_colaFallidas||[]).length>0;
+  }catch(e){return false;}
+}
+function _mandarAlCerrar(){
+  try{
+    const cambios={};
+    (causas||[]).forEach(c=>{if(c&&c.id!=null&&_subidas[c.id]!==_huella(c))cambios[String(c.id)]=c;});
+    if(!Object.keys(cambios).length)return;
+    const cuerpo=JSON.stringify({t:Date.now(),equipo:EQUIPO_ID,cierre:true,
+      ids:Object.keys(cambios),datos:cambios});
+    // el diario sólo agrega: es el destino seguro para un envío de último momento
+    if(navigator.sendBeacon)navigator.sendBeacon(FB_DIARIO,new Blob([cuerpo],{type:'application/json'}));
+    fetch(FB_CAUSAS,{method:'PATCH',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(cambios),keepalive:true}).catch(()=>{});
+  }catch(e){}
+}
+function initCierreSeguro(){
+  window.addEventListener('beforeunload',(ev)=>{
+    _mandarAlCerrar();
+    if(_hayPendientes()){ev.preventDefault();ev.returnValue='';return '';}
+  });
+  window.addEventListener('pagehide',_mandarAlCerrar);
+}
+/* v380 — al abrir ya no pregunta siempre: trae lo último solo y avisa con un
+   cartelito. Sólo pregunta cuando hay riesgo real, es decir cuando esta máquina
+   tiene cambios propios sin subir: ahí sí conviene decidir a mano. */
+function preguntarActualizar(){
+  if(sessionStorage.getItem('ga_pregunta_ok'))return;
+  sessionStorage.setItem('ga_pregunta_ok','1');
+  setTimeout(()=>{
+    if(_hayPendientes()){
+      const ok=confirm('Esta computadora tiene cambios que todavía no subieron.\n\n'+
+        'Aceptar = subir lo mío primero y después traer lo de la nube (recomendado).\n'+
+        'Cancelar = trabajar con lo que tengo acá.');
+      if(ok){subirCausasCambiadas().then(()=>sincronizarAhora());}
+      return;
+    }
+    sincronizarAhora();
+  },900);
+}
 function startSync(){
   if(pollTimer)clearInterval(pollTimer);
   pollTimer=setInterval(pollSync,10000);
@@ -2014,7 +2083,53 @@ function navBack(){
   else if(prev.indexOf('panel:')===0)goP(prev.slice(6));
   _navBacking=false;updBackBtn();
 }
+/* v380 — el buscador ya no mira sólo las carátulas: encuentra también escritos
+   guardados, turnos, encargos de Ramiro y gastos, y lleva de un clic a donde
+   está cada cosa. El registro se sigue filtrando como siempre. */
+function _sinTildes(t){return (t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function buscarGlobal(q){
+  const t=_sinTildes(q).trim();
+  const res=[];
+  if(t.length<3)return res;
+  const pal=t.split(/\s+/).filter(Boolean);
+  const pega=(txt)=>{const x=_sinTildes(txt);return pal.every(p=>x.includes(p));};
+  causas.forEach(c=>{
+    (c.escritos||[]).forEach((e,idx)=>{
+      if(pega((e.titulo||'')+' '+(e.dest||'')+' '+(c.car||'')))
+        res.push({t:'escrito',ico:'📄',tit:e.titulo||'Escrito',sub:(c.car||'')+(e.dest?' · '+e.dest:''),
+          ir:`goP('escgen');setTimeout(()=>escGenVer(${c.id},${idx}),200)`});
+    });
+    getRams(c);
+    (c.rams||[]).filter(x=>!x.done).forEach(x=>{
+      if(pega(x.txt+' '+(c.car||'')))
+        res.push({t:'encargo',ico:'⭐',tit:x.txt,sub:c.car||'',ir:`goR();swV('ram')`});
+    });
+  });
+  (typeof turnos!=='undefined'?turnos:[]).forEach(x=>{
+    if(pega((x.cli||'')+' '+(x.mot||'')))
+      res.push({t:'turno',ico:'🗓',tit:x.cli||'(sin nombre)',sub:_dv(x.f)+(x.h?' · '+x.h+' hs':'')+(x.mot?' · '+x.mot:''),
+        ir:`goP('turnero')`});
+  });
+  (typeof gastos!=='undefined'?gastos:[]).forEach(g=>{
+    if(pega((g.p||'')+' '+((g.rubros||[]).join(' '))+' '+(g.o||'')))
+      res.push({t:'gasto',ico:'💲',tit:'$ '+(parseFloat(g.m)||0).toLocaleString('es-AR')+' — '+((g.rubros||[]).join(', ')||g.o||'gasto'),
+        sub:(g.p||'')+' · '+_dv(g.f),ir:`goP('gastos')`});
+  });
+  return res.slice(0,8);
+}
+function _pintarBuscaMas(q){
+  const cont=document.getElementById('busca-mas');if(!cont)return;
+  const r=buscarGlobal(q);
+  if(!r.length){cont.style.display='none';cont.innerHTML='';return;}
+  cont.style.display='block';
+  cont.innerHTML=r.map(x=>`<div class="bm-it" onmousedown="${x.ir}">
+      <span class="bm-ico">${x.ico}</span>
+      <span class="bm-tx"><b>${escH(String(x.tit).slice(0,70))}</b><small>${escH(String(x.sub).slice(0,80))}</small></span>
+      <span class="bm-tipo">${x.t}</span>
+    </div>`).join('');
+}
 function buscarDesdeArriba(){
+  try{_pintarBuscaMas((document.getElementById('si')||{}).value||'');}catch(e){}
   // buscar desde cualquier panel devuelve al registro para que se vean los resultados
   if(document.querySelector('.panel.on')){
     showRegLayout(true);niOn('reg');
@@ -2445,6 +2560,7 @@ function rowHTML(c){
         <span class="hl" onclick="abrirPlazo(${c.id})" title="Calcular plazo (oficios/cédulas)">⏱</span>
         <span class="hl" onclick="abrirCalcPlazo(${c.id},event)" title="Calculadora de plazos" style="font-size:13px">🧮</span>
         <span class="hl" onclick="abrirEscritos(${c.id},event)" title="Generar escrito" style="font-size:12px">✍️</span>
+        ${(c.escritos||[]).length?`<span class="hl" onclick="event.stopPropagation();repetirUltimoEscrito(${c.id})" title="Repetir el último escrito de esta causa: ${escH((_ultimoEscrito(c)||{}).titulo||'')}" style="font-size:12px">🔁</span>`:''}
         <span class="hl" onclick="agregarNota(${c.id},event)" title="Agregar comentario" style="font-size:14px;font-weight:900;color:#444;padding:0 3px">+</span>
       </div>
     </div>
@@ -3102,7 +3218,8 @@ function renderBan(){
   const _tb=document.getElementById('top-ban');if(_tb)_tb.innerHTML=h;
 }
 function renderR(){
-  const q=document.getElementById('si').value.trim().toLowerCase();
+  const q=_sinTildes(document.getElementById('si').value.trim());
+  const _qpal=q?q.split(/\s+/).filter(Boolean):[];
   let fl=causas.filter(c=>c.est!=='archivada');
   if(filtroF)fl=fl.filter(c=>c.fue===filtroF);
   const artBtn=document.getElementById('btn-art-fil');
@@ -3124,13 +3241,19 @@ function renderR(){
       const db=b.ven?dLeft(b.ven):9999;
       return da-db;
     });
-    if(q)fl=fl.filter(c=>c.car.toLowerCase().includes(q)||c.ex.toLowerCase().includes(q));
+    if(q)fl=fl.filter(c=>{
+      const t=_sinTildes((c.car||'')+' '+(c.carLarga||'')+' '+(c.ex||'')+' '+(c.juz||'')+' '+(c.tv||'')+' '+(c.not||''));
+      return _qpal.every(p=>t.includes(p));
+    });
     // Render flat list, no grouping by juzgado
     const cont=document.getElementById('reg-secs');
     cont.innerHTML=fl.length?fl.map(c=>rowHTML(c)).join(''):'<div style="padding:20px;color:#aaa;text-align:center">Sin vencimientos próximos</div>';
     return;
   }
-  if(q)fl=fl.filter(c=>c.car.toLowerCase().includes(q)||c.ex.toLowerCase().includes(q)||c.juz.toLowerCase().includes(q));
+  if(q)fl=fl.filter(c=>{
+    const t=_sinTildes((c.car||'')+' '+(c.carLarga||'')+' '+(c.ex||'')+' '+(c.juz||'')+' '+(c.tv||'')+' '+(c.not||''));
+    return _qpal.every(p=>t.includes(p));
+  });
   renderSecs('reg-secs',fl);
 }
 
@@ -3946,6 +4069,57 @@ function guardarCausaDatos(){
   document.getElementById('edit-causa-ov').style.display='none';
   renderR();updBadges();
   try{closeCP();}catch(e){}
+}
+/* v381 — sábana de TODOS los gastos cargados hasta hoy, agrupada por causa,
+   con total general y cuánto puso cada socio. Respeta los filtros de arriba:
+   si hay una causa o un socio elegido, sale sólo eso. */
+function gImprimirTodos(){
+  const fc=(document.getElementById('gflt-causa')||{}).value||'';
+  const fs=(document.getElementById('gflt-socio')||{}).value||'';
+  let items=(gastos||[]).slice();
+  if(fc)items=items.filter(g=>g.p===fc);
+  if(fs)items=items.filter(g=>gSocioNorm(g.q)===fs);
+  if(!items.length){alert('No hay gastos cargados con ese filtro.');return;}
+  items.sort((a,b)=>(a.p||'').localeCompare(b.p||'')||String(a.f).localeCompare(String(b.f)));
+  const fecha=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+  const total=items.reduce((s,g)=>s+(parseFloat(g.m)||0),0);
+  const porSocio={};items.forEach(g=>{const n=gSocioNorm(g.q);porSocio[n]=(porSocio[n]||0)+(parseFloat(g.m)||0);});
+  const porCausa={};items.forEach(g=>{const k=g.p||'(sin causa)';(porCausa[k]=porCausa[k]||[]).push(g);});
+  let filas='';
+  Object.keys(porCausa).sort().forEach(k=>{
+    const l=porCausa[k];
+    const sub=l.reduce((s,g)=>s+(parseFloat(g.m)||0),0);
+    filas+=`<tr class="grp"><td colspan="4">${escH(k)}</td><td class="r">${pesos(sub)}</td></tr>`;
+    l.forEach((g,i)=>{
+      let concepto=gRubroTxt(g);
+      if(g.o&&(g.rubros&&g.rubros.length))concepto+=' — '+g.o;
+      filas+=`<tr><td class="n">${i+1}</td><td>${fmtS(g.f)}</td><td>${escH(concepto)}</td><td>${escH(gSocioNorm(g.q))}</td><td class="r">${pesos(g.m)}</td></tr>`;
+    });
+  });
+  const doc=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Gastos al ${fecha}</title><style>
+    @page{size:21cm 29.7cm;margin:2.2cm 1.8cm}
+    body{font-family:Arial,sans-serif;color:#000;margin:0}
+    .enc{display:flex;align-items:center;gap:12px;border-bottom:2px solid #C0912F;padding-bottom:6px;margin-bottom:12px}
+    .enc img{width:5.4cm;height:auto}
+    .enc h1{font-size:13pt;margin:0;letter-spacing:.5px}
+    .enc .f{margin-left:auto;font-size:9pt;color:#555;text-align:right}
+    table{width:100%;border-collapse:collapse}
+    td{font-size:9.5pt;padding:4px 6px;border-bottom:1px solid #ddd;vertical-align:top}
+    tr.grp td{background:#14213D;color:#fff;font-weight:bold;font-size:9.5pt;padding:5px 6px;border:none}
+    .n{width:26px;color:#777}.r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+    .tot{margin-top:14px;border-top:2px solid #14213D;padding-top:8px}
+    .tot .g{font-size:13pt;font-weight:bold;text-align:right}
+    .tot .s{font-size:10pt;text-align:right;color:#333;margin-top:3px}
+    tr{page-break-inside:avoid}
+  </style></head><body>
+    <div class="enc"><img src="${MEMBRETE_BN}" alt=""><h1>GASTOS DEL ESTUDIO</h1>
+      <span class="f">al ${fecha}<br>${items.length} movimiento${items.length!==1?'s':''}${fc?'<br>'+escH(fc):''}${fs?'<br>Socio: '+escH(fs):''}</span></div>
+    <table>${filas}</table>
+    <div class="tot"><div class="g">TOTAL: ${pesos(total)}</div>
+      ${Object.keys(porSocio).sort().map(n=>`<div class="s">${escH(n)}: ${pesos(porSocio[n])}</div>`).join('')}
+    </div>
+  </body></html>`;
+  _imprimirEnIframe(doc);
 }
 function gImprimir(){
   const fc=document.getElementById('gflt-causa').value;
@@ -5836,6 +6010,7 @@ function escActualizar(){
         <select class="fi" id="esc-maxpag" style="width:auto;padding:3px 8px;font-size:11px" onchange="escPreviewRefresh()"><option value="1">1 pág.</option><option value="2" selected>2 pág.</option><option value="3">3 pág.</option></select>
       </label>
     </div>`:'');
+  if(_escManual&&_escManualClave!==_escClaveActual())escOlvidarRetoque();
   escDefaultsOficio(false);
   const apEl=document.getElementById('esc-f-aperc');
   if(apEl&&def.aperc&&APERC_SETS[def.aperc]){
@@ -6469,7 +6644,7 @@ function escCerrarPreview(){const pv=document.getElementById('esc-preview');if(p
 function escVistaPrevia(limpia){
   if(!limpia)_escTomarEdicion();      // si la hoja estaba abierta, se conserva lo escrito
   escCalcularFit();
-  const h=(!limpia&&_escManual)||escHTML();if(!h)return;
+  const h=(!limpia&&_escManualVigente())||escHTML();if(!h)return;
   const pv=document.getElementById('esc-preview');
   pv.style.cssText='margin-top:14px;display:block;background:#4a4d52;padding:22px 0;border-radius:10px;max-height:640px;overflow:auto';
   const maxPag=document.getElementById('esc-maxpag')?parseInt(document.getElementById('esc-maxpag').value):1;
@@ -6484,7 +6659,7 @@ function escVistaPrevia(limpia){
     .esc-fbtn{font-size:11.5px;padding:3px 8px;border-radius:6px;border:1px solid #6b6f76;background:#3a3d42;color:#eee;cursor:pointer}
     .esc-fbtn:hover{background:#50545b}</style>
   <div style="display:flex;align-items:center;padding:0 16px 8px">
-    <span style="color:#cfd3da;font-size:11px">${_escManual?'✎ Hoja retocada a mano — es la que se imprime':'Hoja tal como va a imprimirse'}</span>
+    <span style="color:#cfd3da;font-size:11px">${_escManualVigente()?'✎ Hoja retocada a mano — es la que se imprime':'Hoja tal como va a imprimirse'}</span>
     <span style="flex:1"></span>
     <button onclick="escCerrarPreview()" style="background:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;color:#333;cursor:pointer">✕ Cerrar vista previa</button>
   </div>
@@ -6509,26 +6684,42 @@ function escVistaPrevia(limpia){
    exactamente lo que se imprime, se guarda y se baja en Word. Se acompaña con
    una barra para cambiar interlineado, espacio entre párrafos, cuerpo y
    alineación, sobre lo seleccionado o sobre todo el escrito. */
-let _escManual=null;          // HTML editado a mano; null = generado automático
+/* v379 — BUG: la hoja retocada a mano quedaba guardada "en el aire" y se
+   mostraba en la vista previa de OTRO escrito, incluso de otra causa (aparecía
+   una cédula vieja al armar una nueva). Ahora el retoque queda atado a la causa
+   y al tipo de escrito: si cambia cualquiera de los dos, se descarta solo. */
+let _escManual=null, _escManualClave='';
+function _escClaveActual(){
+  const c=(document.getElementById('esc-causa')||{}).value||'';
+  const t=(document.getElementById('esc-tipo')||{}).value||'';
+  const d=(document.getElementById('esc-f-dest')||{}).value||'';
+  return c+'|'+t+'|'+String(d).slice(0,40);
+}
+function _escManualVigente(){
+  return (_escManual&&_escManualClave===_escClaveActual())?_escManual:null;
+}
+function escOlvidarRetoque(){_escManual=null;_escManualClave='';}
 function escHojaEditada(){
   const sh=document.getElementById('esc-sheet');
   return (sh&&sh.isContentEditable)?sh.innerHTML:null;
 }
 function _escTomarEdicion(){
   const h=escHojaEditada();
-  if(h!==null)_escManual=h;
-  return _escManual;
+  if(h!==null){_escManual=h;_escManualClave=_escClaveActual();}
+  return _escManualVigente();
 }
 function escHTMLFinal(){
   const edit=escHojaEditada();
-  if(edit!==null){_escManual=edit;return edit;}
-  if(_escManual)return _escManual;
+  if(edit!==null&&_escManualClave===_escClaveActual()){_escManual=edit;return edit;}
+  if(edit!==null&&!_escManual){_escManual=edit;_escManualClave=_escClaveActual();return edit;}
+  const vig=_escManualVigente();
+  if(vig)return vig;
   return escHTML();
 }
 function escDescartarEdicion(){
   if(!_escManual&&escHojaEditada()===null)return;
   if(!confirm('Se van a perder los retoques hechos a mano sobre la hoja y vuelve al texto generado. ¿Seguir?'))return;
-  _escManual=null;
+  escOlvidarRetoque();
   const sh=document.getElementById('esc-sheet');
   if(sh)sh.removeAttribute('contenteditable');   // si no, la vista previa lo vuelve a tomar
   escVistaPrevia(true);toast('Volvió al texto generado');
@@ -6606,7 +6797,7 @@ function escCuerpo(dir){
       if(nue!==null)x.style.fontSize=nue+'pt';
     });
   });
-  _escManual=sh.innerHTML;
+  _escManual=sh.innerHTML;_escManualClave=_escClaveActual();
   const total=sh.querySelectorAll('p').length;
   _escActualizarHojas(ps.length===total?'todo el escrito':ps.length+' párrafo'+(ps.length!==1?'s':''));
 }
@@ -6621,7 +6812,7 @@ function escApretar(dir){          // dir -1 = más junto, +1 = más separado
     const esp=_escVecino(_ESP_PASOS,_escLeerEsp(p),dir);
     if(esp!==null)p.style.marginBottom=esp+'pt';
   });
-  _escManual=sh.innerHTML;
+  _escManual=sh.innerHTML;_escManualClave=_escClaveActual();
   const total=sh.querySelectorAll('p').length;
   _escActualizarHojas(ps.length===total?'todo el escrito':ps.length+' párrafo'+(ps.length!==1?'s':''));
 }
@@ -6638,7 +6829,7 @@ function escFormato(que,valor){
       p.querySelectorAll('[style*="font-size"]').forEach(x=>{x.style.fontSize=valor+'pt';});
     }
   });
-  _escManual=sh.innerHTML;
+  _escManual=sh.innerHTML;_escManualClave=_escClaveActual();
   const total=sh.querySelectorAll('p').length;
   _escActualizarHojas(ps.length===total?'todo el escrito':ps.length+' párrafo'+(ps.length!==1?'s':''));
 }
@@ -7298,6 +7489,27 @@ function _escLbl(){
   const larga=(cc.carLarga||'').trim();
   lbl.innerHTML=escH(larga||cc.car)+' <span style="font-weight:500;color:var(--text3)">('+escH(cc.ex||'s/n')+')</span>'+
     (larga?'':' <span style="font-size:10.5px;font-weight:700;color:#9a7400;background:#FFF6E0;border:1px solid #e8d9ae;border-radius:10px;padding:1px 7px;margin-left:6px">carátula abreviada — cargala completa</span>');
+}
+/* v381 — repetir el último escrito de la causa: abre el generador con el mismo
+   tipo y los mismos datos del anterior, listo para retocar la parte que cambia.
+   La mayoría de los escritos de un expediente son casi iguales entre sí. */
+function _ultimoEscrito(c){
+  const l=(c&&c.escritos)||[];
+  if(!l.length)return null;
+  return l.slice().sort((a,b)=>String(b.fecha||'').localeCompare(String(a.fecha||'')))[0];
+}
+function repetirUltimoEscrito(cid){
+  cid=parseInt(cid);
+  const c=causas.find(x=>x.id===cid);if(!c)return;
+  const e=_ultimoEscrito(c);
+  if(!e){toast('Esta causa todavía no tiene escritos guardados');return;}
+  const tipo=(e.key||'').split('|')[0]||e.tipo;
+  if(!tipo||!ESC_TIPOS[tipo]){toast('No puedo repetir ese escrito');return;}
+  escOlvidarRetoque();
+  irAEscrito(cid,tipo,e.datos||{},null);
+  setTimeout(()=>{
+    toast('Repetido: '+(e.titulo||'escrito')+' — revisá lo que cambia');
+  },420);
 }
 function irAEscrito(cid,tipo,campos,faltan){
   if(!campos||!campos._fromFila)_escOrigen=null;
@@ -8513,6 +8725,9 @@ function initAntiOlvido(){
   setTimeout(()=>{try{bajarCausas().then(ok=>{if(ok){renderR();updBadges();updToolsCounts();}});}catch(e){}},2500);
   setTimeout(()=>{try{subirCausasCambiadas();}catch(e){}},4000);
   setTimeout(()=>{try{copiaDiariaNube();}catch(e){}},6000);
+  try{_pintarUltimaSync();setInterval(_pintarUltimaSync,60000);}catch(e){}
+  try{initCierreSeguro();}catch(e){}
+  try{preguntarActualizar();}catch(e){}
   setInterval(()=>{try{reintentarCola();}catch(e){}},60000);
   setTimeout(()=>{try{abrirCheckin(false);}catch(e){}},700);
   setTimeout(()=>{try{chequearAvisos();}catch(e){}},2000);
