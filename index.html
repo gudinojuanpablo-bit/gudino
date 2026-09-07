@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v381</title>
+<title>Gudiño Cabrera y Asociados v382</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1463,7 +1463,7 @@ let extFiltro='';
 // Guardado local siempre
 const svl=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 // Guardado individual
-function sC(){svl('ga_c',causas);fbSave();try{subirCausasCambiadas();}catch(e){}}
+function sC(){try{marcarCambios();}catch(e){}svl('ga_c',causas);fbSave();try{subirCausasCambiadas();}catch(e){}}
 function sM(){svl('ga_m_'+SK,[...movidas]);fbSave();}
 function sH(){svl('ga_h',historial);} // historial no sincroniza para evitar conflictos
 function sG(){svl('ga_g',gastos);fbSave();}
@@ -1755,16 +1755,63 @@ function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:
    está vacío, se conserva el que tiene contenido. Sólo se pisa un dato con otro
    dato cuando los dos existen, y ahí gana la copia tocada más recientemente. */
 const _CAMPOS_TEXTO=['carLarga','car','ex','juz','fue','cli','socio','not','obs','tv','etapa','est','rol','tipo_aud','aud_h','aud_mod','aud_obs','ven','tipo_venc'];
+
+/* ═══════════════════════════════════════════════════════════════════════
+   v382 — MARCA DE TIEMPO POR CAMPO
+
+   El problema de fondo de los datos que "vuelven": la fusión decidía por la
+   marca de la CAUSA ENTERA (lastTouch). Si la otra computadora tocaba
+   cualquier cosa de esa causa después, su copia entera ganaba y devolvía
+   valores viejos — por ejemplo la etapa "A resolver" que ya se había sacado.
+
+   Ahora cada campo lleva su propia marca de cuándo cambió (c._fts). Al
+   fusionar se compara campo contra campo: gana el que se editó más tarde,
+   sin importar qué pasó con el resto de la causa. Las marcas se calculan
+   solas comparando con la última copia conocida, así que no hace falta
+   tocar ninguna de las pantallas que editan datos.
+   ═══════════════════════════════════════════════════════════════════════ */
+let _sombra=(function(){try{return JSON.parse(localStorage.getItem('ga_sombra')||'{}');}catch(e){return {};}})();
+function _guardarSombra(){try{localStorage.setItem('ga_sombra',JSON.stringify(_sombra));}catch(e){}}
+function _valCampo(c,k){const v=c[k];return v==null?'':String(v);}
+function marcarCambios(){
+  const ahora=Date.now();let hubo=false;
+  (causas||[]).forEach(c=>{
+    if(!c||c.id==null)return;
+    const id=String(c.id);
+    const prev=_sombra[id]||{};
+    const act={};
+    c._fts=c._fts||{};
+    _CAMPOS_TEXTO.forEach(k=>{
+      const v=_valCampo(c,k);
+      act[k]=v;
+      if(prev[k]===undefined){                 // primera vez que la vemos
+        if(v!=='' && !c._fts[k])c._fts[k]=c.lastTouch||ahora;
+      }else if(prev[k]!==v){
+        c._fts[k]=ahora;hubo=true;
+      }
+    });
+    _sombra[id]=act;
+  });
+  if(hubo)_guardarSombra(); else _guardarSombra();
+}
+function _marcaDe(c,k){
+  return (c&&c._fts&&c._fts[k])||(c&&c.lastTouch)||0;
+}
 function _fusionarCausa(mia,remota){
   if(!mia)return remota;
   if(!remota)return mia;
   const mNueva=(mia.lastTouch||0)>(remota.lastTouch||0);
   const base=Object.assign({},mNueva?remota:mia,mNueva?mia:remota);   // gana la más nueva
-  // pero nunca se pierde un dato por uno vacío
+  /* campo por campo: gana el que se editó más tarde. Si ninguno tiene marca,
+     se conserva el que tiene contenido antes que el vacío. */
+  base._fts=Object.assign({},remota._fts||{},mia._fts||{});
   _CAMPOS_TEXTO.forEach(k=>{
     const a=(mia[k]==null?'':String(mia[k])).trim();
     const b=(remota[k]==null?'':String(remota[k])).trim();
-    if(a&&!b)base[k]=mia[k];
+    const ta=_marcaDe(mia,k), tb=_marcaDe(remota,k);
+    if(ta>tb){base[k]=mia[k];base._fts[k]=ta;}
+    else if(tb>ta){base[k]=remota[k];base._fts[k]=tb;}
+    else if(a&&!b)base[k]=mia[k];
     else if(b&&!a)base[k]=remota[k];
   });
   // listas: se queda la más larga si la otra está vacía
@@ -2557,7 +2604,6 @@ function rowHTML(c){
       <div style="display:flex;gap:2px;align-items:center">
         <span class="hl" onclick="editRam(${c.id},event)" title="Tarea Ramiro">⭐</span>
 
-        <span class="hl" onclick="abrirPlazo(${c.id})" title="Calcular plazo (oficios/cédulas)">⏱</span>
         <span class="hl" onclick="abrirCalcPlazo(${c.id},event)" title="Calculadora de plazos" style="font-size:13px">🧮</span>
         <span class="hl" onclick="abrirEscritos(${c.id},event)" title="Generar escrito" style="font-size:12px">✍️</span>
         ${(c.escritos||[]).length?`<span class="hl" onclick="event.stopPropagation();repetirUltimoEscrito(${c.id})" title="Repetir el último escrito de esta causa: ${escH((_ultimoEscrito(c)||{}).titulo||'')}" style="font-size:12px">🔁</span>`:''}
@@ -8707,6 +8753,7 @@ function initAtajos(){
 }
 function initAntiOlvido(){
   try{initAtajos();}catch(e){}
+  try{marcarCambios();}catch(e){}
   try{_migrarSocios();_pintarFiltroSocio();}catch(e){}
   // v376 — barrido de encargos borrados que hayan quedado en alguna copia vieja
   try{
