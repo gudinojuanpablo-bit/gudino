@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v2.1</title>
+<title>Gudiño Cabrera y Asociados — v2.2</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -2082,17 +2082,32 @@ function _adoptarEstado(d){
    queda como punto de partida. Si ya hay algo más nuevo, se pone al día. */
 async function ponerseAlDia(){
   try{
-    const r=await fetch(FB_MAESTRO+'?t='+Date.now(),{cache:'no-store'});
-    const m=r.ok?await r.json():null;
+    let r=null,m=null,respondio=false;
+    for(let intento=0;intento<3&&!respondio;intento++){
+      try{
+        r=await fetch(FB_MAESTRO+'?t='+Date.now(),{cache:'no-store'});
+        if(r.ok){m=await r.json();respondio=true;}
+      }catch(e){}
+      if(!respondio)await new Promise(x=>setTimeout(x,1500));
+    }
+    if(!respondio){setSyncStatus('err');return;}   // sin respuesta: no se toca nada
     if(!m||!m.v||!m.datos){
-      // la nube está vacía: esta computadora deja el punto de partida
+      // la nube está realmente vacía: esta computadora deja el punto de partida
       await _publicar(true);
       return;
     }
     if(m.v>_maestroLocal){
       if(_puedeSubir()&&_hayPendientes()){try{await subirCausasCambiadas();await reintentarCola();}catch(e){}}
+      const antesN=(causas||[]).length, remotoN=(m.datos.causas||[]).length;
       if(_adoptarEstado(m.datos)){
         _marcarAdoptado(m.v);
+        if(antesN>remotoN+2){
+          const av=document.getElementById('avisoMaestro');
+          if(av){av.style.display='block';av.style.background='#FFF6E0';av.style.color='#8a6400';
+            av.innerHTML='⚠ Esta computadora tenía '+antesN+' causas y el estado del estudio trae '+remotoN+
+              '. Se aplicó el del estudio. Si las que faltan estaban bien acá, tocá '+
+              '<span style="text-decoration:underline;cursor:pointer" onclick="deshacerAdopcion()">Deshacer</span> y avisá.';}
+        }
         renderR();updBadges();updToolsCounts();renderBan();
         const av=document.getElementById('avisoMaestro');
         if(av){av.style.display='block';
