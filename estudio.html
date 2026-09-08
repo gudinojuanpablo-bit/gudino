@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v2.2</title>
+<title>Gudiño Cabrera y Asociados — v2.3</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1548,7 +1548,7 @@ function vBtnTxt(c){
 // ═══════════════════════════════════════════════
 // SYNC — Firebase Realtime Database
 // ═══════════════════════════════════════════════
-const FB_URL='https://gudino-asociados-default-rtdb.firebaseio.com/estudio_v2/datos.json';
+const FB_URL='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoza40/v2/datos.json';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPALDO v372 — tres capas para que un dato cargado no se pierda nunca
@@ -1564,7 +1564,7 @@ const FB_URL='https://gudino-asociados-default-rtdb.firebaseio.com/estudio_v2/da
    3) COPIA DIARIA COMPLETA en la nube, una por fecha (nunca se sobreescriben
       entre ellas), más la copia diaria local que ya existía.
    ═══════════════════════════════════════════════════════════════════════════ */
-const FB_RAIZ='https://gudino-asociados-default-rtdb.firebaseio.com/estudio_v2';
+const FB_RAIZ='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoza40/v2';
 const FB_MAESTRO=FB_RAIZ+'/maestro.json';
 const FB_CAUSAS=FB_RAIZ+'/causas.json';
 const FB_DIARIO=FB_RAIZ+'/diario.json';
@@ -2126,7 +2126,9 @@ async function _publicar(silencioso){
     const v=Date.now();
     const r=await fetch(FB_MAESTRO,{method:'PUT',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({v,equipo:EQUIPO_ID,fecha:new Date().toISOString(),datos:_estadoCompleto()})});
-    if(!r.ok)throw new Error('HTTP '+r.status);
+    if(!r.ok)throw new Error(r.status===401||r.status===403
+      ? 'la base de datos no autoriza escribir (permisos)'
+      : 'HTTP '+r.status);
     _marcarAdoptado(v);setSyncStatus('ok');
     if(!silencioso)alert('Listo: los datos de esta computadora quedaron como los del estudio ('+causas.length+' causas).');
     return true;
