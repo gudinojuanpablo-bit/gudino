@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados v387</title>
+<title>Gudiño Cabrera y Asociados — v2.3</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -854,6 +854,7 @@ g.pan-clic:hover text{fill:var(--text)}
       <div class="aud-list" id="aud-list"></div>
     </div>
 
+    <div id="avisoMaestro" style="display:none;background:#E7F6EE;border-bottom:1px solid #b7e0c8;padding:6px 12px;font-size:11.5px;color:#1E6F42;text-align:center;position:sticky;top:0;z-index:9998"></div>
     <div class="ct panel" id="panel-informe"><div id="inf-body"></div></div>
     <div class="ct panel" id="panel-caratulas"><div id="car-body"></div></div>
     <div class="ct panel" id="panel-panorama"><div id="pan-body"></div></div>
@@ -1217,6 +1218,18 @@ g.pan-clic:hover text{fill:var(--text)}
             <button class="btn gh" onclick="sincronizarAhora()">🔄 Sincronizar ahora</button>
             <button class="btn gh gh-rojo" onclick="deshacerRecuperacion()">↩ Deshacer la última recuperación</button>
           </div>
+          <div style="margin-top:14px;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg2)">
+            <div style="font-size:12px;font-weight:800;color:var(--text2);margin-bottom:4px">🔄 Datos del estudio</div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:9px">
+              No hay nada que hacer: cada vez que abrís la app se pone al día sola con lo último del estudio,
+              y todo lo que cargás sube solo. Los botones de abajo son para casos raros.
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn gh" onclick="traerMaestro(false)">📥 Traer los datos ahora</button>
+              <button class="btn gh gh-rojo" onclick="publicarMaestro()" title="Sólo si esta computadora quedó con los datos correctos y las otras no">⚠ Usar los datos de ESTA computadora para todas</button>
+            </div>
+            <div id="maestro-est" style="font-size:10.5px;color:var(--text3);margin-top:7px"></div>
+          </div>
           <div style="font-size:10.5px;color:#8a94a6;margin-top:6px">El diario guarda cada cambio hecho en cualquier computadora, sólo agrega y nunca se pisa: es el último recurso para recuperar algo que se haya perdido.</div>
           <div style="font-size:10.5px;color:#8a94a6;margin-top:6px">La app guarda sola una copia por día (las últimas cinco) antes de bajar datos de la nube. "Recuperar" no borra nada: fusiona y devuelve lo que falte.</div>
         </div>
@@ -1535,7 +1548,7 @@ function vBtnTxt(c){
 // ═══════════════════════════════════════════════
 // SYNC — Firebase Realtime Database
 // ═══════════════════════════════════════════════
-const FB_URL='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoza40/datos.json';
+const FB_URL='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoza40/v2/datos.json';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    RESPALDO v372 — tres capas para que un dato cargado no se pierda nunca
@@ -1551,7 +1564,8 @@ const FB_URL='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoz
    3) COPIA DIARIA COMPLETA en la nube, una por fecha (nunca se sobreescriben
       entre ellas), más la copia diaria local que ya existía.
    ═══════════════════════════════════════════════════════════════════════════ */
-const FB_RAIZ='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoza40';
+const FB_RAIZ='https://gudino-asociados-default-rtdb.firebaseio.com/estudiomendoza40/v2';
+const FB_MAESTRO=FB_RAIZ+'/maestro.json';
 const FB_CAUSAS=FB_RAIZ+'/causas.json';
 const FB_DIARIO=FB_RAIZ+'/diario.json';
 const FB_COPIAS=FB_RAIZ+'/copias';
@@ -1619,6 +1633,7 @@ function _guardarCola(){try{localStorage.setItem('ga_cola',JSON.stringify(_colaF
 
 /* Sube SÓLO las causas que cambiaron. Lo que no se tocó no se escribe. */
 async function subirCausasCambiadas(){
+  if(!_puedeSubir())return false;
   const cambios={},huellas={};
   (causas||[]).forEach(c=>{
     if(!c||c.id==null)return;
@@ -1933,6 +1948,7 @@ function applyPayload(d){
 }
 
 async function fbSave(){
+  if(!_puedeSubir())return;
   if(isSaving){saveQueue=true;return;}
   isSaving=true;saveQueue=false;lastSaveTS=Date.now();setSyncStatus('saving');
   try{
@@ -2015,6 +2031,169 @@ function _pintarUltimaSync(){
 /* v379 — al cerrar la ventana: si quedó algo sin subir, se manda igual con
    sendBeacon (viaja aunque la pestaña se esté cerrando) y el navegador avisa
    antes de salir. Al abrir: se pregunta si traer lo último de la nube. */
+/* ═══════════════════════════════════════════════════════════════════════
+   ESTADO MAESTRO (v2)
+
+   Se terminó la fusión entre computadoras, que era de donde salían los datos
+   que revivían. Ahora hay UN estado del estudio en la nube, con número de
+   versión. Una máquina lo PUBLICA (la que tiene los datos buenos) y todas las
+   demás lo ADOPTAN entero: reemplazan lo suyo, no lo mezclan.
+
+   Desde ahí, cada máquina sigue subiendo sus cambios causa por causa, pero
+   sólo si ya adoptó la versión vigente. Una computadora con datos viejos no
+   puede subir nada hasta ponerse al día, así que no hay forma de que devuelva
+   una versión anterior.
+   ═══════════════════════════════════════════════════════════════════════ */
+let _maestroLocal=parseInt(localStorage.getItem('ga_maestro_v')||'0');
+function _marcarAdoptado(v){
+  _maestroLocal=v;localStorage.setItem('ga_maestro_v',String(v));
+}
+function _estadoCompleto(){
+  return {causas,turnos,gastos,audiencias,extraj,tareasRam,pendientes,revisiones,feriados,mailCfg,vglob,
+    movidas:[...movidas],movidasSK:SK};
+}
+function _adoptarEstado(d){
+  if(!d)return false;
+  try{
+    // copia de lo que había, por las dudas
+    try{localStorage.setItem('ga_antes_adoptar',JSON.stringify({t:Date.now(),causas}));}catch(e){}
+    if(Array.isArray(d.causas))causas=d.causas;
+    if(Array.isArray(d.turnos))turnos=d.turnos;
+    if(Array.isArray(d.gastos))gastos=d.gastos;
+    if(Array.isArray(d.audiencias))audiencias=d.audiencias;
+    if(Array.isArray(d.extraj))extraj=d.extraj;
+    if(Array.isArray(d.tareasRam))tareasRam=d.tareasRam;
+    if(Array.isArray(d.pendientes))pendientes=d.pendientes;
+    if(Array.isArray(d.revisiones))revisiones=d.revisiones;
+    if(Array.isArray(d.feriados))feriados=d.feriados;
+    if(d.mailCfg)mailCfg=d.mailCfg;
+    if(d.vglob)vglob=d.vglob;
+    if(Array.isArray(d.movidas)&&d.movidasSK===SK)movidas=new Set(d.movidas);
+    svl('ga_c',causas);svl('ga_turnos',turnos);svl('ga_g',gastos);svl('ga_a',audiencias);
+    svl('ga_e',extraj);svl('ga_tram',tareasRam);svl('ga_pend',pendientes);svl('ga_rev',revisiones);
+    svl('ga_f',feriados);svl('ga_mc',mailCfg);svl('ga_vg',vglob);
+    _subidas={};_guardarSubidas();          // se re-sube todo desde esta base
+    _sombra={};try{marcarCambios();}catch(e){}
+    return true;
+  }catch(e){return false;}
+}
+/* v2.1 — sin botones ni decisiones: al abrir, la app sola resuelve qué hacer.
+   Si en la nube todavía no hay nada, sube lo que tiene esta computadora y eso
+   queda como punto de partida. Si ya hay algo más nuevo, se pone al día. */
+async function ponerseAlDia(){
+  try{
+    let r=null,m=null,respondio=false;
+    for(let intento=0;intento<3&&!respondio;intento++){
+      try{
+        r=await fetch(FB_MAESTRO+'?t='+Date.now(),{cache:'no-store'});
+        if(r.ok){m=await r.json();respondio=true;}
+      }catch(e){}
+      if(!respondio)await new Promise(x=>setTimeout(x,1500));
+    }
+    if(!respondio){setSyncStatus('err');return;}   // sin respuesta: no se toca nada
+    if(!m||!m.v||!m.datos){
+      // la nube está realmente vacía: esta computadora deja el punto de partida
+      await _publicar(true);
+      return;
+    }
+    if(m.v>_maestroLocal){
+      if(_puedeSubir()&&_hayPendientes()){try{await subirCausasCambiadas();await reintentarCola();}catch(e){}}
+      const antesN=(causas||[]).length, remotoN=(m.datos.causas||[]).length;
+      if(_adoptarEstado(m.datos)){
+        _marcarAdoptado(m.v);
+        if(antesN>remotoN+2){
+          const av=document.getElementById('avisoMaestro');
+          if(av){av.style.display='block';av.style.background='#FFF6E0';av.style.color='#8a6400';
+            av.innerHTML='⚠ Esta computadora tenía '+antesN+' causas y el estado del estudio trae '+remotoN+
+              '. Se aplicó el del estudio. Si las que faltan estaban bien acá, tocá '+
+              '<span style="text-decoration:underline;cursor:pointer" onclick="deshacerAdopcion()">Deshacer</span> y avisá.';}
+        }
+        renderR();updBadges();updToolsCounts();renderBan();
+        const av=document.getElementById('avisoMaestro');
+        if(av){av.style.display='block';
+          av.innerHTML='✅ Al día con el estudio · '+causas.length+' causas. '+
+            '<span style="text-decoration:underline;cursor:pointer" onclick="deshacerAdopcion()">Deshacer</span>';
+          setTimeout(()=>{av.style.display='none';},10000);}
+      }
+    }else{
+      _marcarAdoptado(m.v);          // ya estaba al día
+    }
+  }catch(e){}
+}
+async function _publicar(silencioso){
+  try{
+    setSyncStatus('saving');
+    const v=Date.now();
+    const r=await fetch(FB_MAESTRO,{method:'PUT',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({v,equipo:EQUIPO_ID,fecha:new Date().toISOString(),datos:_estadoCompleto()})});
+    if(!r.ok)throw new Error(r.status===401||r.status===403
+      ? 'la base de datos no autoriza escribir (permisos)'
+      : 'HTTP '+r.status);
+    _marcarAdoptado(v);setSyncStatus('ok');
+    if(!silencioso)alert('Listo: los datos de esta computadora quedaron como los del estudio ('+causas.length+' causas).');
+    return true;
+  }catch(e){setSyncStatus('err');if(!silencioso)alert('No se pudo: '+e.message);return false;}
+}
+async function publicarMaestro(){
+  const n=causas.length;
+  if(!confirm('PUBLICAR EL ESTADO DE ESTA COMPUTADORA\n\n'+
+    'Lo que hay acá ('+n+' causas) pasa a ser el estado oficial del estudio.\n'+
+    'Las otras máquinas lo van a adoptar tal cual la próxima vez que abran, reemplazando lo suyo.\n\n'+
+    'Hacelo desde la computadora que tiene los datos correctos. ¿Seguir?'))return;
+  try{
+    setSyncStatus('saving');
+    const v=Date.now();
+    const cuerpo={v,equipo:EQUIPO_ID,fecha:new Date().toISOString(),datos:_estadoCompleto()};
+    const r=await fetch(FB_MAESTRO,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(cuerpo)});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    _marcarAdoptado(v);
+    setSyncStatus('ok');
+    alert('Listo. El estado de esta computadora quedó publicado como oficial ('+n+' causas).\n\n'+
+      'Abrí la app en las otras máquinas: se van a poner al día solas.');
+  }catch(e){setSyncStatus('err');alert('No se pudo publicar: '+e.message);}
+}
+async function traerMaestro(silencioso){
+  try{
+    // si esta máquina tenía trabajo sin subir, primero se sube
+    if(_puedeSubir()&&_hayPendientes()){try{await subirCausasCambiadas();await reintentarCola();}catch(e){}}
+    const r=await fetch(FB_MAESTRO+'?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return false;
+    const m=await r.json();
+    if(!m||!m.v||!m.datos)return false;
+    if(m.v<=_maestroLocal)return false;                     // ya estoy al día
+    if(!silencioso){
+      const n=(m.datos.causas||[]).length;
+      if(!confirm('Hay un estado del estudio publicado el '+new Date(m.v).toLocaleString('es-AR')+
+        ' con '+n+' causas.\n\nSe reemplaza lo que hay en esta computadora. ¿Traerlo?'))return false;
+    }
+    if(_adoptarEstado(m.datos)){
+      _marcarAdoptado(m.v);
+      renderR();updBadges();updToolsCounts();renderBan();
+      toast('Al día con el estudio · '+causas.length+' causas');
+      const av=document.getElementById('avisoMaestro');
+      if(av){av.style.display='block';
+        av.innerHTML='✅ Esta computadora se puso al día con el estado del estudio ('+causas.length+
+          ' causas). <span style="text-decoration:underline;cursor:pointer" onclick="deshacerAdopcion()">Deshacer</span>';
+        setTimeout(()=>{av.style.display='none';},12000);}
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+function deshacerAdopcion(){
+  try{
+    const b=JSON.parse(localStorage.getItem('ga_antes_adoptar')||'null');
+    if(!b){alert('No hay nada para deshacer.');return;}
+    if(!confirm('Vuelve esta computadora a como estaba antes de ponerse al día ('+
+      (b.causas||[]).length+' causas). ¿Seguir?'))return;
+    causas=b.causas||[];svl('ga_c',causas);renderR();updBadges();
+    alert('Listo. Ojo: si volvés a abrir la app se pone al día de nuevo.');
+  }catch(e){alert('No se pudo: '+e.message);}
+}
+function _puedeSubir(){
+  // una máquina que no adoptó la versión vigente no sube nada
+  return _maestroLocal>0;
+}
 function _hayPendientes(){
   try{
     if(pendingOfflineSync||localStorage.getItem('ga_pending_sync'))return true;
@@ -2199,7 +2378,13 @@ function goP(p){
   document.getElementById('ptitle').innerHTML=t[p]||escH(p);
   showOtherPanel(p);
   niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'tur',herramientas:'her',escgen:'her',archivo:'arch',control:'control',imprimir:'imp'}[p]||p);
-  if(p==='config'){const cc=document.getElementById('cfg-copias');if(cc)cc.innerHTML=panelCopias();}
+  if(p==='config'){
+    const cc=document.getElementById('cfg-copias');if(cc)cc.innerHTML=panelCopias();
+    const me=document.getElementById('maestro-est');
+    if(me)me.textContent=_maestroLocal
+      ? 'Esta computadora está al día con el estado publicado el '+new Date(_maestroLocal).toLocaleString('es-AR')
+      : '⚠ Esta computadora todavía no adoptó ningún estado: no está subiendo cambios. Publicá desde acá si tiene los datos buenos, o traé el estado del estudio.';
+  }
   if(p==='informe')renderInforme();
   if(p==='caratulas')renderCaratulas();
   if(p==='panorama')renderPanorama();
@@ -8875,6 +9060,7 @@ function initAntiOlvido(){
   setTimeout(()=>{try{reintentarCola();}catch(e){}},1500);
   setTimeout(()=>{try{bajarCausas().then(ok=>{if(ok){renderR();updBadges();updToolsCounts();}});}catch(e){}},2500);
   setTimeout(()=>{try{subirCausasCambiadas();}catch(e){}},4000);
+  setTimeout(()=>{try{ponerseAlDia();}catch(e){}},700);
   setTimeout(()=>{try{copiaDiariaNube();}catch(e){}},6000);
   try{_pintarUltimaSync();setInterval(_pintarUltimaSync,60000);}catch(e){}
   try{initCierreSeguro();}catch(e){}
