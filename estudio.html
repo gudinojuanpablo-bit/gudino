@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v2.4</title>
+<title>Gudiño Cabrera y Asociados — v2.6</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -6894,9 +6894,19 @@ function escVistaPrevia(limpia){
     :`<div style="text-align:center;font-size:11px;margin-top:10px;color:${_ll>85?'#ffcf9e':'#ddd'}">${_pc<100?`Reducido al ${_pc}% (cuerpo ${String(_escInfo.fs).replace('.',',')} pt, interlineado ${String(_escInfo.lh).replace('.',',')}) · `:''}entra en ${_escPags} página${_escPags>1?'s':''} · el texto ocupa el ${_ll}% de la última hoja, con ${FIRMA_CM.toString().replace('.',',')} cm libres abajo para sellar y firmar</div>`;
   pv.innerHTML=`<style>#esc-sheet p{margin:0 0 6pt 0}
     #esc-sheet:focus{outline:2px solid rgba(192,145,47,.55);outline-offset:3px}
-    .esc-fsel{font-size:11px;padding:2px 4px;border-radius:6px;border:1px solid #6b6f76;background:#3a3d42;color:#eee}
-    .esc-fbtn{font-size:11.5px;padding:3px 8px;border-radius:6px;border:1px solid #6b6f76;background:#3a3d42;color:#eee;cursor:pointer}
-    .esc-fbtn:hover{background:#50545b}</style>
+    #esc-fmt{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:6px 10px;margin:0 16px 10px;
+      background:#33363b;border:1px solid #4a4e55;border-radius:10px;color:#e8e8e8;font-size:11px}
+    .esc-fsel{font-size:11px;padding:3px 5px;border-radius:6px;border:1px solid #6b6f76;background:#3a3d42;color:#eee;cursor:pointer}
+    .esc-fbtn{font-size:11.5px;padding:4px 8px;border-radius:6px;border:1px solid #6b6f76;background:#3a3d42;color:#eee;cursor:pointer;line-height:1}
+    .esc-fbtn:hover{background:#50545b}
+    .esc-sep{width:1px;height:17px;background:#565b63;margin:0 3px}
+    .esc-ayuda{font-size:10px;opacity:.55;margin-left:10px}
+    #esc-hojas{font-size:11px}
+    /* línea de corte de hoja, superpuesta a la altura real donde corta la impresora */
+    .corte-hoja{position:absolute;left:0;right:0;height:0;border-top:2px dashed #c3492f;
+      pointer-events:none;user-select:none;z-index:3}
+    .corte-hoja span{position:absolute;right:6px;top:-8px;background:#fff;padding:0 8px;
+      font-size:9.5px;font-weight:700;letter-spacing:.6px;color:#c3492f;text-transform:uppercase}</style>
   <div style="display:flex;align-items:center;padding:0 16px 8px">
     <span style="color:#cfd3da;font-size:11px">${_escManualVigente()?'✎ Hoja retocada a mano — es la que se imprime':'Hoja tal como va a imprimirse'}</span>
     <span style="flex:1"></span>
@@ -6917,6 +6927,17 @@ function escVistaPrevia(limpia){
     wrap.style.height=(sh*sc)+'px';
   }
   pv.scrollIntoView({behavior:'smooth',block:'nearest'});
+  // se marcan los cortes de hoja y se reajusta el alto, que cambia al insertarlos
+  setTimeout(()=>{
+    try{
+      _escMarcarCortes();
+      const w=document.getElementById('esc-wrap'),sh2=document.getElementById('esc-sheet');
+      if(w&&sh2){
+        const sc2=parseFloat((sh2.style.transform.match(/scale\(([\d.]+)\)/)||[0,1])[1])||1;
+        w.style.height=(sh2.offsetHeight*sc2)+'px';
+      }
+    }catch(e){}
+  },80);
 }
 /* v364 — la vista previa es una hoja de Word chiquita en la que se puede
    escribir: se edita ahí mismo (contentEditable) y lo que quede en la hoja es
@@ -6944,7 +6965,14 @@ function escHojaEditada(){
 }
 function _escTomarEdicion(){
   const h=escHojaEditada();
-  if(h!==null){_escManual=h;_escManualClave=_escClaveActual();}
+  if(h!==null){
+    const ahora=_escClaveActual();
+    if(!_escManual||_escManualClave===ahora||_escManualClave===''){
+      _escManual=h;_escManualClave=ahora;         // retoque legítimo del escrito actual
+    }else{
+      escOlvidarRetoque();                        // cambió el formulario: la hoja se rehace
+    }
+  }
   return _escManualVigente();
 }
 function escHTMLFinal(){
@@ -7103,36 +7131,68 @@ function _escActualizarHojas(aQuien){
   }
   toast('Aplicado a '+aQuien+(n?' · ahora ocupa '+n+' hoja'+(n!==1?'s':''):''));
 }
+/* v2.5 — se marcan en la hoja los cortes de página, calculados igual que la
+   impresora: así se ve dónde termina cada hoja sin tener que imprimir. */
+function _escMarcarCortes(){
+  /* v2.6 — las líneas de corte se dibujan a la altura EXACTA donde termina cada
+     hoja A4 (20,7 cm de alto útil), superpuestas sobre la hoja. Antes se metían
+     entre párrafos y, como un párrafo largo no se puede partir al medir, el
+     corte caía mucho antes de lo real. */
+  const sh=document.getElementById('esc-sheet');
+  if(!sh)return;
+  sh.querySelectorAll('.corte-hoja').forEach(x=>x.remove());
+  try{
+    if(getComputedStyle(sh).position==='static')sh.style.position='relative';
+    const MM=3.7795;
+    const altoUtil=207*MM;                    // 29,7 - 4,5 - 4,5 cm
+    const arriba=45*MM;                       // margen superior de la hoja
+    const contenido=sh.scrollHeight-arriba-45*MM;
+    const hojas=Math.max(1,Math.ceil((contenido-2)/altoUtil));
+    for(let i=1;i<hojas;i++){
+      const y=arriba+altoUtil*i;
+      const sep=document.createElement('div');
+      sep.className='corte-hoja';
+      sep.setAttribute('contenteditable','false');
+      sep.style.top=y+'px';
+      sep.innerHTML='<span>hoja '+i+' de '+hojas+' — sigue en la '+(i+1)+'</span>';
+      sh.appendChild(sep);
+    }
+    const et=document.getElementById('esc-hojas');
+    if(et)et.dataset.total=hojas;
+  }catch(e){}
+}
 function escBarraFormato(){
-  return `<div id="esc-fmt" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:0 16px 10px;color:#e8e8e8;font-size:11px">
-    <span style="font-weight:700;letter-spacing:.4px">✍ Se puede escribir en la hoja</span>
-    <span style="opacity:.6">— seleccioná un tramo y apretalo o separalo; sin selección, va a todo</span>
-    <span id="esc-hojas" style="margin-left:8px"></span>
-    <span style="flex:1"></span>
-    <button class="esc-fbtn" onclick="escApretar(-1)" title="Juntar el texto (menos interlineado y menos aire)">↕− Más junto</button>
-    <button class="esc-fbtn" onclick="escApretar(1)" title="Separar el texto (más interlineado y más aire)">↕+ Más separado</button>
-    <label style="display:flex;align-items:center;gap:4px;margin-left:6px">Interlineado
-      <select class="esc-fsel" onchange="escFormato('lh',this.value);this.value=''">
-        <option value="">—</option><option value="1">Simple</option><option value="1.15">1,15</option>
-        <option value="1.5">1,5</option><option value="2">Doble</option><option value="2.5">2,5</option>
-      </select></label>
-    <button class="esc-fbtn" onclick="escCuerpo(-1)" title="Achicar la letra un escalón">A−</button>
-    <button class="esc-fbtn" onclick="escCuerpo(1)" title="Agrandar la letra un escalón">A+</button>
-    <label style="display:flex;align-items:center;gap:4px">Cuerpo
-      <select class="esc-fsel" onchange="escFormato('fs',this.value);this.value=''">
-        <option value="">—</option><option value="9">9</option><option value="10">10</option>
-        <option value="10.5">10,5</option><option value="11">11</option><option value="11.5">11,5</option>
-        <option value="12">12 (estándar)</option><option value="13">13</option><option value="14">14</option>
-      </select></label>
-    <label style="display:flex;align-items:center;gap:4px">Espacio
-      <select class="esc-fsel" onchange="escFormato('esp',this.value);this.value=''">
-        <option value="">—</option><option value="0">Sin espacio</option><option value="6">6 pt</option>
-        <option value="12">12 pt</option><option value="18">18 pt</option><option value="24">24 pt</option>
-      </select></label>
-    <button class="esc-fbtn" onclick="document.execCommand('bold')" title="Negrita" style="font-weight:800">N</button>
-    <button class="esc-fbtn" onclick="document.execCommand('italic')" title="Cursiva" style="font-style:italic">K</button>
-    <button class="esc-fbtn" onclick="document.execCommand('underline')" title="Subrayado" style="text-decoration:underline">S</button>
-    <button class="esc-fbtn" onclick="escDescartarEdicion()" title="Volver al texto generado">↺ Original</button>
+  return `<div id="esc-fmt">
+    <button class="esc-fbtn" onclick="document.execCommand('bold')" title="Negrita" style="font-weight:800;min-width:26px">N</button>
+    <button class="esc-fbtn" onclick="document.execCommand('italic')" title="Cursiva" style="font-style:italic;min-width:26px">K</button>
+    <button class="esc-fbtn" onclick="document.execCommand('underline')" title="Subrayado" style="text-decoration:underline;min-width:26px">S</button>
+    <span class="esc-sep"></span>
+    <button class="esc-fbtn" onclick="escFormato('align','left')" title="Alinear a la izquierda">⯇</button>
+    <button class="esc-fbtn" onclick="escFormato('align','center')" title="Centrar">⯀</button>
+    <button class="esc-fbtn" onclick="escFormato('align','justify')" title="Justificar">☰</button>
+    <span class="esc-sep"></span>
+    <select class="esc-fsel" title="Tamaño de letra" onchange="escFormato('fs',this.value);this.value=''">
+      <option value="">Aa</option><option value="9">9</option><option value="10">10</option>
+      <option value="10.5">10,5</option><option value="11">11</option><option value="11.5">11,5</option>
+      <option value="12">12 ✓</option><option value="13">13</option><option value="14">14</option>
+    </select>
+    <button class="esc-fbtn" onclick="escCuerpo(-1)" title="Achicar la letra">A−</button>
+    <button class="esc-fbtn" onclick="escCuerpo(1)" title="Agrandar la letra">A+</button>
+    <span class="esc-sep"></span>
+    <select class="esc-fsel" title="Interlineado" onchange="escFormato('lh',this.value);this.value=''">
+      <option value="">↕</option><option value="1">Simple</option><option value="1.15">1,15</option>
+      <option value="1.5">1,5</option><option value="2">Doble ✓</option><option value="2.5">2,5</option>
+    </select>
+    <select class="esc-fsel" title="Espacio entre párrafos" onchange="escFormato('esp',this.value);this.value=''">
+      <option value="">¶</option><option value="0">Sin espacio</option><option value="6">6 pt</option>
+      <option value="12">12 pt</option><option value="18">18 pt</option><option value="24">24 pt</option>
+    </select>
+    <button class="esc-fbtn" onclick="escApretar(-1)" title="Juntar el texto">↕−</button>
+    <button class="esc-fbtn" onclick="escApretar(1)" title="Separar el texto">↕+</button>
+    <span class="esc-sep"></span>
+    <button class="esc-fbtn" onclick="escDescartarEdicion()" title="Volver al texto generado">↺</button>
+    <span id="esc-hojas" style="margin-left:auto"></span>
+    <span class="esc-ayuda">Seleccioná un tramo para tocar sólo eso</span>
   </div>`;
 }
 function _escDocCompleto(){
