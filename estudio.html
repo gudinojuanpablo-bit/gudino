@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v2.3</title>
+<title>Gudiño Cabrera y Asociados — v2.4</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -3040,6 +3040,7 @@ function toggleContador(id,e){if(e)e.stopPropagation();var c=document.getElement
 function refRow(id){
   const c=causas.find(x=>x.id===id);if(!c)return;
   const row=document.getElementById('cr-'+id);if(!row)return;
+  try{_pinCalcular();}catch(e){}     // sin esto la chinche quedaba de la vez anterior
   const t=document.createElement('div');t.innerHTML=rowHTML(c);row.replaceWith(t.firstChild);
 }
 
@@ -3229,6 +3230,7 @@ function clearV(id,e){
   c.aud_h='';c.aud_mod='';c.aud_obs='';
   if(pendingVen[id])delete pendingVen[id];
   sC();
+  try{_pinCalcular();}catch(e){}     // recalcular el anclaje antes de redibujar
   const row=document.getElementById('cr-'+id);
   if(row){const t=document.createElement('div');t.innerHTML=rowHTML(c);row.replaceWith(t.firstChild);}
   updBadges();renderVencPanel();
@@ -3251,6 +3253,7 @@ function limpiarCausa(id,e){
   if(pendingVen[id])delete pendingVen[id];
   sC();sH();
   closeCP();
+  try{_pinCalcular();}catch(e){}     // recalcular el anclaje antes de redibujar
   const row=document.getElementById('cr-'+id);
   if(row){const t=document.createElement('div');t.innerHTML=rowHTML(c);row.replaceWith(t.firstChild);}
   updBadges();renderVencPanel();
@@ -8966,7 +8969,8 @@ function _pinChip(c){
   if(st.pin.has(c.id)){
     const d=st.map[c.id].d;
     const t=d<0?'Vencido hace '+Math.abs(d)+' día'+(Math.abs(d)!==1?'s':''):d===0?'Vence hoy':d===1?'Vence mañana':'Vence en 2 días';
-    return `<span class="pin-tag" title="${t} — clic para bajarla a su lugar" onclick="desanclarVenc(${c.id},event)">📌 ✕</span>`;
+    const q=(st.map[c.id].txt||'').trim();
+    return `<span class="pin-tag" title="${t}${q?' — '+escH(q):''} · clic para bajarla a su lugar" onclick="desanclarVenc(${c.id},event)">📌 ✕</span>`;
   }
   if(st.off.has(c.id))return `<span class="pin-tag off" title="Bajada a mano — clic para volver a subirla" onclick="anclarVenc(${c.id},event)">📌</span>`;
   return '';
