@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v2.6</title>
+<title>Gudiño Cabrera y Asociados — v2.7</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1032,11 +1032,11 @@ g.pan-clic:hover text{fill:var(--text)}
         <button class="btn gh gh-azul" onclick="escEnviarControl()">🔍 A control</button>
         <button class="btn" onclick="escGuardarArchivo()" style="background:#1E6F42;color:#fff;border-color:#1E6F42" title="Lo guarda y lo deja esperando en «Para imprimir»">💾 Guardar</button>
         <button class="btn gh gh-navy" onclick="escImprimir()" title="Ctrl+P">🖨 Imprimir</button>
+        <button class="btn gh gh-rojo" onclick="escDescargarPDF()" title="Bajar el escrito en PDF (liviano, para el MEV)">⬇ PDF</button>
         <button class="btn gh" onclick="escMasAcciones(this)" title="Drive, Word y PDF" style="font-weight:700;padding:5px 13px">+</button>
         <div id="esc-mas" style="display:none;gap:8px;flex-wrap:wrap;align-items:center;width:100%;margin-top:2px;padding-top:8px;border-top:1px dashed var(--border)">
           <button class="btn gh gh-verde" id="btn-drive" onclick="escAbrirEnDrive()">📤 Abrir en Drive</button>
           <button class="btn gh gh-oro" onclick="escDescargarWord()">⬇ Word</button>
-          <button class="btn gh gh-rojo" onclick="escDescargarPDF()">⬇ PDF</button>
         </div>
       </div>
       <div id="esc-guardado-ok" style="display:none;font-size:11px;color:var(--green);font-weight:600;margin-top:6px">✓ Guardado y esperando en «Para imprimir»</div>
@@ -5843,6 +5843,7 @@ function generarCedulasWord(){
     @page Section1{size:21cm 29.7cm;margin:4.5cm 2cm 4.5cm 4.5cm;mso-page-orientation:portrait}
     div.Section1{page:Section1}
     body{font-family:Arial,sans-serif;font-size:12pt;color:#000}
+    p.cuerpo-p{margin:0 0 6pt 0;text-align:justify;text-indent:1.25cm}
     p{margin:0 0 6pt 0;line-height:200%;mso-line-height-rule:auto;font-family:Arial,sans-serif;font-size:12pt;color:#000}
     b,i,strong,em{font-family:Arial,sans-serif;color:#000}
   </style></head><body><div class="Section1">${cuerpo}</div></body></html>`;
@@ -6564,13 +6565,21 @@ function richPaste(e){
 function richCmd(e,cmd){e.preventDefault();try{document.execCommand('styleWithCSS',false,false);}catch(_){}document.execCommand(cmd,false,null);escPreviewRefresh();}
 function _richVal(el){
   let h=el.innerHTML||'';
-  h=h.replace(/<div><br\s*\/?><\/div>/gi,' ').replace(/<div>/gi,' ').replace(/<\/div>/gi,'').replace(/<br\s*\/?>/gi,' ');
+  // cada bloque del editor es un párrafo: se marca el corte y se respeta después
+  h=h.replace(/<div><br\s*\/?><\/div>/gi,'\u0001')
+     .replace(/<\/div>\s*<div[^>]*>/gi,'\u0001')
+     .replace(/<div[^>]*>/gi,'\u0001').replace(/<\/div>/gi,'')
+     .replace(/<p[^>]*>/gi,'\u0001').replace(/<\/p>/gi,'')
+     .replace(/<br\s*\/?>/gi,'\u0001');
   h=h.replace(/<span[^>]*font-weight:\s*(bold|[6-9]00)[^>]*>(.*?)<\/span>/gi,'<b>$2</b>');
   h=h.replace(/<span[^>]*font-style:\s*italic[^>]*>(.*?)<\/span>/gi,'<i>$1</i>');
   h=h.replace(/<span[^>]*text-decoration:[^>]*underline[^>]*>(.*?)<\/span>/gi,'<u>$1</u>');
   h=h.replace(/<(?!\/?(?:b|i|u|strong|em)\b)[^>]*>/gi,'');
-  h=h.replace(/&nbsp;/g,' ').replace(/\s+/g,' ');
-  return h.trim();
+  h=h.replace(/&nbsp;/g,'\u00a0').replace(/[ \t\n\r]+/g,' ');
+  // los cortes marcados se convierten en párrafos de verdad
+  const partes=h.split('\u0001').map(x=>x.trim()).filter(x=>x!=='');
+  if(partes.length<=1)return (partes[0]||'').trim();
+  return partes.map(x=>'<p class="cuerpo-p">'+x+'</p>').join('');
 }
 function escDatos(){
   const tipo=document.getElementById('esc-tipo').value;
@@ -6651,7 +6660,7 @@ function escHTML(){
     return `<p style="text-align:center;font-weight:bold;margin-bottom:22pt">${escH(titulo)}</p>
     <p>${jz.gen==='f'?'Señora Jueza':'Señor Juez'} del ${tCase(jz.corto||jz.nombre)}:</p>
     <p style="text-align:justify;text-indent:1.25cm;margin-top:10pt">${encab}</p>
-    <div style="text-align:justify;text-indent:1.25cm">${cuerpo}</div>
+    <div style="text-align:justify;text-indent:1.25cm" class="cuerpo-wrap">${cuerpo}</div>
     <p style="margin-top:16pt;text-align:center">Proveer de conformidad</p>
     <p style="font-weight:bold;text-align:center">SERÁ JUSTICIA</p>`;
   }
@@ -7237,7 +7246,7 @@ function _pdfTxt(t){
     'Á':'\\301','É':'\\311','Í':'\\315','Ó':'\\323','Ú':'\\332','Ñ':'\\321','Ü':'\\334',
     '°':'\\260','·':'\\267','€':'\\200','º':'\\272','ª':'\\252','“':'\\223','”':'\\224','‘':'\\221','’':'\\222',
     '—':'\\227','–':'\\226','…':'\\205','«':'\\253','»':'\\273','¿':'\\277','¡':'\\241'};
-  return _pdfEsc(t).replace(/[^\x00-\x7F]/g,function(ch){return m[ch]!==undefined?m[ch]:'?';});
+  return _pdfEsc(String(t).replace(/\u00a0/g,' ')).replace(/[^\x00-\x7F]/g,function(ch){return m[ch]!==undefined?m[ch]:'?';});
 }
 
 /* medidor: usa el propio navegador con Arial, así el corte de línea es idéntico */
@@ -7253,6 +7262,15 @@ function _pdfRenglones(runs,ancho,pt){
   runs.forEach(r=>{
     r.t.split(/(\s+)/).forEach(w=>{if(w!=='')palabras.push({t:w,b:r.b,i:r.i,u:r.u});});
   });
+  // lo que termina en espacio duro se pega con lo que sigue: así la matrícula
+  // nunca queda partida entre dos renglones
+  for(let i=palabras.length-2;i>=0;i--){
+    const pega=/\u00a0$/.test(palabras[i].t)||/(^|[\s(])(N[°º]|M\.P\.|art\.|Art\.|inc\.|N\.?°)$/.test(palabras[i].t);
+    if(pega&&palabras[i+1]&&!/^[ \t\n\r]+$/.test(palabras[i+1].t)){
+      palabras[i]={t:palabras[i].t+palabras[i+1].t,b:palabras[i].b,i:palabras[i].i,u:palabras[i].u};
+      palabras.splice(i+1,1);
+    }
+  }
   const lineas=[];let act=[],w=0;
   palabras.forEach(p=>{
     const esEspacio=/^[ \t\n\r]+$/.test(p.t);
@@ -7293,7 +7311,8 @@ function _pdfParrafos(html){
     const runs=[];
     const rec=(n,e)=>{
       if(n.nodeType===3){
-        const t=n.nodeValue.replace(/\s+/g,' ');
+        // ojo: \s incluye el espacio duro, y eso partía "M.P. N° 4683"
+        const t=n.nodeValue.replace(/[ \t\n\r]+/g,' ');
         if(t!=='')runs.push({t,b:e.b,i:e.i,u:e.u});
         return;
       }
@@ -7315,7 +7334,27 @@ function _pdfParrafos(html){
     const r=im.getBoundingClientRect();
     membrete={src:im.getAttribute('src'),w:r.width*0.75,h:r.height*0.75};
   }
-  cont.querySelectorAll('p').forEach(p=>{
+  /* se toman TODOS los bloques con texto, no sólo los <p>: el cuerpo escrito a
+     mano viene en <div> o suelto y así se perdía al armar el PDF */
+  const ES_BLOQUE=['P','DIV','LI','H1','H2','H3','H4','H5','H6','BLOCKQUOTE','SECTION','ARTICLE'];
+  const bloques=[];
+  (function recorrer(el){
+    [...el.childNodes].forEach(n=>{
+      if(n.nodeType===3){
+        if(n.nodeValue.trim()!==''){
+          const w=d.createElement('p');
+          n.parentNode.insertBefore(w,n);w.appendChild(n);bloques.push(w);
+        }
+        return;
+      }
+      if(n.nodeType!==1)return;
+      if(n.tagName==='IMG'||n.tagName==='BR')return;
+      const hijosBloque=[...n.children].some(x=>ES_BLOQUE.includes(x.tagName));
+      if(ES_BLOQUE.includes(n.tagName)&&!hijosBloque){bloques.push(n);return;}
+      if(n.childNodes.length)recorrer(n);
+    });
+  })(cont);
+  bloques.forEach(p=>{
     const st=ifr.contentWindow.getComputedStyle(p);
     const pt=Math.round(parseFloat(st.fontSize)*0.75*10)/10;      // px → pt
     let lhPx=parseFloat(st.lineHeight);
