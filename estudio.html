@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v2.7</title>
+<title>Gudiño Cabrera y Asociados — v2.8</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -264,7 +264,9 @@ g.pan-clic:hover text{fill:var(--text)}
 .cr.res{background:#f5f5f5;border-color:#ddd;opacity:.75}
 .cr.res .chk-col{background:#ebebeb;border-color:#ddd}
 .cr.res .ci-car{color:#999}
-.cr.res .ci-not{color:#bbb}
+.cr.res .not-f{font-size:9.5px;color:#b9bfcb;font-weight:400;white-space:nowrap;letter-spacing:.2px}
+.ci-not:hover .not-f{color:#98a1b8}
+.ci-not{color:#bbb}
 /* colores por tipo de audiencia */
 .cr.aud-inicial{background:#EAF4FF;border-color:#90C8F0}
 .cr.aud-inicial .chk-col{background:#D5EBFC;border-color:#90C8F0}
@@ -2770,7 +2772,7 @@ function rowHTML(c){
       ${_audsLineas(c)}
       ${_vencsChips(c)}
       ${c.not?`<div style="position:relative;display:inline-block;width:100%">
-        <div class="ci-not" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" title="Click para editar">${c.not}</div>
+        <div class="ci-not" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" title="Click para editar">${c.not}${_fechaNota(c)}</div>
         <span onclick="edSt(${c.id},event)" title="Editar nota" style="position:absolute;top:0;right:0;font-size:10px;color:#ccc;cursor:pointer;padding:1px 3px;line-height:1">✏</span>
       </div>`:`<div class="ci-not" id="not-${c.id}" contenteditable="false" onclick="edSt(${c.id},event)" onblur="edEn(${c.id})" onkeydown="edK(event,${c.id})" ${(c.tipo_aud||(c.ven&&c.tv))?'style="display:none"':''}></div>`}
 
@@ -3083,8 +3085,24 @@ function pegarTextoPlano(e){
     document.execCommand('insertText',false,texto);
   }
 }
-function edSt(id,e){if(e&&e.target&&e.target.closest('.chk-col'))return;if(openCID!==null){closeCP();return;}if(activeEd===id)return;if(activeEd!==null)edEn(activeEd);activeEd=id;const el=document.getElementById('not-'+id);if(el){el.contentEditable='true';el.onpaste=pegarTextoPlano;el.focus();}}
-function edEn(id){const el=document.getElementById('not-'+id);if(!el){activeEd=null;return;}el.contentEditable='false';const c=causas.find(x=>x.id===id);if(!c){activeEd=null;return;}const nuevo=el.innerText.trim();if(nuevo!==c.not){if(!historial[id])historial[id]=[];historial[id].unshift({d:todayISO(),t:c.not});if(historial[id].length>30)historial[id]=historial[id].slice(0,30);c.not=nuevo;c.lastTouch=Date.now();sC();sH();}activeEd=null;}
+function edSt(id,e){
+  // la fechita se saca antes de editar para que no se mezcle con el texto
+  try{const _e=document.getElementById('not-'+id);if(_e){const _f=_e.querySelector('.not-f');if(_f)_f.remove();}}catch(err){}if(e&&e.target&&e.target.closest('.chk-col'))return;if(openCID!==null){closeCP();return;}if(activeEd===id)return;if(activeEd!==null)edEn(activeEd);activeEd=id;const el=document.getElementById('not-'+id);if(el){el.contentEditable='true';el.onpaste=pegarTextoPlano;el.focus();}}
+/* fecha del último asiento, discreta al final de la nota */
+function _fechaNota(c){
+  const f=c&&c.notF;
+  if(!f)return '';
+  try{
+    const d=new Date(String(f).length<=10?String(f)+'T12:00:00':f);
+    if(isNaN(d))return '';
+    const hoy=new Date(HOY.getFullYear(),HOY.getMonth(),HOY.getDate());
+    const dd=Math.round((hoy-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);
+    const txt=dd===0?'hoy':(dd===1?'ayer':d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}));
+    const largo=d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    return ' <span class="not-f" title="Último asiento: '+largo+'">'+txt+'</span>';
+  }catch(e){return '';}
+}
+function edEn(id){const el=document.getElementById('not-'+id);if(!el){activeEd=null;return;}el.contentEditable='false';const c=causas.find(x=>x.id===id);if(!c){activeEd=null;return;}const nuevo=el.innerText.trim();if(nuevo!==c.not){if(!historial[id])historial[id]=[];historial[id].unshift({d:todayISO(),t:c.not});if(historial[id].length>30)historial[id]=historial[id].slice(0,30);c.not=nuevo;c.notF=todayISO();c.lastTouch=Date.now();sC();sH();}activeEd=null;}
 function edK(e,id){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();edEn(id);}if(e.key==='Escape'){const el=document.getElementById('not-'+id);if(el)el.contentEditable='false';activeEd=null;}}
 
 
