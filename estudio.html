@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v2.8</title>
+<title>Gudiño Cabrera y Asociados — v2.9</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -3102,7 +3102,7 @@ function _fechaNota(c){
     return ' <span class="not-f" title="Último asiento: '+largo+'">'+txt+'</span>';
   }catch(e){return '';}
 }
-function edEn(id){const el=document.getElementById('not-'+id);if(!el){activeEd=null;return;}el.contentEditable='false';const c=causas.find(x=>x.id===id);if(!c){activeEd=null;return;}const nuevo=el.innerText.trim();if(nuevo!==c.not){if(!historial[id])historial[id]=[];historial[id].unshift({d:todayISO(),t:c.not});if(historial[id].length>30)historial[id]=historial[id].slice(0,30);c.not=nuevo;c.notF=todayISO();c.lastTouch=Date.now();sC();sH();}activeEd=null;}
+function edEn(id){const el=document.getElementById('not-'+id);if(!el){activeEd=null;return;}el.contentEditable='false';const c=causas.find(x=>x.id===id);if(!c){activeEd=null;return;}const nuevo=el.innerText.trim();if(nuevo!==c.not){if(!historial[id])historial[id]=[];historial[id].unshift({d:todayISO(),t:c.not});if(historial[id].length>30)historial[id]=historial[id].slice(0,30);c.not=nuevo;c.notF=todayISO();c.lastTouch=Date.now();sC();sH();setTimeout(()=>{try{refRow(id);}catch(e){}},0);}activeEd=null;}
 function edK(e,id){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();edEn(id);}if(e.key==='Escape'){const el=document.getElementById('not-'+id);if(el)el.contentEditable='false';activeEd=null;}}
 
 
