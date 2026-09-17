@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v2.9</title>
+<title>Gudiño Cabrera y Asociados — v3.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -578,7 +578,7 @@ g.pan-clic:hover text{fill:var(--text)}
 </head>
 <body>
 <style id="rich-ctrl-css">
-.rich-tb{display:flex;gap:4px;margin:2px 0 3px}
+.rich-tb{display:flex;gap:4px;margin:2px 0 3px;align-items:center}
 .rich-tb button{border:1px solid #ddd;background:#fff;border-radius:6px;width:30px;height:26px;font-size:13px;cursor:pointer;color:#333;line-height:1}
 .rich-tb button:hover{background:#f0f0f0}
 .fi.rich{min-height:70px;overflow-y:auto;text-align:left}
@@ -5847,7 +5847,7 @@ function generarCedulasWord(){
       <p style="text-align:center;font-weight:bold;font-size:19pt;margin-bottom:20pt;white-space:nowrap;letter-spacing:.5px">CÉDULA DE NOTIFICACIÓN JUDICIAL</p>
       <p><b>Destinatario:</b> ${c.dest}</p>
       <p><b>Domicilio:</b> ${c.dom}</p>
-      <p style="margin-top:18pt;text-align:justify;text-indent:1.25cm;">Comunico a Ud. que en los <b>Autos N° ${expN}</b> caratulados <b>"${escH(carat)}"</b>, que tramitan por ante el <b>${juzg}</b>, se ha dictado una resolución que en su parte pertinente dice: <i>"${c.prov}"</i></p>
+      <p style="margin-top:18pt;text-align:justify;text-indent:1.25cm;">Comunico a Ud. que en los <b>Autos N° ${expN}</b> caratulados <b>"${escH(carat)}"</b>, que tramitan por ante el <b>${juzg}</b>, se ha dictado una resolución que en su parte pertinente dice: <i>"${_limpiaCita(c.prov)}"</i></p>
       ${c.obs?`<p style="font-weight:bold">${c.obs}</p>`:''}
       ${c.art?`<p style="font-size:9pt;text-align:justify;line-height:1.3;margin-top:8pt">${c.art}</p>`:''}
       <p style="margin-top:16pt;font-weight:bold;text-indent:1.25cm;">QUEDA UD. DEBIDAMENTE NOTIFICADO.-</p>
@@ -6237,7 +6237,7 @@ function escActualizar(){
   cont.innerHTML='<label class="fl">2 — Datos del escrito</label>'+_blqCar+def.campos.filter(c=>!c.resp).map(c=>
     `<div style="font-size:10px;color:#8a94a6;margin:6px 0 1px;font-weight:600">${c.l}${c.op?' <span style="font-weight:400">(opcional)</span>':''}</div>`+
     (c.ta?(['prov','cuerpo','texto','relato','pedido','hechos'].includes(c.k)
-      ? `<div class="rich-tb"><button type="button" title="Negrita" onmousedown="richCmd(event,'bold')"><b>N</b></button><button type="button" title="Cursiva" onmousedown="richCmd(event,'italic')"><i>K</i></button><button type="button" title="Subrayado" onmousedown="richCmd(event,'underline')"><u>S</u></button></div>
+      ? `<div class="rich-tb"><button type="button" title="Negrita" onmousedown="richCmd(event,'bold')"><b>N</b></button><button type="button" title="Cursiva" onmousedown="richCmd(event,'italic')"><i>K</i></button><button type="button" title="Subrayado" onmousedown="richCmd(event,'underline')"><u>S</u></button><span style="flex:1"></span><button type="button" title="Deshacer (Ctrl+Z)" onmousedown="richCmd(event,'undo')">↶ Deshacer</button><button type="button" title="Rehacer (Ctrl+Y)" onmousedown="richCmd(event,'redo')">↷ Rehacer</button><button type="button" title="Vaciar este campo" onmousedown="richVaciar(event,'${c.k}')">🗑 Vaciar</button></div>
          <div class="fi rich" id="esc-f-${c.k}" contenteditable="true" data-ph="${c.ph}" style="width:100%;min-height:${c.k==='aperc'?'46':'70'}px;font-size:${c.k==='aperc'?'10':'12'}px" oninput="escPreviewRefresh()" onpaste="richPaste(event)"></div>`
       : `<textarea class="fi" id="esc-f-${c.k}" placeholder="${c.ph}" style="width:100%;height:${c.k==='aperc'?'46':'70'}px;resize:vertical;font-size:${c.k==='aperc'?'10':'12'}px"></textarea>`)
        : c.sel
@@ -6580,6 +6580,18 @@ function richPaste(e){
   }
   escPreviewRefresh();
 }
+/* v3.1 — vaciar un campo largo sin borrar a mano, con posibilidad de deshacer */
+function richVaciar(ev,k){
+  if(ev)ev.preventDefault();
+  const el=document.getElementById('esc-f-'+k);
+  if(!el)return;
+  if(!el.innerText.trim())return;
+  el.focus();
+  document.execCommand('selectAll',false,null);
+  document.execCommand('delete',false,null);   // así queda en el historial de deshacer
+  escPreviewRefresh();
+  toast('Campo vaciado — ↶ Deshacer lo devuelve');
+}
 function richCmd(e,cmd){e.preventDefault();try{document.execCommand('styleWithCSS',false,false);}catch(_){}document.execCommand(cmd,false,null);escPreviewRefresh();}
 function _richVal(el){
   let h=el.innerHTML||'';
@@ -6691,7 +6703,7 @@ function escHTML(){
     <p><b>Destinatario:</b> ${d.dest||'________________'}</p>
     <p><b>Domicilio:</b> ${d.dom||'________________'}</p>
     <div class="fit" style="font-size:${fit.fs}pt;line-height:${fit.lh}">
-      <p style="margin-top:14pt;text-align:justify;text-indent:1.25cm;">Comunico a Ud. que en los <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(_caratula(c))}"</b>, que tramitan por ante el <b>${jz.nombre}</b>, se ha dictado una resolución que en su parte pertinente dice: <i>"${d.prov||'________________'}"</i></p>
+      <p style="margin-top:14pt;text-align:justify;text-indent:1.25cm;">Comunico a Ud. que en los <b>Autos N° ${c.ex||'____'}</b> caratulados <b>"${escH(_caratula(c))}"</b>, que tramitan por ante el <b>${jz.nombre}</b>, se ha dictado una resolución que en su parte pertinente dice: <i>"${_limpiaCita(d.prov)||'________________'}"</i></p>
       ${d.obs?`<p style="font-weight:bold">${d.obs}</p>`:''}
       ${d.fojas?`<p style="text-align:justify;text-indent:1.25cm;">Se acompañan copias para traslado obrantes en ${d.fojas} (${numALetras(d.fojas)}) fojas útiles doble faz.-</p>`:''}
       ${d.link?`<p style="margin-top:8pt"><b>ENLACE A REPOSITORIO:</b> ${d.link}</p>`:''}
@@ -6723,7 +6735,7 @@ function escHTML(){
     ${(esLab||ofiLab)?`<p style="font-weight:bold">PLAZO PARA CONTESTAR OFICIO: ${_plz.num} DÍAS</p>
     <p style="font-weight:bold">REMITIR CONTESTACIÓN A: ${_mailR}</p>`
     :`<p style="text-align:justify;${S}">Responder dentro de los ${_plz.txt} días hábiles, presencialmente en soporte papel en ${_dirR}, o al correo oficial del Juzgado: <b>${_mailR}</b>.-</p>`}
-    ${d.prov?`<p style="text-align:justify;${S}">Para mayores recaudos se transcribe la providencia que así lo ordena y que, en su parte pertinente, dice: <i>"${d.prov}"</i>.-</p>`:''}
+    ${d.prov?`<p style="text-align:justify;${S}">Para mayores recaudos se transcribe la providencia que así lo ordena y que, en su parte pertinente, dice: <i>"${_limpiaCita(d.prov)}"</i>.-</p>`:''}
     ${esLab?'':`<p style="${S}">Cumplido, sírvalo devolver con todo lo actuado.-</p>`}
     ${d.aperc?d.aperc.split('\n').filter(x=>x.trim()).map(a=>`<p style="font-size:${fit.ap||8}pt;line-height:1.25;text-align:justify;margin-top:6pt">${a.trim()}</p>`).join(''):''}
     </div>
@@ -6986,9 +6998,22 @@ function _escManualVigente(){
   return (_escManual&&_escManualClave===_escClaveActual())?_escManual:null;
 }
 function escOlvidarRetoque(){_escManual=null;_escManualClave='';}
+/* saca espacios, saltos y comillas sueltas de los extremos de una cita, para
+   que las comillas queden pegadas al texto al justificar */
+function _limpiaCita(t){
+  let x=String(t==null?'':t);
+  x=x.replace(/^(?:\s|&nbsp;|<br\s*\/?>)+/gi,'').replace(/(?:\s|&nbsp;|<br\s*\/?>)+$/gi,'');
+  x=x.replace(/^["“”]+/,'').replace(/["“”]+$/,'');
+  return x.replace(/\s+([,.;:)])/g,'$1');
+}
 function escHojaEditada(){
   const sh=document.getElementById('esc-sheet');
-  return (sh&&sh.isContentEditable)?sh.innerHTML:null;
+  if(!sh||!sh.isContentEditable)return null;
+  // v3.0 — se saca lo que es sólo ayuda visual (las líneas de corte de hoja):
+  // antes se colaban en el impreso y salían las leyendas "hoja 1 de 3" abajo
+  const copia=sh.cloneNode(true);
+  copia.querySelectorAll('.corte-hoja').forEach(x=>x.remove());
+  return copia.innerHTML;
 }
 function _escTomarEdicion(){
   const h=escHojaEditada();
@@ -7009,6 +7034,20 @@ function escHTMLFinal(){
   const vig=_escManualVigente();
   if(vig)return vig;
   return escHTML();
+}
+/* v3.1 — rearmado total: se tira el retoque, se olvida todo lo guardado en
+   memoria de la hoja y se vuelve a generar desde los campos del formulario.
+   Es el botón para cuando, por lo que sea, quedó algo de un escrito anterior. */
+function escRehacerVista(){
+  try{
+    escOlvidarRetoque();
+    const sh=document.getElementById('esc-sheet');
+    if(sh){sh.removeAttribute('contenteditable');sh.innerHTML='';}
+    _escManual=null;_escManualClave='';
+    clearTimeout(_tPrev);
+    escVistaPrevia(true);
+    toast('Hoja rehecha desde los datos del formulario');
+  }catch(e){toast('No se pudo rehacer: '+e.message);}
 }
 function escDescartarEdicion(){
   if(!_escManual&&escHojaEditada()===null)return;
@@ -7218,6 +7257,7 @@ function escBarraFormato(){
     <button class="esc-fbtn" onclick="escApretar(1)" title="Separar el texto">↕+</button>
     <span class="esc-sep"></span>
     <button class="esc-fbtn" onclick="escDescartarEdicion()" title="Volver al texto generado">↺</button>
+    <button class="esc-fbtn" onclick="escRehacerVista()" title="Rehacer la hoja desde cero, por si quedó algo pegado de un escrito anterior" style="border-color:#8a6b3a;color:#e8c98b">⟳ Rehacer hoja</button>
     <span id="esc-hojas" style="margin-left:auto"></span>
     <span class="esc-ayuda">Seleccioná un tramo para tocar sólo eso</span>
   </div>`;
