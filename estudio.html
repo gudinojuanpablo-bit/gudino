@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v3.1</title>
+<title>Gudiño Cabrera y Asociados — v3.5</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -422,6 +422,58 @@ g.pan-clic:hover text{fill:var(--text)}
 .ext-f.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 .ef-wrap{background:var(--bg2);border-radius:6px;padding:12px;margin-bottom:10px;border:1px solid var(--border);display:none}
 .ef-wrap.ab{display:block}
+/* ── extrajudiciales: filas del registro con lo justo ── */
+.cr.exr{grid-template-columns:26px 1fr 128px}
+.cr.exr.ab{border-color:var(--navy);border-radius:9px 9px 0 0;margin-bottom:0;box-shadow:0 -1px 8px rgba(20,33,61,.07)}
+.cr.exr .ci{padding:6px 10px}
+.exr-tipo{font-size:11px;font-weight:600;color:var(--text3)}
+.cr.exr.mov .exr-tipo{color:#4C8A4C}
+.exr-art{font-size:9.5px;font-weight:700;background:#FFF1E8;border:1px solid #f0c9ab;color:#A84B12;border-radius:9px;padding:1px 6px;margin-left:5px;vertical-align:1px}
+.exr-sub{font-size:11px;color:var(--text3);line-height:1.45}
+.exr-ult{font-size:11px;color:var(--text2);line-height:1.45;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cr.exr .cr-r{min-width:120px;align-items:flex-end;gap:4px}
+.cr.exr .vbtn{font-size:10px;font-weight:600;color:var(--navy);background:var(--bg);border-color:var(--border2)}
+.cr.exr .vbtn:hover{background:var(--navy);color:#fff;border-color:var(--navy);opacity:1}
+.exr-det{border:1px solid var(--navy);border-top:0;border-radius:0 0 9px 9px;background:#FBFCFE;
+  margin:0 0 5px;padding:9px 11px 11px}
+.exr-rot{font-size:9.5px;font-weight:700;color:var(--text3);margin:11px 0 3px;letter-spacing:.3px}
+.exr-rot span{font-weight:400;letter-spacing:0}
+.exr-not{font-size:11.5px;color:var(--text2);line-height:1.55;background:var(--bg);border:1px solid var(--border);
+  border-radius:8px;padding:7px 9px;cursor:text;outline:none;white-space:pre-wrap;word-break:break-word;min-height:34px}
+.exr-not:focus{border-color:var(--navy);box-shadow:0 0 0 2px rgba(20,33,61,.07);color:var(--text)}
+.ext-chips{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0 2px}
+.echip{font-size:10px;font-weight:600;color:var(--text2);background:var(--bg2);border:1px solid var(--border);border-radius:11px;padding:2px 8px}
+.echip.art{background:#FFF1E8;border-color:#f0c9ab;color:#A84B12}
+.echip.tel{background:#EEF4FF;border-color:#c9daf5;color:#2C5AA0}
+.echip.fecha{color:var(--text3);background:transparent;border-style:dashed}
+.ext-seg{margin-top:9px;border:1px solid var(--border);border-radius:9px;background:var(--bg);overflow:hidden}
+.eseg-top{display:flex;align-items:center;justify-content:space-between;padding:5px 9px;background:var(--bg2);
+  border-bottom:1px solid var(--border);font-size:10px;font-weight:700;color:var(--text2);letter-spacing:.3px}
+.eseg-add{width:21px;height:21px;border-radius:50%;border:1px solid var(--border2);background:var(--bg);
+  color:var(--navy);font-size:15px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.eseg-add:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.eseg-it{display:flex;align-items:flex-start;gap:7px;padding:5px 9px;border-bottom:1px solid var(--border);font-size:11.5px}
+.eseg-it:last-child{border-bottom:0}
+.eseg-it.hecho .eseg-t{text-decoration:line-through;color:var(--text3)}
+.eseg-chk{flex:none;width:15px;cursor:pointer;color:var(--green);font-weight:700;text-align:center;user-select:none}
+.eseg-it:not(.hecho) .eseg-chk{color:var(--border2)}
+.eseg-f{flex:none;font-size:10px;color:var(--text3);min-width:48px;font-variant-numeric:tabular-nums;padding-top:1px}
+.eseg-t{flex:1;min-width:0;color:var(--text);outline:none;line-height:1.35}
+.eseg-t[contenteditable="true"]{background:#FFFDF2;box-shadow:0 0 0 2px #f0e2b8;border-radius:4px;padding:0 3px}
+.eseg-del{flex:none;border:0;background:transparent;color:var(--text3);cursor:pointer;font-size:11px;padding:0 2px}
+.eseg-del:hover{color:#C0392B}
+.eseg-vacio{padding:8px 9px;font-size:10.5px;color:var(--text3)}
+.eseg-f2{flex:none;width:102px;font-size:10px;color:var(--text3);border:1px solid transparent;background:transparent;
+  border-radius:5px;padding:1px 3px;font-variant-numeric:tabular-nums;cursor:pointer}
+.eseg-f2:hover{border-color:var(--border2);background:var(--bg)}
+.eseg-nuevo{display:flex;align-items:center;gap:7px;padding:6px 9px;background:var(--bg2);border-top:1px solid var(--border)}
+.eseg-mas{flex:none;width:18px;height:18px;border-radius:50%;background:var(--navy);color:#fff;
+  font-size:13px;font-weight:700;line-height:18px;text-align:center;user-select:none}
+.eseg-in{flex:1;min-width:0;border:1px solid var(--border2);border-radius:6px;background:var(--bg);
+  font-size:11.5px;padding:5px 9px;color:var(--text);font-family:inherit}
+.eseg-in:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 2px rgba(20,33,61,.08)}
+.xb.mas{color:var(--navy);font-weight:700}
+#panel-extrajudiciales{max-width:1120px;margin:0 auto;width:100%}
 .ext-card{border-radius:6px;border:1px solid var(--border);margin-bottom:6px;background:var(--bg);overflow:hidden;border-left-width:4px}
 .ext-card.s-nuevo{border-left-color:var(--blue)}
 .ext-card.s-gestion{border-left-color:#e67e22}
@@ -660,6 +712,7 @@ g.pan-clic:hover text{fill:var(--text)}
     </div>
     <div class="ni" id="ni-aud" onclick="goP('audiencias')">📅 Audiencias</div>
     <div class="ni" id="ni-tur" onclick="goP('turnero')">🗓 Turnos <span class="nb" id="cnt-tur-side" style="display:none;background:#3A5378;color:#fff">0</span></div>
+    <div class="ni" id="ni-ext" onclick="goP('extrajudiciales')">📁 Extrajudiciales <span class="nb" id="cnt-ext-side" style="display:none;background:#7A5C99;color:#fff">0</span></div>
     <div class="ni" id="ni-pend" onclick="goP('pendientes')">📝 Anotador <span class="nb" id="cnt-pend" style="display:none">0</span></div>
     <div class="ni" id="ni-control" onclick="goP('control')">🔍 Control de escritos <span class="nb" id="cnt-control" style="display:none;background:#C0392B;color:#fff">0</span></div>
     <div class="ni" id="ni-imp" onclick="goP('imprimir')">🖨 Para imprimir <span class="nb" id="cnt-imp" style="display:none;background:var(--oro);color:#fff">0</span></div>
@@ -735,27 +788,30 @@ g.pan-clic:hover text{fill:var(--text)}
     </div>
 
     <div class="ct panel" id="panel-extrajudiciales">
-      <div class="ext-top">
-        <div class="ext-fs" id="ext-fs">
-          <div class="ext-f on" onclick="setEF('')">Todos</div>
-          <div class="ext-f" onclick="setEF('Nuevo cliente')">👤 Nuevo cliente</div>
-          <div class="ext-f" onclick="setEF('Potencial demanda')">⚖ Potencial</div>
-          <div class="ext-f" onclick="setEF('Carta documento')">📩 Carta doc.</div>
-          <div class="ext-f" onclick="setEF('Consulta')">💬 Consulta</div>
-          <div class="ext-f" onclick="setEF('Mediación Familiar')">👨‍👩‍👧 Med. Familiar</div>
-          <div class="ext-f" onclick="setEF('Mediación Laboral')">🤝 Med. Laboral</div>
-          <div class="ext-f" onclick="setEF('Otro')">📎 Otro</div>
-        </div>
-        <button class="btn p" onclick="abrirEF(null)" style="font-size:11px">+ Nuevo</button>
+      <div class="ext-top" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:11px;color:var(--text3)" id="ext-resumen">—</div>
+        <button class="btn p" onclick="abrirEF(null)" style="font-size:11px">+ Nueva gestión</button>
       </div>
       <div class="ef-wrap" id="ef-form">
         <div style="font-size:12px;font-weight:700;margin-bottom:10px" id="ef-label">Nuevo extrajudicial</div>
         <div class="fg">
-          <div class="fgg"><label class="fl">Título / Nombre</label><input class="fi" id="ef-tit" placeholder="Ej: García Juan — accidente ART"></div>
-          <div class="fgg"><label class="fl">Tipo</label><select class="fi" id="ef-tipo"><option>Nuevo cliente</option><option>Potencial demanda</option><option>Carta documento</option><option>Consulta</option><option>Mediación Familiar</option><option>Mediación Laboral</option><option>Otro</option></select></div>
+          <div class="fgg"><label class="fl">Cliente</label><input class="fi" id="ef-tit" placeholder="Apellido y nombre"></div>
+          <div class="fgg"><label class="fl">Tipo de gestión</label><select class="fi" id="ef-tipo">
+            <option>TCL (telegrama laboral)</option><option>Carta documento</option><option>Nuevo cliente</option>
+            <option>Potencial demanda</option><option>Consulta</option><option>Mediación Familiar</option>
+            <option>Mediación Laboral</option><option>Reclamo administrativo</option><option>Otro</option></select></div>
+          <div class="fgg"><label class="fl">Fuero</label><select class="fi" id="ef-fuero">
+            <option value="">—</option><option>Laboral</option><option>Civil</option><option>Familia</option>
+            <option>Paz Letrado</option><option>Comercial</option><option>Contencioso</option><option>Previsional</option><option>Otro</option></select></div>
           <div class="fgg"><label class="fl">Estado</label><select class="fi" id="ef-est"><option value="nuevo">Nuevo</option><option value="gestion">En gestión</option><option value="espera">En espera</option><option value="cerrado">Cerrado</option></select></div>
+          <div class="fgg"><label class="fl">Contacto</label><input class="fi" id="ef-tel" placeholder="Teléfono o mail"></div>
           <div class="fgg"><label class="fl">⭐ Tarea para Ramiro</label><input class="fi" id="ef-ram" placeholder="Opcional"></div>
-          <div class="fgg full"><label class="fl">Notas</label><textarea class="fi" rows="3" id="ef-not" style="resize:vertical" placeholder="Descripción, contacto, próximo paso..."></textarea></div>
+          <div class="fgg full" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+              <input type="checkbox" id="ef-art" style="width:15px;height:15px"> 🦺 Es contra una A.R.T.</label>
+            <input class="fi" id="ef-contra" placeholder="Contra quién (empleador, ART, demandado...)" style="flex:1;min-width:220px;font-size:12px">
+          </div>
+          <div class="fgg full"><label class="fl">Observaciones</label><textarea class="fi" rows="3" id="ef-not" style="resize:vertical" placeholder="Lo que haga falta recordar de esta gestión..."></textarea></div>
         </div>
         <input type="hidden" id="ef-id">
         <div class="fa">
@@ -1334,7 +1390,7 @@ const TIPOS={
 };
 function tInfo(t){return TIPOS[t]||TIPOS.otro;}
 
-const EXT_ICO={'Nuevo cliente':'👤','Potencial demanda':'⚖','Carta documento':'📩','Consulta':'💬','Mediación Familiar':'👨‍👩‍👧','Mediación Laboral':'🤝','Otro':'📎'};
+const EXT_ICO={'TCL (telegrama laboral)':'📨','Reclamo administrativo':'🏛','Nuevo cliente':'👤','Potencial demanda':'⚖','Carta documento':'📩','Consulta':'💬','Mediación Familiar':'👨‍👩‍👧','Mediación Laboral':'🤝','Otro':'📎'};
 const EXT_EST={nuevo:{lbl:'Nuevo',cls:'ep-nuevo'},gestion:{lbl:'En gestión',cls:'ep-gestion'},espera:{lbl:'En espera',cls:'ep-espera'},cerrado:{lbl:'Cerrado',cls:'ep-cerrado'}};
 
 // ═══════════════════════════════════════════════
@@ -2436,7 +2492,10 @@ function updBadges(){
   r+=extraj.filter(e=>e.ram&&!e.rdon).length;
   r+=_carpetaTasks().length;
   const rbEl=document.getElementById('rbadge');if(rbEl)rbEl.textContent=r;
-  document.getElementById('cnt-ext').textContent=extraj.filter(e=>e.est!=='cerrado').length;
+  const _nExt=extraj.filter(e=>e.est!=='cerrado').length;
+  document.getElementById('cnt-ext').textContent=_nExt;
+  const _bExt=document.getElementById('cnt-ext-side');
+  if(_bExt){_bExt.textContent=_nExt;_bExt.style.display=_nExt?'inline-block':'none';}
   // el contador de turnos vive ahora en el panel lateral: muestra los de hoy y,
   // si hoy no hay, los de mañana (que es lo que interesa mirar a la tarde)
   const cntTur=document.getElementById('cnt-tur-side');
@@ -3700,52 +3759,243 @@ function setEF(f){
   });
   renderExt();
 }
+/* v3.2 — cuadro de seguimiento: lo que se le va haciendo a la gestión, renglón
+   por renglón, con fecha. El "+" agrega un paso nuevo y queda como lista. */
+/* v3.4 — carga encadenada: se escribe en el renglón de abajo y con Enter queda
+   anotado y el campo vuelve a quedar vacío y con el foco, listo para el que
+   sigue. Así se carga todo lo que se va haciendo sin tocar el mouse. */
+function _extPasos(e){
+  const l=(e.pasos||[]).slice().sort((a,b)=>String(a.f||'').localeCompare(String(b.f||'')));
+  return `<div class="ext-seg">
+    <div class="eseg-top">
+      <span>📋 Lo que se va haciendo${l.length?' · '+l.length:''}</span>
+      <span style="font-size:9.5px;font-weight:500;color:var(--text3);text-transform:none;letter-spacing:0">escribí abajo y apretá Enter</span>
+    </div>
+    ${l.map((p,i)=>`<div class="eseg-it${p.ok?' hecho':''}">
+        <span class="eseg-chk" onclick="extTogPaso(${e.id},${i})" title="Marcar como hecho">${p.ok?'✓':'○'}</span>
+        <span class="eseg-f" onclick="extAbrirFecha(${e.id},${i},this)" title="Tocar para cambiar la fecha">${escH(_dv(p.f))}</span>
+        <span class="eseg-t" contenteditable="false" onclick="extEditPaso(${e.id},${i},this)"
+          onblur="extGuardarPaso(${e.id},${i},this)">${escH(p.t||'')}</span>
+        <button class="eseg-del" onclick="extDelPaso(${e.id},${i})" title="Borrar">✕</button>
+      </div>`).join('')}
+    <div class="eseg-nuevo">
+      <span class="eseg-mas">+</span>
+      <input class="eseg-in" id="eseg-in-${e.id}" placeholder="Qué se hizo hoy… (Enter para anotarlo)"
+        onkeydown="extNuevoPaso(event,${e.id})">
+    </div>
+  </div>`;
+}
+function extNuevoPaso(ev,id){
+  if(ev.key!=='Enter')return;
+  ev.preventDefault();
+  const el=ev.target, txt=el.value.trim();
+  if(!txt)return;
+  const e=_extBuscar(id);if(!e)return;
+  e.pasos=e.pasos||[];
+  e.pasos.push({f:todayISO(),t:txt,ok:false});
+  sE();renderExt();
+  setTimeout(()=>{
+    const n=document.getElementById('eseg-in-'+id);
+    if(n){n.value='';n.focus();}
+  },30);
+}
+function extAbrirFecha(id,i,el){
+  const e=_extBuscar(id);if(!e||!e.pasos||!e.pasos[i])return;
+  const inp=document.createElement('input');
+  inp.type='date';inp.className='eseg-f2';inp.value=e.pasos[i].f||'';
+  let listo=false;
+  inp.onchange=()=>{listo=true;extFechaPaso(id,i,inp.value);};
+  inp.onblur=()=>{setTimeout(()=>{if(!listo)renderExt();},0);};
+  el.replaceWith(inp);
+  inp.focus();if(inp.showPicker)try{inp.showPicker();}catch(err){}
+}
+function extFechaPaso(id,i,v){
+  const e=_extBuscar(id);if(!e||!e.pasos||!e.pasos[i]||!v)return;
+  e.pasos[i].f=v;sE();renderExt();
+}
+function _extBuscar(id){return extraj.find(x=>x.id===parseInt(id));}
+function extAddPaso(id){
+  const e=_extBuscar(id);if(!e)return;
+  e.pasos=e.pasos||[];
+  e.pasos.push({f:todayISO(),t:'',ok:false});
+  sE();renderExt();
+  setTimeout(()=>{
+    const f=document.querySelectorAll('#ext-list .eseg-it .eseg-t');
+    const ult=[...f].filter(x=>x.textContent.trim()==='').pop();
+    if(ult){ult.setAttribute('contenteditable','true');ult.focus();}
+  },40);
+}
+function extEditPaso(id,i,el){
+  el.setAttribute('contenteditable','true');el.focus();
+  const r=document.createRange();r.selectNodeContents(el);
+  const s=window.getSelection();s.removeAllRanges();s.addRange(r);s.collapseToEnd();
+}
+function extGuardarPaso(id,i,el){
+  const e=_extBuscar(id);if(!e||!e.pasos||!e.pasos[i])return;
+  el.setAttribute('contenteditable','false');
+  const txt=el.innerText.trim();
+  if(!txt){e.pasos.splice(i,1);sE();renderExt();return;}
+  if(txt!==e.pasos[i].t){e.pasos[i].t=txt;sE();}
+}
+function extTogPaso(id,i){
+  const e=_extBuscar(id);if(!e||!e.pasos||!e.pasos[i])return;
+  e.pasos[i].ok=!e.pasos[i].ok;sE();renderExt();
+}
+function extDelPaso(id,i){
+  const e=_extBuscar(id);if(!e||!e.pasos)return;
+  e.pasos.splice(i,1);sE();renderExt();
+}
+/* v3.3 — formato de tabla: una fila por gestión, y el detalle (lo que se hizo
+   y las observaciones) se despliega al tocar la fila. Sin filtros arriba. */
+let _extAbierta=null;
+/* el + de la fila: abre el detalle y deja el cursor listo para escribir */
+function extAnotarYa(id){
+  _extAbierta=id;
+  renderExt();
+  setTimeout(()=>{
+    const n=document.getElementById('eseg-in-'+id);
+    if(n){n.scrollIntoView({block:'center',behavior:'smooth'});n.focus();}
+  },60);
+}
+function extTogDetalle(id){
+  _extAbierta=(_extAbierta===id)?null:id;
+  renderExt();
+  if(_extAbierta===id)setTimeout(()=>{
+    const r=document.getElementById('exr-'+id);
+    if(r)r.scrollIntoView({block:'nearest',behavior:'smooth'});
+  },40);
+}
+/* v3.5 — mismas filas que el registro de causas (.cr / .ci / .cr-r), agrupadas
+   por fuero igual que el registro agrupa por juzgado, pero más simple: sólo
+   cliente, tipo de gestión y contra quién. El cuadro de lo que se va haciendo
+   y las observaciones se abren al tocar la fila. */
+const EXT_FUEROS=['Laboral','Civil','Familia','Paz Letrado','Comercial','Contencioso','Previsional','Otro'];
 function renderExt(){
-  let items=extraj;
-  if(extFiltro)items=items.filter(e=>e.tipo===extFiltro);
   const el=document.getElementById('ext-list');
-  if(!items.length){el.innerHTML='<div style="color:#aaa;text-align:center;padding:24px">Sin registros.</div>';return;}
-  el.innerHTML=items.map(e=>{
-    const ico=EXT_ICO[e.tipo]||'📎';
-    const est=EXT_EST[e.est]||EXT_EST.nuevo;
-    return`<div class="ext-card s-${e.est}">
-      <div class="ext-hdr">
-        <div class="ext-ico">${ico}</div>
-        <div class="ext-inf">
-          <div class="ext-tit">${e.tit}${e.ram&&!e.rdon?'<span class="rtag" style="margin-left:6px">⭐ Ramiro</span>':e.ram&&e.rdon?'<span class="rtag done" style="margin-left:6px">⭐ ✓</span>':''}</div>
-          <div class="ext-sub">${e.tipo}</div>
+  const res=document.getElementById('ext-resumen');
+  if(res){
+    const ab=extraj.filter(e=>e.est!=='cerrado').length;
+    res.textContent=extraj.length?`${extraj.length} ${extraj.length===1?'gestión':'gestiones'} · ${ab} abierta${ab!==1?'s':''}`:'';
+  }
+  if(!extraj.length){
+    el.innerHTML='<div class="vacio"><div class="ico">📁</div><div class="tit">Sin gestiones extrajudiciales</div><div class="sub">Acá van los TCL, cartas documento, consultas y todo lo que todavía no es expediente.</div></div>';
+    return;
+  }
+  const grupo=e=>(e.fuero||'').trim()||'Sin fuero';
+  const orden=g=>{const i=EXT_FUEROS.indexOf(g);return i<0?98:i;};
+  const gs=[...new Set(extraj.map(grupo))].sort((a,b)=>{
+    const oa=a==='Sin fuero'?99:orden(a), ob=b==='Sin fuero'?99:orden(b);
+    return oa!==ob?oa-ob:a.localeCompare(b);
+  });
+  let h='';
+  gs.forEach(g=>{
+    const sub=extraj.filter(e=>grupo(e)===g).sort((a,b)=>
+      String(_extUltF(b)).localeCompare(String(_extUltF(a)))||String(a.tit||'').localeCompare(String(b.tit||'')));
+    const ab=sub.filter(e=>e.est!=='cerrado');
+    const ce=sub.filter(e=>e.est==='cerrado');
+    const rPend=ab.filter(e=>e.ram&&!e.rdon).length;
+    h+=`<div class="sec">
+      <div class="sec-hdr" onclick="this.nextElementSibling.classList.toggle('z')">
+        <div class="sec-hdr-l">${escH(g)}</div>
+        <div class="sec-hdr-r">
+          ${rPend?`<span style="background:var(--gold-l);border:1px solid var(--gold-b);border-radius:3px;padding:1px 5px;font-size:9px;color:var(--gold);font-weight:700">⭐ ${rPend}</span>`:''}
+          ${ab.length}/${sub.length} ▾
         </div>
-        <div class="ext-bs"><button class="xb" onclick="abrirEF(${e.id})">✏</button><button class="xb del" onclick="delEFd(${e.id})">🗑</button></div>
       </div>
-      <div class="ext-not" id="enot-${e.id}" contenteditable="false" onclick="edExtSt(${e.id})" onblur="edExtEn(${e.id})">${e.not||'—'}</div>
-      ${e.ram?`<div class="ext-rnota${e.rdon?' done':''}" onclick="togRamE(${e.id})">
-        <span>⭐ <strong>Ramiro:</strong> ${e.ram} <span style="font-size:10px;color:${e.rdon?'#aaa':'#9B6F00'}">${e.rdon?'✓ Cumplido':'→ marcar'}</span></span>
-        <button class="rnota-del" onclick="borrarRamE(${e.id},event)">🗑</button>
-      </div>`:''}
-      <div class="ext-foot">
-        <span class="epill ${est.cls}">${est.lbl}</span>
-        ${e.est!=='cerrado'?`<button class="xb" onclick="chgEst(${e.id},'cerrado')" style="font-size:10px">✓ Cerrar</button>`:''}
-        ${e.est==='nuevo'?`<button class="xb" onclick="chgEst(${e.id},'gestion')" style="font-size:10px">→ Gestión</button>`:''}
-        ${e.est==='espera'?`<button class="xb" onclick="chgEst(${e.id},'gestion')" style="font-size:10px">↩ Retomar</button>`:''}
+      <div class="sec-body">
+        ${ab.map(_extFila).join('')}
+        ${ce.length?`<div class="mov-wrap"><div class="mov-tog" onclick="this.nextElementSibling.classList.toggle('ab')">▸ ${ce.length} cerrada${ce.length!==1?'s':''}</div><div class="mov-body">${ce.map(_extFila).join('')}</div></div>`:''}
       </div>
     </div>`;
-  }).join('');
+  });
+  el.innerHTML=h;
+}
+function _extUltF(e){
+  const l=e.pasos||[];
+  let f=e.alta||'';
+  l.forEach(p=>{if(String(p.f||'')>f)f=String(p.f||'');});
+  return f;
+}
+function _extFila(e){
+  const cerr=e.est==='cerrado';
+  const pasos=e.pasos||[];
+  const ult=pasos.length?pasos.slice().sort((a,b)=>String(a.f||'').localeCompare(String(b.f||''))).pop():null;
+  const abierta=_extAbierta===e.id;
+  const est=EXT_EST[e.est]||EXT_EST.nuevo;
+  const sub=[];
+  if(e.contra)sub.push('c/ '+escH(e.contra));
+  if(e.tel)sub.push('📞 '+escH(e.tel));
+  if(ult)sub.push(`<span title="${escH(ult.t||'')}">último: ${escH(_dv(ult.f))}</span>`);
+  else if(e.alta)sub.push('alta '+escH(_dv(e.alta)));
+  return `<div class="cr exr ${cerr?'mov':'nor'}${abierta?' ab':''}" id="exr-${e.id}">
+    <div class="chk-col" onclick="extTogCerrado(${e.id})" title="${cerr?'Reabrir la gestión':'Marcar como cerrada'}">
+      <div class="chkbox${cerr?' on':''}">${cerr?'✓':''}</div>
+    </div>
+    <div class="ci" onclick="extTogDetalle(${e.id})" style="cursor:pointer">
+      <div class="ci-car">${escH(e.tit||'—')}<span class="exr-tipo"> · ${escH(e.tipo||'—')}</span>${e.esArt?' <span class="exr-art">🦺 ART</span>':''}${e.ram&&!e.rdon?'<span class="rtag">⭐ Ramiro</span>':''}${!cerr&&e.est!=='gestion'?` <span class="epill ${est.cls}" style="font-size:9px;padding:1px 6px">${est.lbl}</span>`:''}</div>
+      <div class="exr-sub">${sub.join(' · ')||'<span style="color:var(--border2)">sin datos todavía</span>'}</div>
+      ${!abierta&&pasos.length?`<div class="exr-ult">${escH(ult.t||'')}</div>`:''}
+    </div>
+    <div class="cr-r" onclick="event.stopPropagation()">
+      <div class="vbtn" onclick="extAnotarYa(${e.id})" title="Anotar un movimiento">＋ anotar</div>
+      <div style="display:flex;gap:3px">
+        <button class="xb" onclick="abrirEF(${e.id})" title="Editar los datos">✏</button>
+        <button class="xb del" onclick="delEFd(${e.id})" title="Eliminar">🗑</button>
+      </div>
+    </div>
+  </div>
+  ${abierta?`<div class="exr-det">
+    ${_extPasos(e)}
+    <div class="exr-rot">OBSERVACIONES <span>— de qué se trata y todo dato que convenga tener a mano</span></div>
+    <div class="exr-not" id="enot-${e.id}" contenteditable="false" onclick="edExtSt(${e.id})" onblur="edExtEn(${e.id})">${e.not||'<span style="color:#b9bfcb">Tocá para escribir…</span>'}</div>
+    ${e.ram?`<div class="ext-rnota${e.rdon?' done':''}" style="margin:8px 0 0" onclick="togRamE(${e.id})">
+      <span>⭐ <strong>Ramiro:</strong> ${escH(e.ram)} <span style="font-size:10px;color:${e.rdon?'#aaa':'#9B6F00'}">${e.rdon?'✓ Cumplido':'→ marcar'}</span></span>
+      <button class="rnota-del" onclick="borrarRamE(${e.id},event)">🗑</button>
+    </div>`:''}
+  </div>`:''}`;
+}
+/* el tilde de la izquierda cierra o reabre la gestión, igual que el del registro */
+function extTogCerrado(id){
+  const e=_extBuscar(id);if(!e)return;
+  e.est=(e.est==='cerrado')?'gestion':'cerrado';
+  sE();renderExt();updBadges();
 }
 function edExtSt(id){const el=document.getElementById('enot-'+id);if(el){el.contentEditable='true';el.onpaste=pegarTextoPlano;el.focus();el.onblur=()=>edExtEn(id);}}
 function edExtEn(id){const el=document.getElementById('enot-'+id);if(!el)return;el.contentEditable='false';const e=extraj.find(x=>x.id===id);if(e){e.not=el.innerText.trim();sE();}}
 function chgEst(id,est){const e=extraj.find(x=>x.id===id);if(e){e.est=est;sE();renderExt();updBadges();}}
 function abrirEF(id){
   const frm=document.getElementById('ef-form');
-  document.getElementById('ef-id').value='';['ef-tit','ef-not','ef-ram'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('ef-del').style.display='none';document.getElementById('ef-label').textContent='Nuevo extrajudicial';
-  if(id){const e=extraj.find(x=>x.id===id);if(e){document.getElementById('ef-id').value=id;document.getElementById('ef-tit').value=e.tit;document.getElementById('ef-tipo').value=e.tipo;document.getElementById('ef-est').value=e.est;document.getElementById('ef-not').value=e.not||'';document.getElementById('ef-ram').value=e.ram||'';document.getElementById('ef-del').style.display='inline-flex';document.getElementById('ef-label').textContent='Editar';}}
+  const set=(i,v)=>{const el=document.getElementById(i);if(!el)return;if(el.type==='checkbox')el.checked=!!v;else el.value=v||'';};
+  document.getElementById('ef-id').value='';
+  ['ef-tit','ef-not','ef-ram','ef-contra','ef-tel'].forEach(i=>set(i,''));
+  set('ef-fuero','');set('ef-art',false);
+  document.getElementById('ef-del').style.display='none';
+  document.getElementById('ef-label').textContent='Nueva gestión extrajudicial';
+  if(id){
+    const e=extraj.find(x=>x.id===id);
+    if(e){
+      document.getElementById('ef-id').value=id;
+      set('ef-tit',e.tit);set('ef-tipo',e.tipo);set('ef-fuero',e.fuero);set('ef-est',e.est);
+      set('ef-not',e.not);set('ef-ram',e.ram);set('ef-contra',e.contra);set('ef-tel',e.tel);
+      set('ef-art',e.esArt);
+      document.getElementById('ef-del').style.display='inline-flex';
+      document.getElementById('ef-label').textContent='Editar gestión';
+    }
+  }
   frm.classList.add('ab');frm.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 function saveEF(){
   const tit=document.getElementById('ef-tit').value.trim();if(!tit){alert('Ingresá un título.');return;}
   const eid=parseInt(document.getElementById('ef-id').value)||null;
-  const obj={id:eid||Date.now(),tit,tipo:document.getElementById('ef-tipo').value,est:document.getElementById('ef-est').value,not:document.getElementById('ef-not').value.trim(),ram:document.getElementById('ef-ram').value.trim(),rdon:false};
-  if(eid){const old=extraj.find(x=>x.id===eid);if(old)obj.rdon=old.rdon;extraj=extraj.map(e=>e.id===eid?obj:e);}else extraj.push(obj);
+  const g=(id)=>{const el=document.getElementById(id);return el?(el.type==='checkbox'?el.checked:el.value.trim()):'';};
+  const obj={id:eid||Date.now(),tit,
+    tipo:g('ef-tipo'),fuero:g('ef-fuero'),esArt:g('ef-art'),contra:g('ef-contra'),tel:g('ef-tel'),
+    est:g('ef-est'),not:g('ef-not'),ram:g('ef-ram'),rdon:false,pasos:[],alta:todayISO()};
+  if(eid){
+    const old=extraj.find(x=>x.id===eid);
+    if(old){obj.rdon=old.rdon;obj.pasos=old.pasos||[];obj.alta=old.alta||todayISO();}
+    extraj=extraj.map(e=>e.id===eid?obj:e);
+  }else extraj.push(obj);
   sE();document.getElementById('ef-form').classList.remove('ab');renderExt();updBadges();
 }
 function delEF(){const id=parseInt(document.getElementById('ef-id').value);if(!id||!confirm('¿Eliminar?'))return;extraj=extraj.filter(e=>e.id!==id);sE();document.getElementById('ef-form').classList.remove('ab');renderExt();updBadges();}
