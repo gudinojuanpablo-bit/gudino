@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v3.5</title>
+<title>Gudiño Cabrera y Asociados — v3.6</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1500,6 +1500,30 @@ const F0=[{f:'2026-05-25',n:'25 de mayo'},{f:'2026-06-17',n:'Belgrano'}];
 // ═══════════════════════════════════════════════
 let causas=JSON.parse(localStorage.getItem('ga_c')||'null')||C0;
 let movidas=new Set(JSON.parse(localStorage.getItem('ga_m_'+SK)||'[]'));
+/* v3.6 — la hora de cada tilde/destilde de esta semana: {id:{t,on}} */
+let movF=(()=>{try{return JSON.parse(localStorage.getItem('ga_mf_'+SK)||'{}')||{};}catch(e){return {};}})();
+function _marcarMov(id,on){movF[String(id)]={t:Date.now(),on:!!on};}
+/* Funde las tildadas de la nube con las de acá: para cada causa gana la
+   marca más reciente. Sin marcas (datos viejos) se respeta el tilde, que es
+   el error menos dañino. Si la nube trae otra semana, no se toca nada: las
+   tildadas se guardan por semana, así que el lunes arrancan solas en cero. */
+function _fusionarMovidas(remList,remF,remSK){
+  if(remSK!==SK)return false;
+  const rF=remF||{};
+  const rSet=new Set((remList||[]).map(x=>parseInt(x)).filter(x=>!isNaN(x)));
+  const ids=new Set([...movidas,...rSet,
+    ...Object.keys(movF).map(Number).filter(x=>!isNaN(x)),
+    ...Object.keys(rF).map(Number).filter(x=>!isNaN(x))]);
+  ids.forEach(id=>{
+    const k=String(id);
+    const mia=movF[k], suya=rF[k];
+    const mejor=(mia&&suya)?((mia.t>=suya.t)?mia:suya):(mia||suya);
+    const on=mejor?mejor.on:(movidas.has(id)||rSet.has(id));
+    if(on)movidas.add(id); else movidas.delete(id);
+    if(mejor)movF[k]=mejor;
+  });
+  return true;
+}
 let _pruebaOpen=new Set(JSON.parse(localStorage.getItem('ga_propen')||'[]'));
 let _pruebaSimple=new Set(JSON.parse(localStorage.getItem('ga_prsimple')||'[]'));
 let _cargOpen=new Set(JSON.parse(localStorage.getItem('ga_cargopen')||'[]'));
@@ -1533,10 +1557,35 @@ let audMes={y:HOY.getFullYear(),m:HOY.getMonth()};
 let extFiltro='';
 
 // Guardado local siempre
-const svl=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+/* v3.6 — si el navegador no puede guardar (se quedó sin espacio), antes la
+   excepción cortaba a la mitad la función que estaba guardando y no avisaba
+   nada. Ahora se avisa en pantalla y el resto del trabajo sigue: lo cargado
+   queda en memoria y se sube igual a la nube. */
+let _discoAvisado=false;
+function _avisarDisco(k,e){
+  try{console.error('No se pudo guardar en este equipo:',k,e&&e.name);}catch(_){}
+  if(_discoAvisado)return;
+  _discoAvisado=true;
+  try{
+    const d=document.createElement('div');
+    d.id='aviso-disco';
+    d.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#7a1f1f;color:#fff;'+
+      'font:600 12.5px system-ui;padding:9px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -2px 12px rgba(0,0,0,.25)';
+    d.innerHTML='<span style="font-size:15px">⚠</span><span style="flex:1">Este navegador se quedó sin espacio y no está pudiendo '+
+      'guardar en la computadora. Lo que cargues se sigue subiendo a la nube, pero conviene entrar a '+
+      '<b>Config. / Online</b> y liberar espacio.</span>'+
+      '<button onclick="this.parentNode.remove()" style="background:#fff;color:#7a1f1f;border:0;border-radius:5px;'+
+      'padding:4px 11px;font:700 11px system-ui;cursor:pointer">Entendido</button>';
+    document.body.appendChild(d);
+  }catch(_){}
+}
+const svl=(k,v)=>{
+  try{localStorage.setItem(k,JSON.stringify(v));return true;}
+  catch(e){_avisarDisco(k,e);return false;}
+};
 // Guardado individual
 function sC(){try{marcarCambios();}catch(e){}svl('ga_c',causas);fbSave();try{subirCausasCambiadas();}catch(e){}}
-function sM(){svl('ga_m_'+SK,[...movidas]);fbSave();}
+function sM(){svl('ga_m_'+SK,[...movidas]);svl('ga_mf_'+SK,movF);fbSave();}
 function sH(){svl('ga_h',historial);} // historial no sincroniza para evitar conflictos
 function sG(){svl('ga_g',gastos);fbSave();}
 function sA(){svl('ga_a',audiencias);fbSave();}
@@ -1825,7 +1874,7 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos,turBorrados,ramBorrados};}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movF,movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos,turBorrados,ramBorrados};}
 /* v371 — antes, lo que bajaba de la nube REEMPLAZABA la lista de causas entera.
    Si la otra computadora tenía una copia sin lo último cargado acá (por ejemplo
    las carátulas completas), ese trabajo se perdía sin aviso. Ahora se fusiona
@@ -1883,7 +1932,14 @@ function _fusionarCausa(mia,remota){
   /* campo por campo: gana el que se editó más tarde. Si ninguno tiene marca,
      se conserva el que tiene contenido antes que el vacío. */
   base._fts=Object.assign({},remota._fts||{},mia._fts||{});
+  /* v3.6 — una limpieza no se deshace sola. Si de un lado se limpió la causa
+     y después nadie la volvió a tocar de ninguno de los dos lados, el
+     resultado queda limpio: no revive el plazo ni la nota vieja. */
+  const _lA=mia._limp||0,_lB=remota._limp||0,_lim=Math.max(_lA,_lB);
+  if(_lim)base._limp=_lim;
+  const _limpiaMANDA=_lim&&_lim>=(mia.lastTouch||0)&&_lim>=(remota.lastTouch||0);
   _CAMPOS_TEXTO.forEach(k=>{
+    if(_limpiaMANDA&&CAMPOS_LIMPIEZA.indexOf(k)>=0){base[k]='';base._fts[k]=_lim;return;}
     const a=(mia[k]==null?'':String(mia[k])).trim();
     const b=(remota[k]==null?'':String(remota[k])).trim();
     const ta=_marcaDe(mia,k), tb=_marcaDe(remota,k);
@@ -1970,10 +2026,10 @@ function applyPayload(d){
       if(c)c.ven=pendingVen[sid];
     });
   }
-  if(d.movidas){
-    // Solo cargar las movidas si son de la semana actual; si son viejas, arrancar en 0
-    if(d.movidasSK===SK)movidas=new Set(d.movidas);
-    else movidas=new Set();
+  if(d.movidas||d.movF){
+    // v3.6 — se funden, no se reemplazan: el tilde que puse recién no se pierde
+    // porque la nube venga atrasada. Si viene de otra semana no se toca nada.
+    _fusionarMovidas(d.movidas,d.movF,d.movidasSK);
   }
   if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;if(d.pendientes)pendientes=d.pendientes;
   if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;if(d.vglob)vglob=d.vglob;
@@ -1998,7 +2054,7 @@ function applyPayload(d){
     sTurDel();
   }
   if(Array.isArray(d.turnos)){turnos=fusionarTurnos(d.turnos);svl('ga_turnos',turnos);}
-  svl('ga_c',causas);svl('ga_m_'+SK,[...movidas]);svl('ga_g',gastos);
+  svl('ga_c',causas);svl('ga_m_'+SK,[...movidas]);svl('ga_mf_'+SK,movF);svl('ga_g',gastos);
   svl('ga_a',audiencias);svl('ga_e',extraj);svl('ga_f',feriados);
   // esto faltaba: lo que bajaba de la nube no se guardaba en el equipo, así que
   // al recargar volvía a leerse la copia vieja del disco
@@ -2108,7 +2164,7 @@ function _marcarAdoptado(v){
 }
 function _estadoCompleto(){
   return {causas,turnos,gastos,audiencias,extraj,tareasRam,pendientes,revisiones,feriados,mailCfg,vglob,
-    movidas:[...movidas],movidasSK:SK};
+    movidas:[...movidas],movF,movidasSK:SK};
 }
 function _adoptarEstado(d){
   if(!d)return false;
@@ -2126,7 +2182,7 @@ function _adoptarEstado(d){
     if(Array.isArray(d.feriados))feriados=d.feriados;
     if(d.mailCfg)mailCfg=d.mailCfg;
     if(d.vglob)vglob=d.vglob;
-    if(Array.isArray(d.movidas)&&d.movidasSK===SK)movidas=new Set(d.movidas);
+    if((Array.isArray(d.movidas)||d.movF)&&d.movidasSK===SK)_fusionarMovidas(d.movidas,d.movF,d.movidasSK);
     svl('ga_c',causas);svl('ga_turnos',turnos);svl('ga_g',gastos);svl('ga_a',audiencias);
     svl('ga_e',extraj);svl('ga_tram',tareasRam);svl('ga_pend',pendientes);svl('ga_rev',revisiones);
     svl('ga_f',feriados);svl('ga_mc',mailCfg);svl('ga_vg',vglob);
@@ -3109,6 +3165,7 @@ function togMov(id){
   id=parseInt(id);
   if(movidas.has(id))movidas.delete(id);
   else{movidas.add(id);touchCausa(id);svl('ga_c',causas);} // v327: tildarla cuenta como movimiento (apaga el titileo)
+  _marcarMov(id,movidas.has(id));   // v3.6 — queda la hora, para que la nube no lo pise
   sM();
   updProgress();
   const row=document.getElementById('cr-'+id);
@@ -3312,6 +3369,8 @@ function clearV(id,e){
   if(row){const t=document.createElement('div');t.innerHTML=rowHTML(c);row.replaceWith(t.firstChild);}
   updBadges();renderVencPanel();
 }
+/* lo que borra "Limpiar": si lo cambiás, cambialo también en _fusionarCausa */
+const CAMPOS_LIMPIEZA=['ven','tv','tv_plazo','tv_accion','tipo_aud','aud_h','aud_mod','aud_obs','not','etapa'];
 function limpiarCausa(id,e){
   if(e)e.stopPropagation();
   id=parseInt(id);
@@ -3328,6 +3387,12 @@ function limpiarCausa(id,e){
   if(_etapaMenu===id)_etapaMenu=null;
   if(historial[id])delete historial[id]; // historial de avances
   if(pendingVen[id])delete pendingVen[id];
+  /* v3.6 — queda constancia de la limpieza con su hora, en la causa y campo por
+     campo. Sin esto la copia de la nube ganaba la fusión y volvía todo. */
+  const _ahoraL=Date.now();
+  c.lastTouch=_ahoraL; c._limp=_ahoraL;
+  c._fts=c._fts||{};
+  CAMPOS_LIMPIEZA.forEach(k=>{c._fts[k]=_ahoraL;});
   sC();sH();
   closeCP();
   try{_pinCalcular();}catch(e){}     // recalcular el anclaje antes de redibujar
@@ -4714,7 +4779,7 @@ function copyTxt(){
   });
   navigator.clipboard.writeText(t).then(()=>alert('¡Copiado! Pegalo en Word con Ctrl+V.'));
 }
-function confirmReset(){if(!confirm('¿Simular lunes? Se borran todos los verdes.'))return;movidas=new Set();causas.forEach(c=>{delete c.ramNotif;});sC();sM();updProgress();renderBan();renderR();}
+function confirmReset(){if(!confirm('¿Simular lunes? Se borran todos los verdes.'))return;const _t=Date.now();movF={};movidas.forEach(id=>{movF[String(id)]={t:_t,on:false};});movidas=new Set();causas.forEach(c=>{delete c.ramNotif;});sC();sM();updProgress();renderBan();renderR();}
 document.addEventListener('click',function(e){
   if(openCID===null)return;
   if(_gcpClickInterno){_gcpClickInterno=false;return;} // click fue dentro del popup
@@ -5032,8 +5097,8 @@ if(localStorage.getItem('ga_version') !== APP_VERSION){
   gastos=G0.map(g=>({...g}));
   extraj=EXT0.map(e=>({...e}));
   feriados=F0.map(f=>({...f}));
-  movidas=new Set();
-  svl('ga_c',causas);svl('ga_a',audiencias);svl('ga_g',gastos);svl('ga_e',extraj);svl('ga_f',feriados);svl('ga_m_'+SK,[]);
+  movidas=new Set();movF={};
+  svl('ga_c',causas);svl('ga_a',audiencias);svl('ga_g',gastos);svl('ga_e',extraj);svl('ga_f',feriados);svl('ga_m_'+SK,[]);svl('ga_mf_'+SK,{});
 }
 document.getElementById('sb-week').textContent=`Semana ${fmt2(LUN)} – ${fmt2(VIE)}`;
 setSyncStatus('local');
