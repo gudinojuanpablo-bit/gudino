@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v3.6</title>
+<title>Gudiño Cabrera y Asociados — v3.7</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1261,6 +1261,10 @@ g.pan-clic:hover text{fill:var(--text)}
         <div class="ok" id="cfg-ok" style="margin-top:6px">✓ Guardado.</div>
       </div>
       <div class="cfg-blk">
+        <h3>🧹 Espacio en esta computadora</h3>
+        <div id="cfg-espacio"></div>
+      </div>
+      <div class="cfg-blk">
         <h3>💾 Copia de seguridad</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <button class="btn" onclick="bkExportar()">⬇️ Descargar copia (.json)</button>
@@ -1561,7 +1565,7 @@ let extFiltro='';
    excepción cortaba a la mitad la función que estaba guardando y no avisaba
    nada. Ahora se avisa en pantalla y el resto del trabajo sigue: lo cargado
    queda en memoria y se sube igual a la nube. */
-let _discoAvisado=false;
+let _discoAvisado=false,_lugarAvisado=false;
 function _avisarDisco(k,e){
   try{console.error('No se pudo guardar en este equipo:',k,e&&e.name);}catch(_){}
   if(_discoAvisado)return;
@@ -1572,17 +1576,131 @@ function _avisarDisco(k,e){
     d.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#7a1f1f;color:#fff;'+
       'font:600 12.5px system-ui;padding:9px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -2px 12px rgba(0,0,0,.25)';
     d.innerHTML='<span style="font-size:15px">⚠</span><span style="flex:1">Este navegador se quedó sin espacio y no está pudiendo '+
-      'guardar en la computadora. Lo que cargues se sigue subiendo a la nube, pero conviene entrar a '+
-      '<b>Config. / Online</b> y liberar espacio.</span>'+
-      '<button onclick="this.parentNode.remove()" style="background:#fff;color:#7a1f1f;border:0;border-radius:5px;'+
-      'padding:4px 11px;font:700 11px system-ui;cursor:pointer">Entendido</button>';
+      'guardar en la computadora. Lo que cargues se sigue subiendo a la nube igual.</span>'+
+      '<button onclick="goP(\'config\');setTimeout(()=>{const e=document.getElementById(\'cfg-espacio\');'+
+      'if(e)e.scrollIntoView({block:\'center\',behavior:\'smooth\'});},300)" '+
+      'style="background:#fff;color:#7a1f1f;border:0;border-radius:5px;padding:4px 11px;'+
+      'font:700 11px system-ui;cursor:pointer">Liberar espacio</button>'+
+      '<button onclick="this.parentNode.remove()" style="background:transparent;color:#fff;border:1px solid #fff6;'+
+      'border-radius:5px;padding:4px 11px;font:700 11px system-ui;cursor:pointer">Después</button>';
     document.body.appendChild(d);
   }catch(_){}
 }
+let _haciendoLugar=false;
+/* Va soltando lo prescindible de a un paso por vez, de menos a más, y después
+   de cada paso prueba si ya entra. Para apenas entra, así suelta lo mínimo
+   necesario. Nunca toca una causa, una carátula, una nota, un plazo ni un
+   encargo: lo más lejos que llega es a soltar el TEXTO de escritos ya
+   generados, que quedan listados igual y se pueden volver a generar. */
+function _soltarEscritos(dejar){
+  let n=0;
+  (causas||[]).forEach(c=>{
+    const l=c&&c.escritos;
+    if(!Array.isArray(l)||l.length<=dejar)return;
+    l.slice(dejar).forEach(e=>{if(e&&(e.html||e.datos)){delete e.html;delete e.datos;e.soltado=true;n++;}});
+  });
+  return n;
+}
+function _pasosParaHacerLugar(){
+  return [
+    // 1) copias automáticas del día, menos la más reciente
+    ()=>{
+      const idx=JSON.parse(localStorage.getItem('ga_bk_idx')||'[]');
+      if(idx.length<=1)return '';
+      idx.slice(0,-1).forEach(f=>localStorage.removeItem('ga_bk_'+f));
+      localStorage.setItem('ga_bk_idx',JSON.stringify(idx.slice(-1)));
+      return 'copias del día repetidas';
+    },
+    // 2) tildes de semanas ya cerradas
+    ()=>{
+      let n=0;
+      Object.keys(localStorage).forEach(k=>{
+        if((k.indexOf('ga_m_')===0||k.indexOf('ga_mf_')===0)&&k!=='ga_m_'+SK&&k!=='ga_mf_'+SK){
+          localStorage.removeItem(k);n++;
+        }
+      });
+      return n?'semanas anteriores':'';
+    },
+    // 3) copias de emergencia de más de una semana
+    ()=>{
+      let n=0;
+      ['ga_antes_adoptar','ga_antes_recuperar'].forEach(k=>{
+        const b=JSON.parse(localStorage.getItem(k)||'null');
+        if(b&&b.t&&(Date.now()-b.t)>7*24*60*60*1000){localStorage.removeItem(k);n++;}
+      });
+      return n?'copias de emergencia viejas':'';
+    },
+    // 4) historial: quedan los 10 asientos más recientes de cada causa
+    ()=>{
+      let rec=0;
+      Object.keys(historial||{}).forEach(id=>{
+        if(Array.isArray(historial[id])&&historial[id].length>10){
+          rec+=historial[id].length-10;historial[id]=historial[id].slice(0,10);
+        }
+      });
+      if(!rec)return '';
+      localStorage.setItem('ga_h',JSON.stringify(historial));
+      return 'historial viejo';
+    },
+    // 5-7) el texto de los escritos ya generados, de los más viejos a todos
+    ()=>{const n=_soltarEscritos(10);return n?n+' textos de escritos viejos':'';},
+    ()=>{const n=_soltarEscritos(3); return n?n+' textos de escritos más':'';},
+    ()=>{const n=_soltarEscritos(0); return n?n+' textos de escritos (quedó el listado)':'';},
+    // 8) última copia del día
+    ()=>{
+      const idx=JSON.parse(localStorage.getItem('ga_bk_idx')||'[]');
+      if(!idx.length)return '';
+      idx.forEach(f=>localStorage.removeItem('ga_bk_'+f));
+      localStorage.removeItem('ga_bk_idx');
+      return 'la última copia del día';
+    },
+  ];
+}
+/* Guardar en esta computadora. Si no entra, hace lugar de a un paso por vez y
+   vuelve a intentar después de cada uno, así suelta lo mínimo necesario. Nunca
+   falla en silencio ni corta a la mitad a quien lo llamó. */
 const svl=(k,v)=>{
-  try{localStorage.setItem(k,JSON.stringify(v));return true;}
-  catch(e){_avisarDisco(k,e);return false;}
+  const serializar=()=>{try{return JSON.stringify(v);}catch(e){return null;}};
+  let txt=serializar();
+  if(txt===null)return false;
+  try{localStorage.setItem(k,txt);return true;}catch(e){}
+  if(_haciendoLugar){_avisarDisco(k,new Error('sin espacio'));return false;}
+  _haciendoLugar=true;
+  const hechos=[];let ok=false;
+  try{
+    const pasos=_pasosParaHacerLugar();
+    for(let i=0;i<pasos.length;i++){
+      let hizo='';
+      try{hizo=pasos[i]()||'';}catch(_){}
+      if(!hizo)continue;
+      hechos.push(hizo);
+      txt=serializar();                 // soltar escritos cambia las causas
+      if(txt===null)break;
+      try{localStorage.setItem(k,txt);ok=true;break;}catch(_){}
+    }
+  }catch(_){}
+  _haciendoLugar=false;
+  if(ok){if(hechos.length)_avisarLugarHecho(hechos);return true;}
+  _avisarDisco(k,new Error('sin espacio'));
+  return false;
 };
+function _avisarLugarHecho(hechos){
+  try{console.info('Se hizo lugar solo:',hechos.join(', '));}catch(_){}
+  if(_lugarAvisado)return;
+  _lugarAvisado=true;
+  try{
+    const d=document.createElement('div');
+    d.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99998;background:#1f5132;color:#fff;'+
+      'font:600 12.5px system-ui;padding:9px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -2px 12px rgba(0,0,0,.25)';
+    d.innerHTML='<span style="font-size:15px">✅</span><span style="flex:1">El navegador estaba sin espacio, '+
+      'así que la app hizo lugar sola ('+hechos.join(', ')+') y guardó todo. '+
+      'Ninguna causa fue tocada.</span>'+
+      '<button onclick="this.parentNode.remove()" style="background:#fff;color:#1f5132;border:0;border-radius:5px;'+
+      'padding:4px 11px;font:700 11px system-ui;cursor:pointer">Entendido</button>';
+    document.body.appendChild(d);
+    setTimeout(()=>{try{d.remove();}catch(_){}} ,14000);
+  }catch(_){}
+}
 // Guardado individual
 function sC(){try{marcarCambios();}catch(e){}svl('ga_c',causas);fbSave();try{subirCausasCambiadas();}catch(e){}}
 function sM(){svl('ga_m_'+SK,[...movidas]);svl('ga_mf_'+SK,movF);fbSave();}
@@ -1973,14 +2091,28 @@ function fusionarCausas(remotas,soloExistentes){
 }
 /* Copia de seguridad automática antes de aplicar lo que baja de la nube.
    Guarda las últimas 5; sirve para volver atrás si algo se borró. */
+/* v3.7 — la copia del día va liviana: sin el HTML de los escritos generados,
+   que es con diferencia lo más pesado y ya vive dentro de cada causa. Antes se
+   guardaban cinco copias completas y entre las cinco llenaban el navegador. */
+function _sinEscritos(lista){
+  return (lista||[]).map(c=>{
+    if(!c||!Array.isArray(c.escritos)||!c.escritos.length)return c;
+    const liviana=Object.assign({},c);
+    liviana.escritos=c.escritos.map(e=>{
+      const x=Object.assign({},e);delete x.html;delete x.datos;return x;
+    });
+    return liviana;
+  });
+}
 function _copiaAuto(){
   try{
     const hoy=isoD(HOY);
     const idx=JSON.parse(localStorage.getItem('ga_bk_idx')||'[]');
     if(idx.includes(hoy))return;                  // una por día alcanza
-    localStorage.setItem('ga_bk_'+hoy,JSON.stringify({f:hoy,causas,turnos,pendientes,revisiones,tareasRam}));
+    localStorage.setItem('ga_bk_'+hoy,JSON.stringify(
+      {f:hoy,causas:_sinEscritos(causas),turnos,pendientes,revisiones,tareasRam,liviana:true}));
     idx.push(hoy);
-    while(idx.length>5){const v=idx.shift();localStorage.removeItem('ga_bk_'+v);}
+    while(idx.length>3){const v=idx.shift();localStorage.removeItem('ga_bk_'+v);}
     localStorage.setItem('ga_bk_idx',JSON.stringify(idx));
   }catch(e){}
 }
@@ -2494,6 +2626,7 @@ function goP(p){
   niOn({extrajudiciales:'her',audiencias:'aud',gastos:'her',nueva:'her',config:'cfg','vencemañana':'vmp',turnero:'tur',herramientas:'her',escgen:'her',archivo:'arch',control:'control',imprimir:'imp'}[p]||p);
   if(p==='config'){
     const cc=document.getElementById('cfg-copias');if(cc)cc.innerHTML=panelCopias();
+    try{renderEspacio();}catch(e){}
     const me=document.getElementById('maestro-est');
     if(me)me.textContent=_maestroLocal
       ? 'Esta computadora está al día con el estado publicado el '+new Date(_maestroLocal).toLocaleString('es-AR')
@@ -4476,6 +4609,147 @@ function carGuardar(id,val){
   c.carLarga=v;sC();updToolsCounts();
   const n=_carFaltan();
   toast(v?('Carátula guardada'+(n?' · faltan '+n:' · ya están todas')):'Carátula completa borrada');
+}
+/* ── v3.7 — espacio del navegador: medirlo y liberarlo ───────────── */
+function _pesoKey(k){
+  try{const v=localStorage.getItem(k);return v?(k.length+v.length)*2:0;}catch(e){return 0;}
+}
+function _fmtPeso(b){
+  if(b<1024)return b+' B';
+  if(b<1024*1024)return Math.round(b/1024).toLocaleString('es-AR')+' KB';
+  return (b/1048576).toLocaleString('es-AR',{minimumFractionDigits:1,maximumFractionDigits:1})+' MB';
+}
+function _pesoEscritos(){
+  /* se mide sobre lo que está realmente guardado en el disco del navegador,
+     no sobre lo que hay en memoria, para que el total y el detalle cierren */
+  let lista=causas;
+  try{const g=JSON.parse(localStorage.getItem('ga_c')||'null');if(Array.isArray(g))lista=g;}catch(e){}
+  let b=0,n=0;
+  (lista||[]).forEach(c=>(c.escritos||[]).forEach(e=>{
+    n++;b+=((e.html||'').length+JSON.stringify(e.datos||'').length)*2;
+  }));
+  return {bytes:b,cuantos:n};
+}
+function espacioResumen(){
+  const claves=Object.keys(localStorage);
+  const g=(f)=>claves.filter(f).reduce((a,k)=>a+_pesoKey(k),0);
+  const esc=_pesoEscritos();
+  const total=claves.reduce((a,k)=>a+_pesoKey(k),0);
+  const causasB=_pesoKey('ga_c');
+  return {
+    total,
+    partes:[
+      {n:'Escritos generados que quedaron guardados',b:esc.bytes,
+       d:esc.cuantos+' escrito'+(esc.cuantos!==1?'s':'')+' en '+(causas||[]).length+' causas'},
+      {n:'Causas (carátulas, plazos, notas)',b:Math.max(0,causasB-esc.bytes),d:'esto no se toca'},
+      {n:'Copias automáticas del día',b:g(k=>k.indexOf('ga_bk_')===0),d:'se puede achicar'},
+      {n:'Historial de cambios de cada causa',b:_pesoKey('ga_h'),d:'se puede recortar'},
+      {n:'Semanas anteriores (tildes viejos)',
+       b:g(k=>(k.indexOf('ga_m_')===0||k.indexOf('ga_mf_')===0)&&k!=='ga_m_'+SK&&k!=='ga_mf_'+SK),
+       d:'se puede borrar entero'},
+      {n:'Copias de emergencia',b:_pesoKey('ga_antes_adoptar')+_pesoKey('ga_antes_recuperar'),
+       d:'se puede borrar si ya pasó una semana'},
+      {n:'Borrador del generador de escritos',b:_pesoKey('ga_esc_draft'),d:'se puede borrar'},
+    ].sort((a,b)=>b.b-a.b),
+  };
+}
+function renderEspacio(){
+  const el=document.getElementById('cfg-espacio');if(!el)return;
+  const r=espacioResumen();
+  const fila=(x)=>`<div style="display:flex;align-items:baseline;gap:9px;padding:5px 0;border-bottom:1px solid var(--border)">
+    <span style="flex:1;font-size:11.5px;color:var(--text2)">${x.n}
+      <span style="color:var(--text3);font-size:10.5px">· ${x.d}</span></span>
+    <b style="font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap">${_fmtPeso(x.b)}</b>
+  </div>`;
+  const esc=_pesoEscritos();
+  el.innerHTML=`
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:7px">
+      <b style="font-size:13px">${_fmtPeso(r.total)}</b>
+      <span style="font-size:11px;color:var(--text3)">ocupados del espacio que da el navegador (unos 5 MB)</span>
+    </div>
+    ${r.partes.filter(x=>x.b>0).map(fila).join('')}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:11px">
+      <button class="btn gh gh-verde" onclick="liberarEspacio()">🧹 Liberar espacio ahora</button>
+      ${esc.cuantos?`<button class="btn gh" onclick="purgarEscritos()">📄 Soltar los escritos viejos (${esc.cuantos})</button>`:''}
+    </div>
+    <div id="espacio-ok" style="display:none;margin-top:9px;padding:8px 10px;border-radius:7px;
+      background:#e8f8ee;border:1px solid #a3d9b1;font-size:11.5px;color:#1a7a3a"></div>
+    <div style="font-size:10.5px;color:var(--text3);margin-top:8px;line-height:1.5">
+      Liberar espacio no toca ninguna causa, ni las notas, ni los plazos, ni los encargos: saca copias
+      automáticas repetidas, semanas ya cerradas y el historial más viejo. Todo sigue además en la nube.
+    </div>`;
+}
+function _avisoEspacio(txt){
+  const d=document.getElementById('espacio-ok');
+  if(d){d.style.display='block';d.innerHTML=txt;}
+  const b=document.getElementById('aviso-disco');if(b)b.remove();
+  _discoAvisado=false;
+}
+function liberarEspacio(){
+  const antes=Object.keys(localStorage).reduce((a,k)=>a+_pesoKey(k),0);
+  const hechos=[];
+  // 1) copias automáticas: queda sólo la más reciente
+  try{
+    const idx=JSON.parse(localStorage.getItem('ga_bk_idx')||'[]');
+    if(idx.length>1){
+      const quedan=idx.slice(-1);
+      idx.slice(0,-1).forEach(f=>localStorage.removeItem('ga_bk_'+f));
+      localStorage.setItem('ga_bk_idx',JSON.stringify(quedan));
+      hechos.push((idx.length-1)+' copias automáticas repetidas');
+    }
+  }catch(e){}
+  // 2) tildes de semanas ya cerradas
+  let sem=0;
+  Object.keys(localStorage).forEach(k=>{
+    if((k.indexOf('ga_m_')===0||k.indexOf('ga_mf_')===0)&&k!=='ga_m_'+SK&&k!=='ga_mf_'+SK){
+      localStorage.removeItem(k);sem++;
+    }
+  });
+  if(sem)hechos.push(sem+' registros de semanas anteriores');
+  // 3) copias de emergencia de más de una semana
+  ['ga_antes_adoptar','ga_antes_recuperar'].forEach(k=>{
+    try{
+      const b=JSON.parse(localStorage.getItem(k)||'null');
+      if(b&&b.t&&(Date.now()-b.t)>7*24*60*60*1000){localStorage.removeItem(k);hechos.push('una copia de emergencia vieja');}
+    }catch(e){}
+  });
+  // 4) historial: se conservan los 10 asientos más recientes de cada causa
+  try{
+    let rec=0;
+    Object.keys(historial||{}).forEach(id=>{
+      if(Array.isArray(historial[id])&&historial[id].length>10){
+        rec+=historial[id].length-10;historial[id]=historial[id].slice(0,10);
+      }
+    });
+    if(rec){sH();hechos.push(rec+' asientos viejos del historial');}
+  }catch(e){}
+  // 5) borrador suelto del generador
+  if(localStorage.getItem('ga_esc_draft')){localStorage.removeItem('ga_esc_draft');hechos.push('el borrador del generador');}
+  const despues=Object.keys(localStorage).reduce((a,k)=>a+_pesoKey(k),0);
+  renderEspacio();
+  const lib=Math.max(0,antes-despues);
+  const esc=_pesoEscritos();
+  const extra=esc.bytes>1048576
+    ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid #a3d9b1">Lo que más pesa son los '+
+      '<b>escritos ya generados</b>: '+_fmtPeso(esc.bytes)+' de '+esc.cuantos+' escritos. Con el botón de al lado '+
+      'soltás el texto y queda el listado de cuáles hiciste.</div>'
+    : '';
+  _avisoEspacio((lib
+    ? '✅ Se liberaron <b>'+_fmtPeso(lib)+'</b>. Se sacaron: '+hechos.join(', ')+'. No se tocó ninguna causa.'
+    : 'No quedaba nada suelto para sacar sin tocar causas.')+extra);
+}
+function purgarEscritos(){
+  const esc=_pesoEscritos();
+  if(!esc.cuantos){alert('No hay escritos guardados.');return;}
+  if(!confirm('Suelta el texto de los escritos ya generados ('+esc.cuantos+', '+_fmtPeso(esc.bytes)+').\n\n'+
+    'Queda el registro de cuáles hiciste, para qué causa y cuándo: lo único que se va es el texto guardado, '+
+    'que podés volver a generar desde la plantilla. No se toca ninguna causa.\n\n¿Seguir?'))return;
+  let n=0;
+  (causas||[]).forEach(c=>(c.escritos||[]).forEach(e=>{
+    if(e.html||e.datos){delete e.html;delete e.datos;e.soltado=true;n++;}
+  }));
+  sC();renderEspacio();
+  _avisoEspacio('✅ Se soltaron <b>'+n+'</b> escritos ('+_fmtPeso(esc.bytes)+'). El listado de escritos generados sigue estando.');
 }
 function panelCopias(){
   const l=copiasDisponibles();
