@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v4.1</title>
+<title>Gudiño Cabrera y Asociados — v4.4</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -736,6 +736,9 @@ g.pan-clic:hover text{fill:var(--text)}
     <button id="btn-guardar-ya" onclick="guardarAhora()" title="Subir ahora todo lo cargado en esta computadora"
       style="margin-left:8px;background:var(--navy);color:#fff;border:0;border-radius:6px;padding:4px 11px;
       font:700 11px system-ui;cursor:pointer;white-space:nowrap">💾 Guardar ahora</button>
+    <button id="btn-manda" onclick="toggleManda()"
+      style="margin-left:5px;background:transparent;color:var(--text3);border:1px solid var(--border2);
+      border-radius:6px;padding:4px 10px;font:700 11px system-ui;cursor:pointer;white-space:nowrap">📌 Que mande esta compu</button>
     <span id="presencia-indicator" style="font-size:11px;color:#aaa;margin-left:8px"></span>
     <div class="srch" style="position:relative">🔍 <input id="si" placeholder="Buscar causas, escritos, turnos, encargos…" oninput="buscarDesdeArriba()" onblur="setTimeout(()=>{const r=document.getElementById('busca-mas');if(r)r.style.display='none';},180)">
       <div id="busca-mas"></div>
@@ -1756,7 +1759,19 @@ function fusionarAudiencias(remotas){
   });
   return [...mapa.values()];
 }
-function sE(){svl('ga_e',extraj);fbSave();}
+/* v4.2 — cada gestión guarda la hora de su último cambio, para que al fundir
+   gane la más reciente y no se pierda lo que se acaba de cargar acá. */
+let _sombraExt={};
+function sE(){
+  try{
+    (extraj||[]).forEach(e=>{
+      if(!e||e.id==null)return;
+      const h=JSON.stringify(e);
+      if(_sombraExt[e.id]!==h){e._t=Date.now();_sombraExt[e.id]=JSON.stringify(e);}
+    });
+  }catch(err){}
+  svl('ga_e',extraj);fbSave();
+}
 function sF(){svl('ga_f',feriados);fbSave();}
 // ═══════════════════════════════════════════════
 // HELPERS
@@ -2114,6 +2129,73 @@ function _anotarRescate(id,campo,valor){
     localStorage.setItem('ga_rescates',JSON.stringify(_rescates));
   }catch(e){}
 }
+/* v4.3 — modo "esta computadora manda"
+   v4.4 — se apaga solo al cambiar el día: si no, al volver el lunes esta
+   computadora se impondría sobre lo que cargaste el jueves en la otra. */
+let _mandaVencido=false;
+let _MANDA=(()=>{
+  if(localStorage.getItem('ga_manda')!=='1')return false;
+  const dia=localStorage.getItem('ga_manda_dia')||'';
+  if(dia&&dia===todayISO())return true;
+  localStorage.removeItem('ga_manda');localStorage.removeItem('ga_manda_dia');
+  _mandaVencido=!!dia;
+  return false;
+})();
+function mandaEstaCompu(){return _MANDA;}
+function _pintarManda(){
+  const b=document.getElementById('btn-manda');
+  if(b){
+    b.textContent=_MANDA?'📌 Esta compu manda':'📌 Que mande esta compu';
+    b.style.background=_MANDA?'#B8860B':'transparent';
+    b.style.color=_MANDA?'#fff':'var(--text3)';
+    b.style.border=_MANDA?'0':'1px solid var(--border2)';
+    b.title=_MANDA
+      ?'Lo que cargues acá gana siempre, hasta que termine el día. Tocá para volver al modo normal.'
+      :'Hacer que lo cargado en esta computadora gane siempre sobre lo que venga de la nube (por hoy).';
+  }
+  const av=document.getElementById('cinta-manda');
+  if(_MANDA&&!av){
+    const d=document.createElement('div');
+    d.id='cinta-manda';
+    d.style.cssText='position:fixed;right:10px;bottom:10px;z-index:9990;background:#B8860B;color:#fff;'+
+      'font:700 11px system-ui;padding:5px 11px;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer';
+    d.textContent='📌 Esta computadora manda';
+    d.onclick=()=>toggleManda();
+    document.body.appendChild(d);
+  }else if(!_MANDA&&av){av.remove();}
+}
+async function toggleManda(){
+  if(_MANDA){
+    if(!confirm('Volver al modo normal.\n\nDesde ahora, los cambios de las otras computadoras '+
+      'vuelven a poder modificar lo de acá (siempre con la regla de que nada se vacía solo).\n\n¿Seguir?'))return;
+    _MANDA=false;localStorage.removeItem('ga_manda');localStorage.removeItem('ga_manda_dia');_pintarManda();
+    _avisoGuardado('Modo normal. Las dos computadoras vuelven a fundirse como siempre.');
+    return;
+  }
+  const n=(causas||[]).length;
+  if(!confirm('QUE MANDE ESTA COMPUTADORA\n\n'+
+    'Desde ahora, todo lo que cargues acá ('+n+' causas) gana sobre lo que venga de la nube: '+
+    'ningún cambio de la otra computadora puede pisarlo ni borrarlo.\n\n'+
+    'Lo que la otra computadora AGREGUE (causas nuevas, datos en campos que acá están vacíos) '+
+    'sigue entrando igual: esta computadora manda, no se queda aislada.\n\n'+
+    'Se publica ahora mismo lo de acá como estado del estudio. ¿Seguir?'))return;
+  // todo lo que hay acá queda marcado como lo más reciente
+  const ahora=Date.now();
+  (causas||[]).forEach(c=>{
+    if(!c)return;
+    c.lastTouch=ahora;c._fts=c._fts||{};
+    _CAMPOS_TEXTO.forEach(k=>{
+      const v=(c[k]==null?'':String(c[k])).trim();
+      if(v)c._fts[k]=ahora;
+    });
+  });
+  _MANDA=true;
+  localStorage.setItem('ga_manda','1');
+  localStorage.setItem('ga_manda_dia',todayISO());
+  _pintarManda();
+  try{sC();}catch(e){}
+  await guardarAhora(true);
+}
 function _marcaDe(c,k){
   return (c&&c._fts&&c._fts[k])||(c&&c.lastTouch)||0;
 }
@@ -2175,6 +2257,24 @@ function _fusionarCausa(mia,remota){
      siempre una copia atrasada, y antes ganaba por tener lastTouch más nuevo.
      Esto es lo que borraba el plazo recién cargado, una vuelta tras otra. */
   if(!_limpiaMANDA){
+    /* v4.3 — con "esta computadora manda", lo que acá tiene contenido gana
+       siempre, aunque la nube traiga otro valor más nuevo. Lo que acá está
+       vacío se deja completar por la nube, para no quedar aislado. */
+    if(_MANDA){
+      _CAMPOS_TEXTO.forEach(k=>{
+        const mio=(mia[k]==null?'':String(mia[k])).trim();
+        const qued=(base[k]==null?'':String(base[k])).trim();
+        if(mio&&qued!==mio){base[k]=mia[k];base._fts[k]=Math.max(_marcaDe(mia,k),(base.lastTouch||0)+1);}
+      });
+      if(mia.pl)base.pl=true;
+      if(Array.isArray(mia.vencs)&&mia.vencs.length){
+        const lap=new Set((base.vdel||[]).map(x=>String(x.id)));
+        const mapa=new Map();
+        (base.vencs||[]).forEach(v=>{if(v&&v.id!=null&&!lap.has(String(v.id)))mapa.set(String(v.id),v);});
+        mia.vencs.forEach(v=>{if(v&&v.id!=null&&!lap.has(String(v.id)))mapa.set(String(v.id),v);});
+        base.vencs=[...mapa.values()];
+      }
+    }
     _CAMPOS_TEXTO.forEach(k=>{
       const mio=(mia[k]==null?'':String(mia[k])).trim();
       const qued=(base[k]==null?'':String(base[k])).trim();
@@ -2283,8 +2383,11 @@ function applyPayload(d){
     // porque la nube venga atrasada. Si viene de otra semana no se toca nada.
     _fusionarMovidas(d.movidas,d.movF,d.movidasSK);
   }
-  if(d.gastos)gastos=d.gastos;if(d.pendientes)pendientes=d.pendientes;
-  if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;
+  /* v4.2 — también acá se funde: nada de reemplazar listas enteras */
+  if(Array.isArray(d.gastos))gastos=_fusionarPorId(gastos,d.gastos,'gastos');
+  if(Array.isArray(d.pendientes))pendientes=_fusionarPorId(pendientes,d.pendientes,'anotador');
+  if(Array.isArray(d.extraj))extraj=_fusionarPorId(extraj,d.extraj,'extrajudiciales');
+  if(d.feriados)feriados=d.feriados;
   /* v3.8 — las lápidas de los dos lados se suman ANTES de fundir, así lo que
      borré acá no vuelve con la copia de la nube. */
   if(Array.isArray(d.audBorradas)){
@@ -2305,7 +2408,7 @@ function applyPayload(d){
     d.revBorradas.forEach(x=>{if(x&&!vistos.has(String(x.id))){revBorradas.push(x);vistos.add(String(x.id));}});
     sRevDel();
   }
-  if(d.revisiones)revisiones=_limpiarBorradas(d.revisiones);
+  if(Array.isArray(d.revisiones))revisiones=_limpiarBorradas(_fusionarPorId(revisiones,d.revisiones,'control de escritos'));
   if(d.mailCfg)mailCfg=d.mailCfg;
   if(Array.isArray(d.ramBorrados)){
     const vistos=new Set(ramBorrados.map(x=>String(x.id)));
@@ -2432,23 +2535,55 @@ function _estadoCompleto(){
   return {causas,turnos,gastos,audiencias,extraj,tareasRam,pendientes,revisiones,feriados,mailCfg,vglob,
     movidas:[...movidas],movF,movidasSK:SK,audBorradas,vglobBorrados};
 }
+/* v4.2 — fusión genérica por id para las listas que no tienen una propia.
+   Nunca achica la lista: lo que está en esta computadora y no está en la nube
+   se conserva, salvo que tenga lápida (borrado a propósito). */
+function _fusionarPorId(local,remota,nombre,borradas){
+  local=Array.isArray(local)?local:[];
+  remota=Array.isArray(remota)?remota:[];
+  const todosConId=(l)=>l.length===0||l.every(x=>x&&x.id!=null);
+  if(!todosConId(local)||!todosConId(remota)){
+    // sin id no se pueden casar uno a uno: al menos, que nunca se achique
+    if(local.length>remota.length){_anotarRescate(0,nombre,local.length+' contra '+remota.length+' de la nube');return local;}
+    return remota.length?remota:local;
+  }
+  const muertos=new Set((borradas||[]).map(x=>String(x&&x.id!=null?x.id:x)));
+  const mapa=new Map();
+  remota.forEach(x=>{if(!muertos.has(String(x.id)))mapa.set(String(x.id),x);});
+  let rescatados=0;
+  local.forEach(x=>{
+    const k=String(x.id);
+    if(muertos.has(k))return;
+    const suyo=mapa.get(k);
+    if(!suyo){mapa.set(k,x);rescatados++;return;}
+    // si los dos lo tienen y el de acá se tocó después, manda el de acá
+    if((x._t||0)>(suyo._t||0)){mapa.set(k,x);rescatados++;}
+  });
+  if(rescatados)_anotarRescate(0,nombre,rescatados+' que la nube no tenía');
+  return [...mapa.values()];
+}
 function _adoptarEstado(d){
   if(!d)return false;
   _sacarAvisoTrabada();          // v4.0 — adoptar es una decisión explícita
   try{
     // copia de lo que había, por las dudas
     try{localStorage.setItem('ga_antes_adoptar',JSON.stringify({t:Date.now(),causas}));}catch(e){}
-    if(Array.isArray(d.causas))causas=d.causas;
-    if(Array.isArray(d.turnos))turnos=d.turnos;
-    if(Array.isArray(d.gastos))gastos=d.gastos;
+    /* v4.2 — se FUNDE, no se reemplaza. Traer el estado del estudio no puede
+       significar tirar lo que esta computadora tiene cargado: entra todo lo
+       de la nube y se conserva lo de acá, campo por campo, con la regla de oro. */
+    const _antesC=(causas||[]).length;
+    if(Array.isArray(d.causas))causas=fusionarCausas(d.causas);
+    if(Array.isArray(d.turnos))turnos=fusionarTurnos(d.turnos);
     if(Array.isArray(d.audiencias))audiencias=fusionarAudiencias(d.audiencias);
-    if(Array.isArray(d.extraj))extraj=d.extraj;
-    if(Array.isArray(d.tareasRam))tareasRam=d.tareasRam;
-    if(Array.isArray(d.pendientes))pendientes=d.pendientes;
-    if(Array.isArray(d.revisiones))revisiones=d.revisiones;
+    if(Array.isArray(d.tareasRam))tareasRam=fusionarRams(tareasRam,d.tareasRam);
+    if(Array.isArray(d.gastos))gastos=_fusionarPorId(gastos,d.gastos,'gastos');
+    if(Array.isArray(d.extraj))extraj=_fusionarPorId(extraj,d.extraj,'extrajudiciales');
+    if(Array.isArray(d.pendientes))pendientes=_fusionarPorId(pendientes,d.pendientes,'anotador');
+    if(Array.isArray(d.revisiones))revisiones=_limpiarBorradas(_fusionarPorId(revisiones,d.revisiones,'control de escritos'));
     if(Array.isArray(d.feriados))feriados=d.feriados;
     if(d.mailCfg)mailCfg=d.mailCfg;
-    if(d.vglob)vglob=d.vglob;
+    if(Array.isArray(d.vglob))vglob=fusionarVglob(d.vglob);
+    if((causas||[]).length<_antesC)_anotarRescate(0,'causas','quedaron '+causas.length+' de '+_antesC);
     if((Array.isArray(d.movidas)||d.movF)&&d.movidasSK===SK)_fusionarMovidas(d.movidas,d.movF,d.movidasSK);
     svl('ga_c',causas);svl('ga_turnos',turnos);svl('ga_g',gastos);svl('ga_a',audiencias);
     svl('ga_e',extraj);svl('ga_tram',tareasRam);svl('ga_pend',pendientes);svl('ga_rev',revisiones);
@@ -2498,6 +2633,11 @@ async function ponerseAlDia(){
       }
     }else{
       _marcarAdoptado(m.v);          // ya estaba al día
+      /* v4.4 — confirmación corta al abrir, para no tener que adivinar */
+      try{
+        const q=(m.datos&&m.datos.causas||[]).length;
+        if(q)setTimeout(()=>_avisoGuardado('✅ Al día con el estudio · '+(causas||[]).length+' causas.'),1800);
+      }catch(e){}
     }
   }catch(e){}
 }
@@ -2645,9 +2785,28 @@ function preguntarActualizar(){
     sincronizarAhora();
   },900);
 }
+let _reintentoTrabada=null,_intentosTrabada=0;
+/* v4.4 — si esta computadora quedó fuera del circuito (el estado del estudio
+   no contestó al abrir), lo reintenta sola cada minuto en vez de quedarse
+   trabada toda la jornada esperando que alguien toque un botón. */
+function _vigilarTrabada(){
+  if(_reintentoTrabada)return;
+  _reintentoTrabada=setInterval(async()=>{
+    if(_puedeSubir()||_intentosTrabada>40){clearInterval(_reintentoTrabada);_reintentoTrabada=null;return;}
+    _intentosTrabada++;
+    try{await ponerseAlDia();}catch(e){}
+    if(_puedeSubir()){
+      _sacarAvisoTrabada();
+      try{await subirCausasCambiadas();await reintentarCola();await fbSave();}catch(e){}
+      try{_avisoGuardado('✅ Se restableció la sincronización sola y se subió todo lo de esta computadora.');}catch(e){}
+      clearInterval(_reintentoTrabada);_reintentoTrabada=null;
+    }
+  },60000);
+}
 function startSync(){
   if(pollTimer)clearInterval(pollTimer);
   pollTimer=setInterval(pollSync,10000);
+  _vigilarTrabada();
   // al volver a la pestaña (típico cuando se cambia de computadora) se trae lo
   // último de inmediato, sin esperar la vuelta del reloj
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(()=>pollSync(),300);});
@@ -5736,6 +5895,12 @@ if(localStorage.getItem('ga_version') !== APP_VERSION){
   svl('ga_c',causas);svl('ga_a',audiencias);svl('ga_g',gastos);svl('ga_e',extraj);svl('ga_f',feriados);svl('ga_m_'+SK,[]);svl('ga_mf_'+SK,{});
 }
 document.getElementById('sb-week').textContent=`Semana ${fmt2(LUN)} – ${fmt2(VIE)}`;
+try{_pintarManda();}catch(e){}
+/* v4.4 — si el modo venía prendido de otro día, avisar que ya se apagó */
+if(_mandaVencido)setTimeout(()=>{try{
+  _avisoGuardado('📌 El modo <b>"esta computadora manda"</b> se apagó solo porque cambió el día. '+
+    'Las dos computadoras vuelven a fundirse normal. Si hoy vas a trabajar acá, prendelo de nuevo.');
+}catch(e){}},2500);
 setSyncStatus('local');
 
 
