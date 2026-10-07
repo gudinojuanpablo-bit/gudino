@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v3.8</title>
+<title>Gudiño Cabrera y Asociados — v3.9</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1372,12 +1372,16 @@ function lunesDe(d){const r=new Date(d),di=(r.getDay()===0)?-6:1-r.getDay();r.se
 const _refSem=new Date(HOY);
 if(HOY.getDay()===0&&HOY.getHours()>=20)_refSem.setDate(_refSem.getDate()+1);
 const LUN=lunesDe(_refSem),VIE=new Date(LUN);VIE.setDate(LUN.getDate()+4);
-const SK=LUN.toISOString().split('T')[0];
+/* v3.9 — la clave de la semana también en hora local. LUN conserva la hora del
+   reloj, así que con toISOString() desde las 21:00 la clave saltaba al día
+   siguiente y las causas tildadas de la semana desaparecían hasta la mañana. */
+const SK=(()=>{const m=LUN.getMonth()+1,d=LUN.getDate();
+  return LUN.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(d<10?'0':'')+d;})();
 function fmt2(d){return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});}
 function fmtS(s){return s?s.split('-').reverse().join('/'):'—';}
 function fmtSD(s){if(!s)return'—';const[y,m,d]=s.split('-').map(Number);const dt=new Date(y,m-1,d);const dias=['dom','lun','mar','mié','jue','vie','sáb'];return dias[dt.getDay()]+' '+s.split('-').reverse().join('/');}
 function dLeft(s){if(!s)return 9999;const[y,m,d]=s.split('-').map(Number);const ven=new Date(y,m-1,d);const hoy=new Date(HOY.getFullYear(),HOY.getMonth(),HOY.getDate());return Math.round((ven-hoy)/86400000);}
-function todayISO(){return HOY.toISOString().split('T')[0];}
+function todayISO(){return isoD(new Date());}
 function pesos(n){return'$'+Math.round(n).toLocaleString('es-AR');}
 function escH(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
@@ -2767,10 +2771,15 @@ function updBadges(){
   const hoy5=isoD(HOY);
   const en5=isoD(new Date(HOY.getTime()+5*24*60*60*1000));
   const vmpProx=causas.filter(c=>c.ven&&c.ven>=hoy5&&c.ven<=en5&&c.est!=='archivada'&&c.pl&&c.tipo_aud!=='recordatorio');
-  const miosUrg=(typeof _vencUrgentesMios==='function')?_vencUrgentesMios(5):[];
-  const vmp=vmpProx.length+miosUrg.length;
+  /* v3.9 — un solo conteo, sin repetidos, y exactamente lo que el panel muestra */
+  const urg=(typeof _vencUrgentes==='function')?_vencUrgentes(5):[];
+  const miosUrg=urg;
+  const vmp=urg.length;
   const vmpEl=document.getElementById('cnt-vmp');
-  if(vmpEl){vmpEl.textContent=vmp;vmpEl.style.display=vmp?'':'none';}
+  if(vmpEl){
+    vmpEl.textContent=vmp;vmpEl.style.display=vmp?'':'none';
+    vmpEl.title=vmp?urg.map(v=>_dv(v.f)+' · '+(v.txt||'')+((v.c&&v.c.car)?' — '+v.c.car:'')).join('\n'):'';
+  }
   const ctEl=document.getElementById('cnt-control');
   const cnCtrl=(revisiones||[]).filter(r=>r.estado==='pendiente'||r.estado==='corrigiendo').length;
   if(ctEl){ctEl.textContent=cnCtrl;ctEl.style.display=cnCtrl?'':'none';}
@@ -2858,7 +2867,34 @@ function renderVMP(){
       ${c.tv?`<div style="font-size:10px;color:#888">${c.tv}</div>`:''}
     </div>`;
   });
-  if(!vencidos.length&&!proximos5.length&&!recsUrg.length){
+  /* v3.9 — acá van los plazos y recordatorios que NO son el vencimiento
+     principal de la causa: los que se cargan a mano en la ficha, los
+     personales y los que salen de la etapa de prueba. El número del costado
+     los contaba y el panel no los mostraba nunca. */
+  const sueltos=(typeof _vencUrgentes==='function')?_vencUrgentes(5).filter(v=>v.src!=='legacy'):[];
+  if(sueltos.length){
+    html+=`<div style="margin-top:14px;margin-bottom:8px;font-size:11px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:.5px;border-top:1px solid var(--border);padding-top:12px">Plazos y recordatorios cargados a mano</div>`;
+    sueltos.forEach(v=>{
+      const d=_faltan(v.f);
+      const label=d===0?'HOY':d===1?'Mañana':'En '+d+' días';
+      const color=d===0?'#e24b4a':d<=2?'#e67e22':'#b84d00';
+      const bg=d===0?'#fff0f0':d<=2?'#fff7f0':'#fffbe6';
+      const border=d===0?'#ffb3b3':d<=2?'#ffd09e':'#ffe066';
+      const esPersonal=!v.c||!v.c.id;
+      const sePuedeBorrar=(v.src==='manual'||v.src==='global')&&v.vid!=null;
+      html+=`<div style="padding:10px 12px;border-radius:6px;border:1px solid ${border};background:${bg};margin-bottom:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;gap:8px">
+          <span style="font-size:10px;font-weight:800;color:${color};text-transform:uppercase;letter-spacing:.5px">${label}${v.h?' · '+escH(v.h)+' hs':''}</span>
+          <span style="font-size:10px;color:#aaa;display:flex;align-items:center;gap:6px">${fmtS(v.f)}
+            ${sePuedeBorrar?`<span onclick="delVencManual(${esPersonal?0:v.c.id},${JSON.stringify(v.vid)})" title="Quitar" style="cursor:pointer;color:#bbb;font-weight:700">✕</span>`:''}
+          </span>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:2px">${escH(v.txt||'Vencimiento')}</div>
+        <div style="font-size:10px;color:#aaa">${esPersonal?'Recordatorio personal':escH((v.c&&v.c.car)||'')}</div>
+      </div>`;
+    });
+  }
+  if(!vencidos.length&&!proximos5.length&&!recsUrg.length&&!sueltos.length){
     html='<div style="color:#888;text-align:center;padding:20px;font-size:12px">✓ Sin vencimientos urgentes</div>';
   }
   // Recordatorios no urgentes — sección separada
@@ -3924,6 +3960,23 @@ function _gatherVenc(){
   return out;
 }
 function _vencUrgentesMios(dias){const lim=dias||5;return _gatherVenc().filter(v=>(v.cat==='mio'||v.cat==='recordatorio')&&_faltan(v.f)>=0&&_faltan(v.f)<=lim);}
+/* v3.9 — la lista única de lo que vence pronto. La usan el número del costado
+   y el panel, así no pueden decir cosas distintas. Saca repetidos: el plazo
+   principal de una causa aparecía dos veces y el número lo contaba doble. */
+function _vencUrgentes(dias){
+  const lim=(dias===undefined||dias===null)?5:dias;
+  const vistos=new Set(),out=[];
+  _gatherVenc().forEach(v=>{
+    if(!v||!v.f)return;
+    if(v.cat!=='mio'&&v.cat!=='recordatorio')return;
+    const n=_faltan(v.f);
+    if(n<0||n>lim)return;
+    const k=[(v.c&&v.c.id)||0,v.f,(v.txt||'').trim()].join('|');
+    if(vistos.has(k))return;
+    vistos.add(k);out.push(v);
+  });
+  return out.sort((a,b)=>String(a.f).localeCompare(String(b.f)));
+}
 let vencFiltro='todos';
 function setVencFiltro(k){vencFiltro=k;renderVen();}
 function renderVen(){
@@ -5582,7 +5635,16 @@ function turLunes(off){
   d.setHours(0,0,0,0);
   return d;
 }
-function isoD(d){return d.toISOString().split('T')[0];}
+/* v3.9 — la fecha se arma con el día del reloj de esta computadora, no en
+   horario de Greenwich. Con toISOString(), desde las 21:00 de San Juan la app
+   ya daba por empezado el día siguiente: un plazo de hoy figuraba como de
+   ayer, y las notas y movimientos quedaban fechados un día adelante. */
+function isoD(d){
+  const x=(d instanceof Date)?d:new Date(d);
+  if(isNaN(x))return '';
+  const m=x.getMonth()+1,dd=x.getDate();
+  return x.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd;
+}
 const DIAS_SEMANA=['Lun','Mar','Mié','Jue','Vie'];
 const MESES_CORTO=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
