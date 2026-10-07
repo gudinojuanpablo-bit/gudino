@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v3.9</title>
+<title>Gudiño Cabrera y Asociados — v4.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -733,6 +733,9 @@ g.pan-clic:hover text{fill:var(--text)}
     <div class="tb-title" id="ptitle">Registro de causas</div>
     <span class="sync-dot" id="sync-dot" title="Estado de sincronización"></span>
     <span class="sync-label" id="sync-label">local</span>
+    <button id="btn-guardar-ya" onclick="guardarAhora()" title="Subir ahora todo lo cargado en esta computadora"
+      style="margin-left:8px;background:var(--navy);color:#fff;border:0;border-radius:6px;padding:4px 11px;
+      font:700 11px system-ui;cursor:pointer;white-space:nowrap">💾 Guardar ahora</button>
     <span id="presencia-indicator" style="font-size:11px;color:#aaa;margin-left:8px"></span>
     <div class="srch" style="position:relative">🔍 <input id="si" placeholder="Buscar causas, escritos, turnos, encargos…" oninput="buscarDesdeArriba()" onblur="setTimeout(()=>{const r=document.getElementById('busca-mas');if(r)r.style.display='none';},180)">
       <div id="busca-mas"></div>
@@ -1941,6 +1944,7 @@ async function reintentarCola(){
 }
 /* Baja las causas una por una y las fusiona (nunca reemplaza en bloque) */
 async function bajarCausas(){
+  if(!_puedeBajar()){_avisarSincTrabada();return false;}   // v4.0
   try{
     const r=await fetch(FB_CAUSAS,{cache:'no-store'});
     if(!r.ok)return false;
@@ -2024,6 +2028,19 @@ function setSyncStatus(s){
   lbl.title=hace?'Tocá para traer los últimos cambios de la nube':'';
   lbl.style.cursor='pointer';
   lbl.onclick=()=>sincronizarAhora();
+  try{
+    const trabada=!_puedeSubir()&&(causas||[]).length>0;
+    const bg=document.getElementById('btn-guardar-ya');
+    if(bg){
+      const hayQue=trabada||_hayPendientes();
+      bg.style.background=hayQue?'#C0392B':'var(--navy)';
+      bg.title=hayQue?'Hay cambios sin subir — tocá para subirlos ahora'
+                     :'Subir ahora todo lo cargado en esta computadora';
+    }
+    /* v4.0 — el aviso aparece apenas la computadora queda fuera del circuito,
+       sin esperar a que una bajada la pise: así se entera en el momento. */
+    if(trabada)_avisarSincTrabada(); else _sacarAvisoTrabada();
+  }catch(e){}
   let banner=document.getElementById('offline-banner');
   if(!banner){
     banner=document.createElement('div');banner.id='offline-banner';
@@ -2205,6 +2222,8 @@ function restaurarCopia(f){
 }
 function applyPayload(d){
   if(!d)return;
+  /* v4.0 — si esta computadora no está subiendo, no se la pisa con lo remoto */
+  if(!_puedeBajar()){_avisarSincTrabada();return;}
   if(d.causas){
     _copiaAuto();
     causas=fusionarCausas(d.causas);
@@ -2371,6 +2390,7 @@ function _estadoCompleto(){
 }
 function _adoptarEstado(d){
   if(!d)return false;
+  _sacarAvisoTrabada();          // v4.0 — adoptar es una decisión explícita
   try{
     // copia de lo que había, por las dudas
     try{localStorage.setItem('ga_antes_adoptar',JSON.stringify({t:Date.now(),causas}));}catch(e){}
@@ -2511,6 +2531,33 @@ function _puedeSubir(){
   // una máquina que no adoptó la versión vigente no sube nada
   return _maestroLocal>0;
 }
+/* v4.0 — candado simétrico. Si esta computadora no está subiendo, tampoco se
+   deja pisar por la nube: antes bajaba igual y borraba lo recién cargado. */
+function _puedeBajar(){
+  if(_puedeSubir())return true;             // está en el circuito normal
+  if(!(causas||[]).length)return true;      // máquina vacía: que se llene
+  return false;                             // tiene datos y no sube: no se la pisa
+}
+let _avisoTrabadoPuesto=false;
+function _avisarSincTrabada(){
+  const el=document.getElementById('avisoMaestro');
+  if(!el)return;
+  _avisoTrabadoPuesto=true;
+  el.style.display='block';
+  el.style.background='#FDECEC';el.style.borderBottom='1px solid #f0b4b4';el.style.color='#8a1f1f';
+  el.innerHTML='⛔ <b>Esta computadora no está sincronizando.</b> Lo que cargues se guarda acá, '+
+    'pero no sube ni baja, para no perderlo. '+
+    '<button onclick="guardarAhora(true)" style="margin-left:8px;background:#8a1f1f;color:#fff;border:0;'+
+    'border-radius:5px;padding:3px 10px;font:700 11px system-ui;cursor:pointer">Subir lo de esta computadora</button> '+
+    '<button onclick="traerDelEstudio()" style="margin-left:4px;background:#fff;color:#8a1f1f;'+
+    'border:1px solid #d99;border-radius:5px;padding:3px 10px;font:700 11px system-ui;cursor:pointer">Traer lo del estudio</button>';
+}
+function _sacarAvisoTrabada(){
+  if(!_avisoTrabadoPuesto)return;
+  _avisoTrabadoPuesto=false;
+  const el=document.getElementById('avisoMaestro');
+  if(el){el.style.display='none';el.style.background='';el.style.borderBottom='';el.style.color='';}
+}
 function _hayPendientes(){
   try{
     if(pendingOfflineSync||localStorage.getItem('ga_pending_sync'))return true;
@@ -2566,6 +2613,94 @@ function startSync(){
 window.addEventListener('online',()=>{if(pendingOfflineSync||localStorage.getItem('ga_pending_sync')){setSyncStatus('saving');setTimeout(fbSave,2000);}});
 setInterval(()=>{if((pendingOfflineSync||localStorage.getItem('ga_pending_sync'))&&navigator.onLine)fbSave();},120000);
 
+/* v4.0 — GUARDAR AHORA: sube todo lo de esta computadora, sin esperar al reloj
+   de la sincronización. Si la computadora está trabada (no venía subiendo),
+   publica lo de acá como estado del estudio y la vuelve a meter en el circuito.
+   Siempre dice qué pasó: nunca se queda callado. */
+let _guardandoYa=false;
+function _avisoGuardado(txt,color){
+  const el=document.getElementById('avisoMaestro');
+  if(!el)return;
+  el.style.display='block';
+  el.style.background=color==='mal'?'#FDECEC':'#E7F6EE';
+  el.style.borderBottom='1px solid '+(color==='mal'?'#f0b4b4':'#b7e0c8');
+  el.style.color=color==='mal'?'#8a1f1f':'#1E6F42';
+  el.innerHTML=txt;
+  if(color!=='mal')setTimeout(()=>{if(!_avisoTrabadoPuesto)el.style.display='none';},9000);
+}
+async function guardarAhora(forzarPublicar){
+  if(_guardandoYa)return;
+  const btn=document.getElementById('btn-guardar-ya');
+  _guardandoYa=true;
+  const textoOrig=btn?btn.textContent:'';
+  if(btn){btn.textContent='Guardando…';btn.disabled=true;btn.style.opacity='.7';}
+  try{
+    // 1) que quede en el disco de esta computadora, pase lo que pase
+    const enDisco=svl('ga_c',causas)&&svl('ga_a',audiencias)&&svl('ga_g',gastos)&&svl('ga_e',extraj);
+    try{marcarCambios();}catch(e){}
+    svl('ga_m_'+SK,[...movidas]);svl('ga_mf_'+SK,movF);svl('ga_vglob',vglob);
+    svl('ga_turnos',turnos);svl('ga_tram',tareasRam);svl('ga_pend',pendientes);
+
+    // 2) si está trabada, publicar lo de acá la devuelve al circuito
+    let publico=false;
+    if(!_puedeSubir()||forzarPublicar){
+      const n=(causas||[]).length;
+      if(forzarPublicar||confirm('Esta computadora no está subiendo cambios a la nube.\n\n'+
+        'Publicar lo que tenés acá ('+n+' causas) como estado del estudio y volver a sincronizar.\n\n'+
+        'Lo de las otras computadoras no se pierde: se vuelve a fundir en la próxima vuelta.\n\n¿Publicar?')){
+        publico=await _publicar(true);
+        if(publico)_sacarAvisoTrabada();
+      }
+    }
+
+    // 3) subir: primero causa por causa, después la cola atrasada, después el bloque
+    let subio=false,cola=false,bloque=false;
+    if(_puedeSubir()){
+      try{subio=await subirCausasCambiadas();}catch(e){}
+      try{cola=await reintentarCola();}catch(e){}
+      try{await fbSave();bloque=!pendingOfflineSync&&!localStorage.getItem('ga_pending_sync');}catch(e){}
+    }
+
+    // 4) decir qué pasó, sin vueltas
+    const hora=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    if(!_puedeSubir()){
+      _avisoGuardado('💾 Guardado en esta computadora a las '+hora+'. <b>No subió a la nube</b>: '+
+        'esta computadora está fuera del circuito. Tocá <b>Guardar ahora</b> otra vez y aceptá publicar.','mal');
+    }else if(subio&&bloque){
+      _avisoGuardado('✅ Guardado y subido a las '+hora+' · '+(causas||[]).length+' causas'+
+        (publico?' · esta computadora volvió a sincronizar':'')+'.');
+    }else if(enDisco){
+      _avisoGuardado('💾 Guardado en esta computadora a las '+hora+', pero la nube no respondió. '+
+        'Queda en cola y se reintenta solo. No se pierde nada.','mal');
+    }else{
+      _avisoGuardado('⚠ No se pudo guardar. Fijate el espacio en <b>Config. / Online</b>.','mal');
+    }
+    updBadges();
+  }catch(e){
+    _avisoGuardado('⚠ No se pudo completar el guardado: '+escH(String(e&&e.message||e)),'mal');
+  }
+  if(btn){btn.textContent=textoOrig||'💾 Guardar ahora';btn.disabled=false;btn.style.opacity='';}
+  _guardandoYa=false;
+}
+/* el otro camino del aviso: descartar lo de acá y traer el estado del estudio */
+async function traerDelEstudio(){
+  if(!confirm('Trae el estado del estudio desde la nube y reemplaza lo que hay en esta computadora.\n\n'+
+    'Se guarda una copia de lo actual por si querés volver atrás (Config. / Online → Deshacer).\n\n¿Seguir?'))return;
+  try{
+    const r=await fetch(FB_MAESTRO+'?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)throw new Error('la nube no respondió');
+    const m=await r.json();
+    if(!m||!m.datos)throw new Error('todavía no hay un estado publicado');
+    if(_adoptarEstado(m.datos)){
+      _marcarAdoptado(m.v||Date.now());
+      renderR();updBadges();updToolsCounts();renderBan();
+      _avisoGuardado('✅ Al día con el estudio · '+(causas||[]).length+' causas. '+
+        '<span style="text-decoration:underline;cursor:pointer" onclick="deshacerAdopcion()">Deshacer</span>');
+    }else throw new Error('no se pudo aplicar');
+  }catch(e){
+    _avisoGuardado('⚠ No se pudo traer el estado del estudio: '+escH(String(e&&e.message||e)),'mal');
+  }
+}
 async function conectarJSONBin(){
   setSyncStatus('saving');
   try{
@@ -2790,6 +2925,16 @@ function updBadges(){
   })||miosUrg.some(v=>_faltan(v.f)<=1);
   const btn=document.getElementById('vmp-btn-inner');
   if(btn)btn.classList.toggle('vmp-urgente',hayUrgente);
+  /* v4.0 — avisar si esta computadora quedó fuera del circuito de sincronización */
+  try{
+    const trabada=!_puedeSubir()&&(causas||[]).length>0;
+    const bg=document.getElementById('btn-guardar-ya');
+    if(bg){
+      const hayQue=trabada||_hayPendientes();
+      bg.style.background=hayQue?'#C0392B':'var(--navy)';
+    }
+    if(trabada)_avisarSincTrabada(); else _sacarAvisoTrabada();
+  }catch(e){}
   renderBannerAlertas();
 }
 function updProgress(){
