@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v3.7</title>
+<title>Gudiño Cabrera y Asociados — v3.8</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1536,6 +1536,20 @@ let gastos=JSON.parse(localStorage.getItem('ga_g')||'null')||G0;
 let audiencias=JSON.parse(localStorage.getItem('ga_a')||'null')||A0;
 let extraj=JSON.parse(localStorage.getItem('ga_e')||'null')||EXT0;
 let vglob=JSON.parse(localStorage.getItem('ga_vglob')||'[]');
+/* v3.8 — lápidas de los recordatorios personales borrados */
+let vglobBorrados=(()=>{try{return JSON.parse(localStorage.getItem('ga_vgdel')||'[]')||[];}catch(e){return [];}})();
+function sVgDel(){
+  const corte=Date.now()-120*864e5;
+  vglobBorrados=vglobBorrados.filter(x=>x&&x.t>corte);
+  try{localStorage.setItem('ga_vgdel',JSON.stringify(vglobBorrados));}catch(e){}
+}
+function fusionarVglob(remotos){
+  const borrado=new Set(vglobBorrados.map(x=>String(x.id)));
+  const mapa=new Map();
+  (vglob||[]).forEach(v=>{if(v&&v.id!=null&&!borrado.has(String(v.id)))mapa.set(String(v.id),v);});
+  (remotos||[]).forEach(v=>{if(v&&v.id!=null&&!borrado.has(String(v.id))&&!mapa.has(String(v.id)))mapa.set(String(v.id),v);});
+  return [...mapa.values()];
+}
 /* v360 — los escritos que se quitaban del control volvían a aparecer solos.
    Motivo: la lista de revisiones viaja entera en la sincronización, así que
    cuando el otro equipo (el de Ramiro) subía su copia —que todavía los tenía—
@@ -1707,6 +1721,30 @@ function sM(){svl('ga_m_'+SK,[...movidas]);svl('ga_mf_'+SK,movF);fbSave();}
 function sH(){svl('ga_h',historial);} // historial no sincroniza para evitar conflictos
 function sG(){svl('ga_g',gastos);fbSave();}
 function sA(){svl('ga_a',audiencias);fbSave();}
+/* v3.8 — lápidas de audiencias borradas, para que no vuelvan con la nube */
+let audBorradas=(()=>{try{return JSON.parse(localStorage.getItem('ga_auddel')||'[]')||[];}catch(e){return [];}})();
+function sAudDel(){
+  const corte=Date.now()-120*864e5;
+  audBorradas=audBorradas.filter(x=>x&&x.t>corte);
+  try{localStorage.setItem('ga_auddel',JSON.stringify(audBorradas));}catch(e){}
+}
+function _borrarAudiencia(id){
+  audiencias=(audiencias||[]).filter(a=>String(a.id)!==String(id));
+  if(!audBorradas.some(x=>String(x.id)===String(id)))audBorradas.push({id:id,t:Date.now()});
+  sAudDel();
+}
+/* Funde audiencia por audiencia según su id, saltando las borradas. Así la
+   audiencia suelta que cargué acá no desaparece porque la nube venga sin ella. */
+function fusionarAudiencias(remotas){
+  const borrada=new Set(audBorradas.map(x=>String(x.id)));
+  const mapa=new Map();
+  (audiencias||[]).forEach(a=>{if(a&&a.id!=null&&!borrada.has(String(a.id)))mapa.set(String(a.id),a);});
+  (remotas||[]).forEach(a=>{
+    if(!a||a.id==null||borrada.has(String(a.id)))return;
+    if(!mapa.has(String(a.id)))mapa.set(String(a.id),a);
+  });
+  return [...mapa.values()];
+}
 function sE(){svl('ga_e',extraj);fbSave();}
 function sF(){svl('ga_f',feriados);fbSave();}
 // ═══════════════════════════════════════════════
@@ -1992,7 +2030,7 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movF,movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos,turBorrados,ramBorrados};}
+function getPayload(){return{v:Date.now(),causas,movidas:[...movidas],movF,movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos,turBorrados,ramBorrados,audBorradas,vglobBorrados};}
 /* v371 — antes, lo que bajaba de la nube REEMPLAZABA la lista de causas entera.
    Si la otra computadora tenía una copia sin lo último cargado acá (por ejemplo
    las carátulas completas), ese trabajo se perdía sin aviso. Ahora se fusiona
@@ -2053,6 +2091,21 @@ function _fusionarCausa(mia,remota){
   /* v3.6 — una limpieza no se deshace sola. Si de un lado se limpió la causa
      y después nadie la volvió a tocar de ninguno de los dos lados, el
      resultado queda limpio: no revive el plazo ni la nota vieja. */
+  /* v3.8 — los recordatorios se funden de a uno, por su id, y los borrados
+     quedan borrados: así entra lo que carga la otra computadora sin revivir
+     lo que yo saqué. */
+  {
+    const lap=new Map();
+    [].concat(mia.vdel||[],remota.vdel||[]).forEach(x=>{if(x&&x.id!=null)lap.set(String(x.id),x);});
+    const corte=Date.now()-120*864e5;
+    base.vdel=[...lap.values()].filter(x=>!x.t||x.t>corte);
+    const mapa=new Map();
+    [].concat(remota.vencs||[],mia.vencs||[]).forEach(v=>{
+      if(v&&v.id!=null&&!lap.has(String(v.id)))mapa.set(String(v.id),v);
+    });
+    base.vencs=[...mapa.values()];
+    if(!base.vdel.length)delete base.vdel;
+  }
   const _lA=mia._limp||0,_lB=remota._limp||0,_lim=Math.max(_lA,_lB);
   if(_lim)base._limp=_lim;
   const _limpiaMANDA=_lim&&_lim>=(mia.lastTouch||0)&&_lim>=(remota.lastTouch||0);
@@ -2163,8 +2216,22 @@ function applyPayload(d){
     // porque la nube venga atrasada. Si viene de otra semana no se toca nada.
     _fusionarMovidas(d.movidas,d.movF,d.movidasSK);
   }
-  if(d.gastos)gastos=d.gastos;if(d.audiencias)audiencias=d.audiencias;if(d.pendientes)pendientes=d.pendientes;
-  if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;if(d.vglob)vglob=d.vglob;
+  if(d.gastos)gastos=d.gastos;if(d.pendientes)pendientes=d.pendientes;
+  if(d.extraj)extraj=d.extraj;if(d.feriados)feriados=d.feriados;
+  /* v3.8 — las lápidas de los dos lados se suman ANTES de fundir, así lo que
+     borré acá no vuelve con la copia de la nube. */
+  if(Array.isArray(d.audBorradas)){
+    const vistos=new Set(audBorradas.map(x=>String(x.id)));
+    d.audBorradas.forEach(x=>{if(x&&!vistos.has(String(x.id))){audBorradas.push(x);vistos.add(String(x.id));}});
+    sAudDel();
+  }
+  if(Array.isArray(d.vglobBorrados)){
+    const vistos=new Set(vglobBorrados.map(x=>String(x.id)));
+    d.vglobBorrados.forEach(x=>{if(x&&!vistos.has(String(x.id))){vglobBorrados.push(x);vistos.add(String(x.id));}});
+    sVgDel();
+  }
+  if(Array.isArray(d.audiencias))audiencias=fusionarAudiencias(d.audiencias);
+  if(Array.isArray(d.vglob))vglob=fusionarVglob(d.vglob);
   // las lápidas de los dos lados se suman antes de aplicar la lista remota
   if(Array.isArray(d.revBorradas)){
     const vistos=new Set(revBorradas.map(x=>String(x.id)));
@@ -2187,7 +2254,7 @@ function applyPayload(d){
   }
   if(Array.isArray(d.turnos)){turnos=fusionarTurnos(d.turnos);svl('ga_turnos',turnos);}
   svl('ga_c',causas);svl('ga_m_'+SK,[...movidas]);svl('ga_mf_'+SK,movF);svl('ga_g',gastos);
-  svl('ga_a',audiencias);svl('ga_e',extraj);svl('ga_f',feriados);
+  svl('ga_a',audiencias);svl('ga_e',extraj);svl('ga_f',feriados);svl('ga_vglob',vglob);
   // esto faltaba: lo que bajaba de la nube no se guardaba en el equipo, así que
   // al recargar volvía a leerse la copia vieja del disco
   svl('ga_rev',revisiones);svl('ga_tram',tareasRam);svl('ga_pend',pendientes);
@@ -2296,7 +2363,7 @@ function _marcarAdoptado(v){
 }
 function _estadoCompleto(){
   return {causas,turnos,gastos,audiencias,extraj,tareasRam,pendientes,revisiones,feriados,mailCfg,vglob,
-    movidas:[...movidas],movF,movidasSK:SK};
+    movidas:[...movidas],movF,movidasSK:SK,audBorradas,vglobBorrados};
 }
 function _adoptarEstado(d){
   if(!d)return false;
@@ -2306,7 +2373,7 @@ function _adoptarEstado(d){
     if(Array.isArray(d.causas))causas=d.causas;
     if(Array.isArray(d.turnos))turnos=d.turnos;
     if(Array.isArray(d.gastos))gastos=d.gastos;
-    if(Array.isArray(d.audiencias))audiencias=d.audiencias;
+    if(Array.isArray(d.audiencias))audiencias=fusionarAudiencias(d.audiencias);
     if(Array.isArray(d.extraj))extraj=d.extraj;
     if(Array.isArray(d.tareasRam))tareasRam=d.tareasRam;
     if(Array.isArray(d.pendientes))pendientes=d.pendientes;
@@ -2317,7 +2384,7 @@ function _adoptarEstado(d){
     if((Array.isArray(d.movidas)||d.movF)&&d.movidasSK===SK)_fusionarMovidas(d.movidas,d.movF,d.movidasSK);
     svl('ga_c',causas);svl('ga_turnos',turnos);svl('ga_g',gastos);svl('ga_a',audiencias);
     svl('ga_e',extraj);svl('ga_tram',tareasRam);svl('ga_pend',pendientes);svl('ga_rev',revisiones);
-    svl('ga_f',feriados);svl('ga_mc',mailCfg);svl('ga_vg',vglob);
+    svl('ga_f',feriados);svl('ga_mc',mailCfg);svl('ga_vglob',vglob);
     _subidas={};_guardarSubidas();          // se re-sube todo desde esta base
     _sombra={};try{marcarCambios();}catch(e){}
     return true;
@@ -2638,6 +2705,7 @@ function goP(p){
   if(p==='gastos')renderG();
   if(p==='config')renderCfg();
   if(p==='audiencias'){sincTodasAudiencias();renderCal();}
+  if(p==='registro')renderBan();
   if(p==='pendientes'){renderPendientes();setTimeout(()=>{const i=document.getElementById('pend-inp');if(i)i.focus();},100);}
   if(p==='inactivas'){renderInactivas();}
   if(p==='histmes'){renderHistMes();}
@@ -3208,10 +3276,20 @@ function gcpSelDia(iso){
 function gcpAplicarContador(){}
 function sincTodasAudiencias(){
   const audTypes=['inicial','mediac','concil','final','recursiva','resolver'];
-  const porCausa={};
-  audiencias.forEach(a=>{if(a.causaId){const k=String(a.causaId);if(!porCausa[k])porCausa[k]=a;}});
-  const sinCausa=audiencias.filter(a=>!a.causaId);
-  audiencias=[...sinCausa,...Object.values(porCausa)];
+  /* v3.8 — antes esto dejaba UNA sola audiencia por causa y borraba el resto,
+     y cuál sobrevivía dependía del orden del arreglo, que cambia con cada
+     sincronización: de ahí que la agenda saliera distinta cada vez. Ahora sólo
+     saca duplicados exactos (misma causa, misma fecha y misma hora). */
+  {
+    const visto=new Set(),limpio=[];
+    (audiencias||[]).forEach(a=>{
+      if(!a)return;
+      const k=[a.causaId||'',a.f||'',a.h||'',a.t||''].join('|');
+      if(visto.has(k))return;
+      visto.add(k);limpio.push(a);
+    });
+    audiencias=limpio;
+  }
   causas.forEach(c=>{
     if(!c.tipo_aud||!audTypes.includes(c.tipo_aud)||!c.ven)return;
     const t=c.tipo_aud==='concil'?'mediac':c.tipo_aud;
@@ -3523,6 +3601,11 @@ function limpiarCausa(id,e){
   /* v3.6 — queda constancia de la limpieza con su hora, en la causa y campo por
      campo. Sin esto la copia de la nube ganaba la fusión y volvía todo. */
   const _ahoraL=Date.now();
+  if(Array.isArray(c.vencs)&&c.vencs.length){     // v3.8 — con lápida, para que no vuelvan
+    c.vdel=c.vdel||[];
+    c.vencs.forEach(v=>{if(v&&v.id!=null&&!c.vdel.some(x=>String(x.id)===String(v.id)))c.vdel.push({id:v.id,t:_ahoraL});});
+  }
+  c.vencs=[];
   c.lastTouch=_ahoraL; c._limp=_ahoraL;
   c._fts=c._fts||{};
   CAMPOS_LIMPIEZA.forEach(k=>{c._fts[k]=_ahoraL;});
@@ -3815,7 +3898,7 @@ function _vencsChips(c){
   return h+'</div>';
 }
 function delAudChip(id){
-  audiencias=(audiencias||[]).filter(a=>String(a.id)!==String(id));
+  _borrarAudiencia(id);
   sA();if(typeof renderR==='function')renderR();updBadges();renderVencPanel();
   const pa=document.getElementById('panel-audiencias');if(pa&&pa.classList.contains('on'))renderCal();
 }
@@ -3891,10 +3974,20 @@ function addVencManual(){
   c.vencs.push({id:Date.now(),f,h:document.getElementById('nv-h').value,txt:document.getElementById('nv-txt').value.trim()||'Vencimiento',cat:document.getElementById('nv-cat').value});
   sC();renderVen();updBadges();
 }
+/* v3.8 — borrar un recordatorio deja lápida y hora. Sin eso, la copia de la
+   nube ganaba la fusión y el recordatorio borrado volvía a aparecer solo. */
 function delVencManual(cid,vid){
-  if(cid===0){vglob=vglob.filter(v=>v.id!==vid);svl('ga_vglob',vglob);sC();if(typeof renderVen==='function')renderVen();updBadges();return;}
+  if(cid===0){
+    vglob=vglob.filter(v=>String(v.id)!==String(vid));
+    vglobBorrados.push({id:vid,t:Date.now()});sVgDel();
+    svl('ga_vglob',vglob);fbSave();
+    if(typeof renderVen==='function')renderVen();updBadges();renderVencPanel();return;
+  }
   const c=causas.find(x=>x.id===cid);if(!c||!c.vencs)return;
-  c.vencs=c.vencs.filter(v=>v.id!==vid);
+  c.vencs=c.vencs.filter(v=>String(v.id)!==String(vid));
+  c.vdel=c.vdel||[];
+  if(!c.vdel.some(x=>String(x.id)===String(vid)))c.vdel.push({id:vid,t:Date.now()});
+  c.lastTouch=Date.now();
   sC();if(typeof renderR==='function')renderR();if(typeof renderVen==='function')renderVen();updBadges();renderVencPanel();
 }
 
@@ -4274,7 +4367,7 @@ function saveA(){
 function delA(){
   const id=document.getElementById('af-id').value;
   if(!id||!confirm('¿Eliminar?'))return;
-  audiencias=audiencias.filter(a=>String(a.id)!==String(id));
+  _borrarAudiencia(id);
   sA();document.getElementById('af-form').classList.remove('ab');renderCal();
 }
 
