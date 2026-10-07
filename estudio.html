@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v4.0</title>
+<title>Gudiño Cabrera y Asociados — v4.1</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1268,6 +1268,10 @@ g.pan-clic:hover text{fill:var(--text)}
         <div id="cfg-espacio"></div>
       </div>
       <div class="cfg-blk">
+        <h3>🛟 Borrados que la app impidió</h3>
+        <div id="cfg-rescates"></div>
+      </div>
+      <div class="cfg-blk">
         <h3>💾 Copia de seguridad</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
           <button class="btn" onclick="bkExportar()">⬇️ Descargar copia (.json)</button>
@@ -2098,6 +2102,18 @@ function marcarCambios(){
   });
   if(hubo)_guardarSombra(); else _guardarSombra();
 }
+/* v4.1 — libreta de rescates: cada vez que la regla de oro impide un borrado
+   queda anotado acá, con hora, causa y campo. Se ve en Config. / Online. */
+let _rescates=(()=>{try{return JSON.parse(localStorage.getItem('ga_rescates')||'[]')||[];}catch(e){return [];}})();
+function _anotarRescate(id,campo,valor){
+  try{
+    const c=(causas||[]).find(x=>String(x.id)===String(id));
+    _rescates.push({t:Date.now(),id:id,car:(c&&c.car)||'',campo:campo,
+      val:String(valor==null?'':valor).slice(0,60)});
+    if(_rescates.length>120)_rescates=_rescates.slice(-120);
+    localStorage.setItem('ga_rescates',JSON.stringify(_rescates));
+  }catch(e){}
+}
 function _marcaDe(c,k){
   return (c&&c._fts&&c._fts[k])||(c&&c.lastTouch)||0;
 }
@@ -2142,13 +2158,41 @@ function _fusionarCausa(mia,remota){
   });
   // listas: se queda la más larga si la otra está vacía
   base.rams=fusionarRams(mia.rams,remota.rams);
-  ['escritos','vencs','hist'].forEach(k=>{
+  /* v4.1 — 'vencs' SALE de esta lista: tiene su propia fusión por ítem con
+     lápidas unas líneas más arriba, y esta regla se la pisaba entera. Ese era
+     el motivo de que los recordatorios borrados siguieran volviendo. */
+  ['escritos','hist'].forEach(k=>{
     const a=Array.isArray(mia[k])?mia[k]:null, b=Array.isArray(remota[k])?remota[k]:null;
     if(a&&a.length&&(!b||!b.length))base[k]=a;
     else if(b&&b.length&&(!a||!a.length))base[k]=b;
   });
   if(mia.prueba&&!remota.prueba)base.prueba=mia.prueba;
   base.lastTouch=Math.max(mia.lastTouch||0,remota.lastTouch||0);
+  /* ── REGLA DE ORO (v4.1) ──────────────────────────────────────────────
+     Ninguna fusión deja vacío un campo que de este lado tiene contenido.
+     Borrar es una acción explícita y deja su marca (Limpiar, o la ✕ de cada
+     cosa, que dejan lápida). Un campo que llega vacío desde la nube es casi
+     siempre una copia atrasada, y antes ganaba por tener lastTouch más nuevo.
+     Esto es lo que borraba el plazo recién cargado, una vuelta tras otra. */
+  if(!_limpiaMANDA){
+    _CAMPOS_TEXTO.forEach(k=>{
+      const mio=(mia[k]==null?'':String(mia[k])).trim();
+      const qued=(base[k]==null?'':String(base[k])).trim();
+      if(mio&&!qued){
+        base[k]=mia[k];
+        base._fts[k]=Math.max(_marcaDe(mia,k),(base.lastTouch||0)+1);
+        _anotarRescate(mia.id,k,mia[k]);
+      }
+    });
+    // el pinche del plazo acompaña al plazo: si quedó el mío, queda el pinche
+    if(mia.pl&&!base.pl&&(base.ven||'')===(mia.ven||''))base.pl=true;
+    // y los recordatorios: si acá hay y del otro lado no, no se vacían
+    if(Array.isArray(mia.vencs)&&mia.vencs.length&&(!Array.isArray(base.vencs)||!base.vencs.length)){
+      const lap=new Set((base.vdel||[]).map(x=>String(x.id)));
+      const quedan=mia.vencs.filter(v=>v&&v.id!=null&&!lap.has(String(v.id)));
+      if(quedan.length){base.vencs=quedan;_anotarRescate(mia.id,'vencs',quedan.length+' recordatorios');}
+    }
+  }
   return base;
 }
 function fusionarCausas(remotas,soloExistentes){
@@ -2833,6 +2877,7 @@ function goP(p){
   if(p==='config'){
     const cc=document.getElementById('cfg-copias');if(cc)cc.innerHTML=panelCopias();
     try{renderEspacio();}catch(e){}
+    try{renderRescates();}catch(e){}
     const me=document.getElementById('maestro-est');
     if(me)me.textContent=_maestroLocal
       ? 'Esta computadora está al día con el estado publicado el '+new Date(_maestroLocal).toLocaleString('es-AR')
@@ -4943,6 +4988,31 @@ function espacioResumen(){
       {n:'Borrador del generador de escritos',b:_pesoKey('ga_esc_draft'),d:'se puede borrar'},
     ].sort((a,b)=>b.b-a.b),
   };
+}
+/* v4.1 — lo que la regla de oro salvó: cada vez que una sincronización quiso
+   dejar vacío un campo que acá tenía contenido, queda anotado acá. */
+function renderRescates(){
+  const el=document.getElementById('cfg-rescates');if(!el)return;
+  const NOM={ven:'plazo',tv:'para qué es el plazo',not:'nota',car:'carátula',carLarga:'carátula completa',
+    juz:'juzgado',ex:'expediente',cli:'cliente',etapa:'etapa',obs:'observaciones',vencs:'recordatorios',
+    aud_h:'hora de audiencia',aud_obs:'observaciones de audiencia',tipo_aud:'tipo de audiencia',
+    socio:'socio',rol:'rol',est:'estado',fue:'fuero',tipo_venc:'tipo de plazo',aud_mod:'modalidad'};
+  const l=(_rescates||[]).slice().reverse();
+  if(!l.length){
+    el.innerHTML='<div style="font-size:11.5px;color:var(--text3)">Todavía no hizo falta rescatar nada. '+
+      'Acá va a aparecer cada vez que una sincronización intente borrar algo que cargaste, '+
+      'con la fecha y qué era.</div>';
+    return;
+  }
+  el.innerHTML='<div style="font-size:11px;color:var(--text3);margin-bottom:8px">'+
+      'La app impidió '+l.length+' borrado'+(l.length!==1?'s':'')+'. Si ves algo raro acá, avisame.</div>'+
+    l.slice(0,40).map(x=>`<div style="display:flex;gap:9px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:10px;color:var(--text3);white-space:nowrap;font-variant-numeric:tabular-nums">${new Date(x.t).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>
+      <span style="flex:1;font-size:11.5px;color:var(--text2)"><b>${escH(NOM[x.campo]||x.campo)}</b>
+        ${x.car?'· '+escH(String(x.car).slice(0,46)):''}
+        <span style="color:var(--text3)">— se conservó «${escH(x.val)}»</span></span>
+    </div>`).join('')+
+    `<button class="btn gh" style="margin-top:10px;font-size:11px" onclick="_rescates=[];localStorage.removeItem('ga_rescates');renderRescates()">Vaciar la lista</button>`;
 }
 function renderEspacio(){
   const el=document.getElementById('cfg-espacio');if(!el)return;
