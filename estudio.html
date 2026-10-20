@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v4.8</title>
+<title>Gudiño Cabrera y Asociados — v4.9</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -5431,8 +5431,26 @@ async function volverAPunto(k){
     _CAMPOS_TEXTO.forEach(c2=>{x._fts[c2]=ahora;});   // todo este punto manda, incluso lo vacío
     return x;
   });
-  // las causas que este punto no tiene se conservan: nunca se borra una causa en silencio
-  (causas||[]).forEach(c=>{if(c&&c.id!=null&&!enPunto.has(String(c.id)))nuevas.push(c);});
+  /* v4.9 — las causas que el punto no tiene: nunca se borran en silencio, pero
+     ahora podés sacarlas del registro archivándolas. Es lo que hace falta cuando
+     una computadora desactualizada resucitó expedientes viejos. */
+  let archivadas=0;
+  if(extras){
+    const archivar=confirm('Hay '+extras+' causa(s) que ahora están y que este punto NO tiene.\n\n'+
+      'Suelen ser las que trajo una computadora desactualizada.\n\n'+
+      'Aceptar = ARCHIVARLAS (salen del registro, no se pierden: quedan en Archivo y las podés restaurar).\n'+
+      'Cancelar = dejarlas como están, activas.');
+    (causas||[]).forEach(c=>{
+      if(!c||c.id==null||enPunto.has(String(c.id)))return;
+      const x=Object.assign({},c);
+      if(archivar&&x.est!=='archivada'){
+        x._estAntes=x.est;x.est='archivada';x.archAt=ahora;
+        x.lastTouch=ahora;x._fts=x._fts||{};x._fts.est=ahora;
+        archivadas++;
+      }
+      nuevas.push(x);
+    });
+  }
   causas=nuevas;
   _MANDA=true;localStorage.setItem('ga_manda','1');localStorage.setItem('ga_manda_dia',todayISO());
   try{_pintarManda();}catch(e){}
@@ -5440,8 +5458,10 @@ async function volverAPunto(k){
   sC();renderR();updBadges();try{updToolsCounts();}catch(e){}
   await guardarAhora(true);
   try{renderVuelta();renderRescates();}catch(e){}
-  _avisoGuardado('⏪ Volviste a: <b>'+escH(p.nom)+'</b> · '+causas.length+' causas. '+
-    'Quedó publicado como estado del estudio y esta computadora manda por hoy.');
+  const activas=(causas||[]).filter(c=>c.est!=='archivada').length;
+  _avisoGuardado('⏪ Volviste a: <b>'+escH(p.nom)+'</b> · '+activas+' causas en el registro'+
+    (archivadas?' · se archivaron '+archivadas+' que había traído la computadora desactualizada':'')+
+    '. Quedó publicado como estado del estudio y esta computadora manda por hoy.');
 }
 function renderEspacio(){
   const el=document.getElementById('cfg-espacio');if(!el)return;
