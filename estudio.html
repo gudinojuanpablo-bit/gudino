@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v4.7</title>
+<title>Gudiño Cabrera y Asociados — v4.8</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -622,46 +622,22 @@ g.pan-clic:hover text{fill:var(--text)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 /* v4.7 — botonera de sincronización: dos acciones frecuentes rotuladas y el
    resto en un menú, para no llenar la barra de botones. */
-/* ── v4.7 — ANOTADOR DE RINCÓN ──────────────────────────────────────
-   Un bloc de papel pegado arriba a la derecha. Cerrado es una pestañita
-   con el número de notas; abierto, un papel rayado donde se escribe y
-   con Enter queda anotado. */
-#bloc{position:fixed;top:54px;right:14px;z-index:9986;display:flex;flex-direction:column;align-items:flex-end}
-.bloc-tab{display:flex;align-items:center;gap:5px;border:1px solid #e8d9a8;background:linear-gradient(180deg,#FFF9DF,#FDF2C9);
-  border-radius:10px;padding:5px 10px;cursor:pointer;box-shadow:0 2px 6px rgba(20,33,61,.1);
-  font:700 11px system-ui;color:#8a6d1a;transition:transform .13s,box-shadow .13s}
-.bloc-tab:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(20,33,61,.15)}
-.bloc-ico{font-size:13px;line-height:1}
-.bloc-n{min-width:16px;height:16px;border-radius:8px;background:#B8860B;color:#fff;font:700 10px system-ui;
-  display:flex;align-items:center;justify-content:center;padding:0 4px}
-.bloc-n.cero{display:none}
-#bloc.ab .bloc-tab{display:none}
-.bloc-cuerpo{display:none;width:288px;max-width:calc(100vw - 28px);background:#FFFDF2;
-  border:1px solid #e8dcb4;border-radius:12px;box-shadow:0 12px 34px rgba(20,33,61,.18);overflow:hidden}
-#bloc.ab .bloc-cuerpo{display:block}
-.bloc-hdr{display:flex;align-items:center;gap:6px;padding:8px 10px;background:linear-gradient(180deg,#FDF2C9,#F7E9B4);
-  border-bottom:1px solid #e8dcb4}
-.bloc-tit{flex:1;font:800 11.5px system-ui;color:#7a5f10;letter-spacing:.3px}
-.bloc-x{border:0;background:transparent;color:#a8903f;cursor:pointer;font-size:12px;padding:1px 4px;border-radius:5px;line-height:1}
-.bloc-x:hover{background:#ffffff80;color:#7a5f10}
-.bloc-nuevo{padding:9px 10px 7px}
-#bloc-inp{width:100%;box-sizing:border-box;border:1px solid #e3d5a5;border-radius:8px;background:#fff;
-  font:500 12px system-ui;color:var(--text);padding:7px 10px;outline:none}
-#bloc-inp:focus{border-color:#B8860B;box-shadow:0 0 0 2px rgba(184,134,11,.13)}
-.bloc-list{max-height:46vh;overflow:auto;padding:0 10px 10px}
-.bloc-it{display:flex;align-items:flex-start;gap:8px;padding:7px 2px;
-  background-image:linear-gradient(transparent 96%,#ece0bb 96%);background-size:100% 1.55em;line-height:1.55em}
-.bloc-it input{width:14px;height:14px;margin-top:2px;cursor:pointer;accent-color:#B8860B;flex:none}
-.bloc-tx{flex:1;font:500 12px system-ui;color:var(--text);word-break:break-word}
-.bloc-it.list .bloc-tx{color:#b2a98f;text-decoration:line-through}
-.bloc-del{border:0;background:transparent;color:#d8cba4;cursor:pointer;font-size:12px;padding:0 2px;flex:none}
-.bloc-del:hover{color:#C0392B}
-.bloc-vacio{padding:14px 2px 8px;font:500 11.5px system-ui;color:#b5a881;text-align:center;line-height:1.5}
-.bloc-pie{padding:7px 10px;border-top:1px solid #efe4c2;font:600 10.5px system-ui;color:#a8903f;
-  display:flex;justify-content:space-between;align-items:center}
-.bloc-pie span{cursor:pointer}
-.bloc-pie span:hover{color:#7a5f10;text-decoration:underline}
-@media(max-width:760px){#bloc{top:50px;right:8px}.bloc-cuerpo{width:262px}}
+/* ── v4.8 — ANOTADOR DE RINCÓN ──────────────────────────────────────
+   Un bloc de papel arriba a la derecha. No abre nada flotante: se
+   aprieta y lleva al mismo anotador que el del panel lateral. */
+#bloc{position:fixed;top:52px;right:16px;z-index:9986;display:flex;flex-direction:column;align-items:center;
+  gap:2px;width:74px;padding:10px 6px 9px;cursor:pointer;
+  background:repeating-linear-gradient(180deg,#FFFDF2 0 15px,#FBF4D8 15px 16px);
+  border:1px solid #e3d5a5;border-top:7px solid #D9B449;border-radius:4px 4px 9px 9px;
+  box-shadow:0 3px 10px rgba(20,33,61,.13);transition:transform .14s,box-shadow .14s}
+#bloc:hover{transform:translateY(-2px);box-shadow:0 7px 20px rgba(20,33,61,.2)}
+#bloc:active{transform:translateY(0)}
+.bloc-ico{font-size:21px;line-height:1}
+.bloc-rot{font:800 9.5px system-ui;color:#8a6d1a;letter-spacing:.4px;text-transform:uppercase}
+.bloc-n{min-width:21px;height:19px;border-radius:10px;background:#B8860B;color:#fff;
+  font:800 11.5px system-ui;display:flex;align-items:center;justify-content:center;padding:0 6px;margin-top:2px}
+.bloc-n.cero{background:transparent;color:#bfae7a;box-shadow:inset 0 0 0 1px #e3d5a5}
+@media(max-width:760px){#bloc{top:48px;right:8px;width:62px;padding:8px 5px 7px}.bloc-ico{font-size:18px}}
 @media print{#bloc,.sbar,.sbar-pop{display:none!important}}
 .sbar{display:inline-flex;align-items:stretch;margin-left:10px;border:1px solid var(--border2);
   border-radius:9px;overflow:hidden;background:var(--bg);box-shadow:0 1px 2px rgba(20,33,61,.05)}
@@ -808,22 +784,11 @@ g.pan-clic:hover text{fill:var(--text)}
       <span class="sbar-sep"></span>
       <button class="sbar-b sbar-mas" onclick="sbarMenu(event)" title="Más opciones" aria-haspopup="true">⋯</button>
     </div>
-    <div id="bloc">
-      <button class="bloc-tab" onclick="blocToggle()" title="Anotador — escribí algo rápido">
-        <span class="bloc-ico">📝</span><span class="bloc-n" id="bloc-n">0</span>
-      </button>
-      <div class="bloc-cuerpo" id="bloc-cuerpo">
-        <div class="bloc-hdr">
-          <span class="bloc-tit">Anotador</span>
-          <button class="bloc-x" onclick="goP('pendientes')" title="Abrir el anotador completo">⤢</button>
-          <button class="bloc-x" onclick="blocToggle()" title="Cerrar">✕</button>
-        </div>
-        <div class="bloc-nuevo">
-          <input id="bloc-inp" placeholder="Anotá algo y apretá Enter…" onkeydown="blocEnter(event)" autocomplete="off">
-        </div>
-        <div class="bloc-list" id="bloc-list"></div>
-      </div>
-    </div>
+    <button id="bloc" onclick="goP('pendientes')" title="Anotador">
+      <span class="bloc-ico">📝</span>
+      <span class="bloc-rot">Anotador</span>
+      <span class="bloc-n" id="bloc-n">0</span>
+    </button>
     <div id="sbar-pop" class="sbar-pop">
       <button id="btn-manda" onclick="sbarCerrar();toggleManda()"><span>📌</span><span class="sbar-t">Que mande esta compu<em>lo de acá gana, por hoy</em></span></button>
       <button onclick="sbarCerrar();goP('config');setTimeout(()=>{const e=document.getElementById('cfg-vuelta');if(e)e.scrollIntoView({block:'center',behavior:'smooth'});},300)"><span>⏪</span><span class="sbar-t">Volver a un punto anterior<em>elegís entre los últimos días</em></span></button>
@@ -2957,81 +2922,15 @@ let _trayendo=false;
 function _huellaCausas(){
   return JSON.stringify((causas||[]).map(c=>[c.id,c.ven,c.tv,c.not,c.est,c.car,c.pl]).sort());
 }
-/* ── el anotador de rincón: mismo anotador de siempre, a mano ── */
-let _blocAb=localStorage.getItem('ga_bloc')==='1';
-function blocToggle(){
-  _blocAb=!_blocAb;
-  try{localStorage.setItem('ga_bloc',_blocAb?'1':'0');}catch(e){}
-  _blocPintar();
-  if(_blocAb)setTimeout(()=>{const i=document.getElementById('bloc-inp');if(i)i.focus();},60);
-}
-function blocEnter(ev){
-  if(ev.key==='Escape'){blocToggle();return;}
-  if(ev.key!=='Enter')return;
-  ev.preventDefault();
-  const i=ev.target,txt=(i.value||'').trim();
-  if(!txt)return;
-  pendientes.unshift({id:Date.now(),txt,done:false,ts:Date.now()});
-  savePend();
-  i.value='';
-  renderBloc();
-  try{if(curView==='pend'||document.getElementById('pend-list'))renderPendientes();}catch(e){}
-  try{updCntPend();}catch(e){}
-}
-function blocTog(id){
-  const x=pendientes.find(y=>y.id===id);if(!x)return;
-  x.done=!x.done;x.doneTs=x.done?Date.now():null;
-  savePend();renderBloc();
-  try{if(document.getElementById('pend-list'))renderPendientes();}catch(e){}
-  try{updCntPend();}catch(e){}
-}
-function blocDel(id){
-  pendientes=pendientes.filter(y=>y.id!==id);
-  savePend();renderBloc();
-  try{if(document.getElementById('pend-list'))renderPendientes();}catch(e){}
-  try{updCntPend();}catch(e){}
-}
-function _blocPintar(){
-  const b=document.getElementById('bloc');
-  if(b)b.classList.toggle('ab',!!_blocAb);
-}
+/* ── v4.8 — el bloc del rincón sólo muestra cuántas notas hay pendientes;
+   al apretarlo se abre el anotador de siempre, el mismo del panel lateral. ── */
 function renderBloc(){
-  _blocPintar();
-  const n=document.getElementById('bloc-n');
-  const pend=(pendientes||[]).filter(x=>!x.done);
-  if(n){n.textContent=pend.length;n.classList.toggle('cero',!pend.length);}
-  const el=document.getElementById('bloc-list');if(!el)return;
-  const hechas=(pendientes||[]).filter(x=>x.done);
-  let h='';
-  if(!pend.length&&!hechas.length){
-    h='<div class="bloc-vacio">Nada anotado todavía.<br>Escribí arriba y apretá Enter.</div>';
-  }else{
-    h+=pend.map(x=>`<div class="bloc-it">
-      <input type="checkbox" onchange="blocTog(${x.id})">
-      <span class="bloc-tx">${escH(x.txt)}</span>
-      <button class="bloc-del" onclick="blocDel(${x.id})" title="Borrar">✕</button>
-    </div>`).join('');
-    if(hechas.length){
-      h+=`<div class="bloc-pie" style="border-top:1px dashed #e4d7ab;margin-top:6px">
-        <span style="cursor:default">✓ ${hechas.length} hecha${hechas.length!==1?'s':''}</span>
-        <span onclick="blocLimpiar()">Borrar las hechas</span></div>`;
-      h+=hechas.slice(0,6).map(x=>`<div class="bloc-it list">
-        <input type="checkbox" checked onchange="blocTog(${x.id})">
-        <span class="bloc-tx">${escH(x.txt)}</span>
-        <button class="bloc-del" onclick="blocDel(${x.id})" title="Borrar">✕</button>
-      </div>`).join('');
-    }
-  }
-  el.innerHTML=h;
-}
-function blocLimpiar(){
-  const n=(pendientes||[]).filter(x=>x.done).length;
-  if(!n)return;
-  if(!confirm('Borrar '+n+' nota'+(n!==1?'s':'')+' ya hecha'+(n!==1?'s':'')+'. ¿Seguir?'))return;
-  pendientes=pendientes.filter(x=>!x.done);
-  savePend();renderBloc();
-  try{if(document.getElementById('pend-list'))renderPendientes();}catch(e){}
-  try{updCntPend();}catch(e){}
+  const n=document.getElementById('bloc-n');if(!n)return;
+  const pend=(pendientes||[]).filter(x=>!x.done).length;
+  n.textContent=pend;
+  n.classList.toggle('cero',!pend);
+  const b=document.getElementById('bloc');
+  if(b)b.title=pend?('Anotador — '+pend+' sin hacer'):'Anotador';
 }
 function sbarMenu(ev){
   if(ev)ev.stopPropagation();
