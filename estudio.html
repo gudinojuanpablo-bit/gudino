@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v4.4</title>
+<title>Gudiño Cabrera y Asociados — v4.7</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -620,6 +620,72 @@ g.pan-clic:hover text{fill:var(--text)}
 .sync-dot.saving{background:#FFB800;animation:pulse .8s infinite}
 .sync-dot.err{background:#e24b4a}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* v4.7 — botonera de sincronización: dos acciones frecuentes rotuladas y el
+   resto en un menú, para no llenar la barra de botones. */
+/* ── v4.7 — ANOTADOR DE RINCÓN ──────────────────────────────────────
+   Un bloc de papel pegado arriba a la derecha. Cerrado es una pestañita
+   con el número de notas; abierto, un papel rayado donde se escribe y
+   con Enter queda anotado. */
+#bloc{position:fixed;top:54px;right:14px;z-index:9986;display:flex;flex-direction:column;align-items:flex-end}
+.bloc-tab{display:flex;align-items:center;gap:5px;border:1px solid #e8d9a8;background:linear-gradient(180deg,#FFF9DF,#FDF2C9);
+  border-radius:10px;padding:5px 10px;cursor:pointer;box-shadow:0 2px 6px rgba(20,33,61,.1);
+  font:700 11px system-ui;color:#8a6d1a;transition:transform .13s,box-shadow .13s}
+.bloc-tab:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(20,33,61,.15)}
+.bloc-ico{font-size:13px;line-height:1}
+.bloc-n{min-width:16px;height:16px;border-radius:8px;background:#B8860B;color:#fff;font:700 10px system-ui;
+  display:flex;align-items:center;justify-content:center;padding:0 4px}
+.bloc-n.cero{display:none}
+#bloc.ab .bloc-tab{display:none}
+.bloc-cuerpo{display:none;width:288px;max-width:calc(100vw - 28px);background:#FFFDF2;
+  border:1px solid #e8dcb4;border-radius:12px;box-shadow:0 12px 34px rgba(20,33,61,.18);overflow:hidden}
+#bloc.ab .bloc-cuerpo{display:block}
+.bloc-hdr{display:flex;align-items:center;gap:6px;padding:8px 10px;background:linear-gradient(180deg,#FDF2C9,#F7E9B4);
+  border-bottom:1px solid #e8dcb4}
+.bloc-tit{flex:1;font:800 11.5px system-ui;color:#7a5f10;letter-spacing:.3px}
+.bloc-x{border:0;background:transparent;color:#a8903f;cursor:pointer;font-size:12px;padding:1px 4px;border-radius:5px;line-height:1}
+.bloc-x:hover{background:#ffffff80;color:#7a5f10}
+.bloc-nuevo{padding:9px 10px 7px}
+#bloc-inp{width:100%;box-sizing:border-box;border:1px solid #e3d5a5;border-radius:8px;background:#fff;
+  font:500 12px system-ui;color:var(--text);padding:7px 10px;outline:none}
+#bloc-inp:focus{border-color:#B8860B;box-shadow:0 0 0 2px rgba(184,134,11,.13)}
+.bloc-list{max-height:46vh;overflow:auto;padding:0 10px 10px}
+.bloc-it{display:flex;align-items:flex-start;gap:8px;padding:7px 2px;
+  background-image:linear-gradient(transparent 96%,#ece0bb 96%);background-size:100% 1.55em;line-height:1.55em}
+.bloc-it input{width:14px;height:14px;margin-top:2px;cursor:pointer;accent-color:#B8860B;flex:none}
+.bloc-tx{flex:1;font:500 12px system-ui;color:var(--text);word-break:break-word}
+.bloc-it.list .bloc-tx{color:#b2a98f;text-decoration:line-through}
+.bloc-del{border:0;background:transparent;color:#d8cba4;cursor:pointer;font-size:12px;padding:0 2px;flex:none}
+.bloc-del:hover{color:#C0392B}
+.bloc-vacio{padding:14px 2px 8px;font:500 11.5px system-ui;color:#b5a881;text-align:center;line-height:1.5}
+.bloc-pie{padding:7px 10px;border-top:1px solid #efe4c2;font:600 10.5px system-ui;color:#a8903f;
+  display:flex;justify-content:space-between;align-items:center}
+.bloc-pie span{cursor:pointer}
+.bloc-pie span:hover{color:#7a5f10;text-decoration:underline}
+@media(max-width:760px){#bloc{top:50px;right:8px}.bloc-cuerpo{width:262px}}
+@media print{#bloc,.sbar,.sbar-pop{display:none!important}}
+.sbar{display:inline-flex;align-items:stretch;margin-left:10px;border:1px solid var(--border2);
+  border-radius:9px;overflow:hidden;background:var(--bg);box-shadow:0 1px 2px rgba(20,33,61,.05)}
+.sbar-b{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;cursor:pointer;
+  padding:5px 12px;font:700 11.5px system-ui;color:var(--text2);white-space:nowrap;transition:background .13s}
+.sbar-b span{font-size:12.5px;line-height:1}
+.sbar-b:hover{background:var(--bg2);color:var(--navy)}
+.sbar-b:active{background:#eceff5}
+.sbar-b[disabled]{opacity:.55;cursor:default}
+.sbar-b.pend{color:#C0392B}
+.sbar-b.pend::after{content:'';width:6px;height:6px;border-radius:50%;background:#C0392B;margin-left:1px}
+.sbar-sep{width:1px;background:var(--border);flex:none}
+.sbar-mas{padding:5px 10px;font-size:14px;color:var(--text3);letter-spacing:1px}
+.sbar-pop{display:none;position:fixed;z-index:10000;background:var(--bg);border:1px solid var(--border2);
+  border-radius:11px;box-shadow:0 10px 30px rgba(20,33,61,.17);padding:5px;min-width:252px}
+.sbar-pop.ab{display:block}
+.sbar-pop button{display:flex;align-items:flex-start;gap:9px;width:100%;border:0;background:transparent;
+  cursor:pointer;padding:8px 10px;border-radius:8px;text-align:left;font:600 12px system-ui;color:var(--text)}
+.sbar-pop button:hover{background:var(--bg2)}
+.sbar-pop button>span:first-child{font-size:14px;line-height:1.1;width:17px;flex:none}
+.sbar-t{display:flex;flex-direction:column;gap:1px;line-height:1.3}
+.sbar-t em{font-style:normal;font-size:10.5px;color:var(--text3);font-weight:500}
+.sbar-pop button.on{background:var(--gold-l)}
+.sbar-pop button.on .sbar-t em{color:#8a6d1a}
 .sync-label{font-size:10px;color:#888}
 .calc-d{padding:5px 10px;border-radius:5px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
 .calc-d.on{border-color:var(--blue);background:var(--blue);color:#fff}
@@ -733,12 +799,36 @@ g.pan-clic:hover text{fill:var(--text)}
     <div class="tb-title" id="ptitle">Registro de causas</div>
     <span class="sync-dot" id="sync-dot" title="Estado de sincronización"></span>
     <span class="sync-label" id="sync-label">local</span>
-    <button id="btn-guardar-ya" onclick="guardarAhora()" title="Subir ahora todo lo cargado en esta computadora"
-      style="margin-left:8px;background:var(--navy);color:#fff;border:0;border-radius:6px;padding:4px 11px;
-      font:700 11px system-ui;cursor:pointer;white-space:nowrap">💾 Guardar ahora</button>
-    <button id="btn-manda" onclick="toggleManda()"
-      style="margin-left:5px;background:transparent;color:var(--text3);border:1px solid var(--border2);
-      border-radius:6px;padding:4px 10px;font:700 11px system-ui;cursor:pointer;white-space:nowrap">📌 Que mande esta compu</button>
+    <div class="sbar">
+      <button class="sbar-b" id="btn-traer-ya" onclick="traerUltimo()"
+        title="Traer lo último del estudio. Apretalo al llegar a una computadora que estuvo apagada."><span>⬇</span>Traer</button>
+      <span class="sbar-sep"></span>
+      <button class="sbar-b" id="btn-guardar-ya" onclick="guardarAhora()"
+        title="Subir ahora todo lo cargado en esta computadora"><span>💾</span>Guardar</button>
+      <span class="sbar-sep"></span>
+      <button class="sbar-b sbar-mas" onclick="sbarMenu(event)" title="Más opciones" aria-haspopup="true">⋯</button>
+    </div>
+    <div id="bloc">
+      <button class="bloc-tab" onclick="blocToggle()" title="Anotador — escribí algo rápido">
+        <span class="bloc-ico">📝</span><span class="bloc-n" id="bloc-n">0</span>
+      </button>
+      <div class="bloc-cuerpo" id="bloc-cuerpo">
+        <div class="bloc-hdr">
+          <span class="bloc-tit">Anotador</span>
+          <button class="bloc-x" onclick="goP('pendientes')" title="Abrir el anotador completo">⤢</button>
+          <button class="bloc-x" onclick="blocToggle()" title="Cerrar">✕</button>
+        </div>
+        <div class="bloc-nuevo">
+          <input id="bloc-inp" placeholder="Anotá algo y apretá Enter…" onkeydown="blocEnter(event)" autocomplete="off">
+        </div>
+        <div class="bloc-list" id="bloc-list"></div>
+      </div>
+    </div>
+    <div id="sbar-pop" class="sbar-pop">
+      <button id="btn-manda" onclick="sbarCerrar();toggleManda()"><span>📌</span><span class="sbar-t">Que mande esta compu<em>lo de acá gana, por hoy</em></span></button>
+      <button onclick="sbarCerrar();goP('config');setTimeout(()=>{const e=document.getElementById('cfg-vuelta');if(e)e.scrollIntoView({block:'center',behavior:'smooth'});},300)"><span>⏪</span><span class="sbar-t">Volver a un punto anterior<em>elegís entre los últimos días</em></span></button>
+      <button onclick="sbarCerrar();verCopiasNube()"><span>☁</span><span class="sbar-t">Copias de la nube<em>recupera lo que falte</em></span></button>
+    </div>
     <span id="presencia-indicator" style="font-size:11px;color:#aaa;margin-left:8px"></span>
     <div class="srch" style="position:relative">🔍 <input id="si" placeholder="Buscar causas, escritos, turnos, encargos…" oninput="buscarDesdeArriba()" onblur="setTimeout(()=>{const r=document.getElementById('busca-mas');if(r)r.style.display='none';},180)">
       <div id="busca-mas"></div>
@@ -1269,6 +1359,10 @@ g.pan-clic:hover text{fill:var(--text)}
       <div class="cfg-blk">
         <h3>🧹 Espacio en esta computadora</h3>
         <div id="cfg-espacio"></div>
+      </div>
+      <div class="cfg-blk">
+        <h3>⏪ Volver a un punto anterior</h3>
+        <div id="cfg-vuelta"></div>
       </div>
       <div class="cfg-blk">
         <h3>🛟 Borrados que la app impidió</h3>
@@ -2052,7 +2146,7 @@ function setSyncStatus(s){
     const bg=document.getElementById('btn-guardar-ya');
     if(bg){
       const hayQue=trabada||_hayPendientes();
-      bg.style.background=hayQue?'#C0392B':'var(--navy)';
+      bg.classList.toggle('pend',!!hayQue);
       bg.title=hayQue?'Hay cambios sin subir — tocá para subirlos ahora'
                      :'Subir ahora todo lo cargado en esta computadora';
     }
@@ -2145,13 +2239,14 @@ function mandaEstaCompu(){return _MANDA;}
 function _pintarManda(){
   const b=document.getElementById('btn-manda');
   if(b){
-    b.textContent=_MANDA?'📌 Esta compu manda':'📌 Que mande esta compu';
-    b.style.background=_MANDA?'#B8860B':'transparent';
-    b.style.color=_MANDA?'#fff':'var(--text3)';
-    b.style.border=_MANDA?'0':'1px solid var(--border2)';
+    b.classList.toggle('on',!!_MANDA);
+    const t=b.querySelector('.sbar-t');
+    if(t)t.innerHTML=_MANDA
+      ?'Esta compu manda<em>tocá para volver al modo normal</em>'
+      :'Que mande esta compu<em>lo de acá gana, por hoy</em>';
     b.title=_MANDA
-      ?'Lo que cargues acá gana siempre, hasta que termine el día. Tocá para volver al modo normal.'
-      :'Hacer que lo cargado en esta computadora gane siempre sobre lo que venga de la nube (por hoy).';
+      ?'Lo que cargues acá gana siempre, hasta que termine el día.'
+      :'Hacer que lo cargado en esta computadora gane sobre lo que venga de la nube (por hoy).';
   }
   const av=document.getElementById('cinta-manda');
   if(_MANDA&&!av){
@@ -2173,6 +2268,31 @@ async function toggleManda(){
     return;
   }
   const n=(causas||[]).length;
+  /* v4.5 — freno: si lo de esta computadora está claramente atrasado contra lo
+     publicado, avisar con los números antes de dejar publicarlo. */
+  try{
+    const r=await fetch(FB_MAESTRO+'?t='+Date.now(),{cache:'no-store'});
+    if(r.ok){
+      const m=await r.json();
+      const suyas=(m&&m.datos&&m.datos.causas)||null;
+      if(Array.isArray(suyas)&&suyas.length){
+        const miArch=(causas||[]).filter(c=>c.est==='archivada').length;
+        const suArch=suyas.filter(c=>c.est==='archivada').length;
+        const menos=suyas.length-n, desarch=suArch-miArch;
+        if(menos>2||desarch>2){
+          if(!confirm('⚠ CUIDADO — esta computadora parece estar ATRASADA\n\n'+
+            'Acá: '+n+' causas, '+miArch+' archivadas.\n'+
+            'Estado del estudio: '+suyas.length+' causas, '+suArch+' archivadas.\n\n'+
+            (menos>2?'Te faltan '+menos+' causas. ':'')+
+            (desarch>2?'Tenés '+desarch+' causas desarchivadas que en el estudio están archivadas. ':'')+
+            '\n\nSi publicás esto, esos datos viejos van a pisar a los buenos en las demás computadoras '+
+            'y después cuesta mucho revertirlo.\n\n'+
+            'Si no estás seguro, cancelá y abrí primero la computadora que tiene los datos buenos.\n\n'+
+            '¿Publicar igual?'))return;
+        }
+      }
+    }
+  }catch(e){}
   if(!confirm('QUE MANDE ESTA COMPUTADORA\n\n'+
     'Desde ahora, todo lo que cargues acá ('+n+' causas) gana sobre lo que venga de la nube: '+
     'ningún cambio de la otra computadora puede pisarlo ni borrarlo.\n\n'+
@@ -2330,7 +2450,7 @@ function _copiaAuto(){
     localStorage.setItem('ga_bk_'+hoy,JSON.stringify(
       {f:hoy,causas:_sinEscritos(causas),turnos,pendientes,revisiones,tareasRam,liviana:true}));
     idx.push(hoy);
-    while(idx.length>3){const v=idx.shift();localStorage.removeItem('ga_bk_'+v);}
+    while(idx.length>4){const v=idx.shift();localStorage.removeItem('ga_bk_'+v);}
     localStorage.setItem('ga_bk_idx',JSON.stringify(idx));
   }catch(e){}
 }
@@ -2717,7 +2837,9 @@ function _puedeSubir(){
 }
 /* v4.0 — candado simétrico. Si esta computadora no está subiendo, tampoco se
    deja pisar por la nube: antes bajaba igual y borraba lo recién cargado. */
+let _bajadaManual=false;
 function _puedeBajar(){
+  if(_bajadaManual)return true;             // v4.6 — la pediste vos a mano
   if(_puedeSubir())return true;             // está en el circuito normal
   if(!(causas||[]).length)return true;      // máquina vacía: que se llene
   return false;                             // tiene datos y no sube: no se la pisa
@@ -2831,12 +2953,162 @@ function _avisoGuardado(txt,color){
   el.innerHTML=txt;
   if(color!=='mal')setTimeout(()=>{if(!_avisoTrabadoPuesto)el.style.display='none';},9000);
 }
+let _trayendo=false;
+function _huellaCausas(){
+  return JSON.stringify((causas||[]).map(c=>[c.id,c.ven,c.tv,c.not,c.est,c.car,c.pl]).sort());
+}
+/* ── el anotador de rincón: mismo anotador de siempre, a mano ── */
+let _blocAb=localStorage.getItem('ga_bloc')==='1';
+function blocToggle(){
+  _blocAb=!_blocAb;
+  try{localStorage.setItem('ga_bloc',_blocAb?'1':'0');}catch(e){}
+  _blocPintar();
+  if(_blocAb)setTimeout(()=>{const i=document.getElementById('bloc-inp');if(i)i.focus();},60);
+}
+function blocEnter(ev){
+  if(ev.key==='Escape'){blocToggle();return;}
+  if(ev.key!=='Enter')return;
+  ev.preventDefault();
+  const i=ev.target,txt=(i.value||'').trim();
+  if(!txt)return;
+  pendientes.unshift({id:Date.now(),txt,done:false,ts:Date.now()});
+  savePend();
+  i.value='';
+  renderBloc();
+  try{if(curView==='pend'||document.getElementById('pend-list'))renderPendientes();}catch(e){}
+  try{updCntPend();}catch(e){}
+}
+function blocTog(id){
+  const x=pendientes.find(y=>y.id===id);if(!x)return;
+  x.done=!x.done;x.doneTs=x.done?Date.now():null;
+  savePend();renderBloc();
+  try{if(document.getElementById('pend-list'))renderPendientes();}catch(e){}
+  try{updCntPend();}catch(e){}
+}
+function blocDel(id){
+  pendientes=pendientes.filter(y=>y.id!==id);
+  savePend();renderBloc();
+  try{if(document.getElementById('pend-list'))renderPendientes();}catch(e){}
+  try{updCntPend();}catch(e){}
+}
+function _blocPintar(){
+  const b=document.getElementById('bloc');
+  if(b)b.classList.toggle('ab',!!_blocAb);
+}
+function renderBloc(){
+  _blocPintar();
+  const n=document.getElementById('bloc-n');
+  const pend=(pendientes||[]).filter(x=>!x.done);
+  if(n){n.textContent=pend.length;n.classList.toggle('cero',!pend.length);}
+  const el=document.getElementById('bloc-list');if(!el)return;
+  const hechas=(pendientes||[]).filter(x=>x.done);
+  let h='';
+  if(!pend.length&&!hechas.length){
+    h='<div class="bloc-vacio">Nada anotado todavía.<br>Escribí arriba y apretá Enter.</div>';
+  }else{
+    h+=pend.map(x=>`<div class="bloc-it">
+      <input type="checkbox" onchange="blocTog(${x.id})">
+      <span class="bloc-tx">${escH(x.txt)}</span>
+      <button class="bloc-del" onclick="blocDel(${x.id})" title="Borrar">✕</button>
+    </div>`).join('');
+    if(hechas.length){
+      h+=`<div class="bloc-pie" style="border-top:1px dashed #e4d7ab;margin-top:6px">
+        <span style="cursor:default">✓ ${hechas.length} hecha${hechas.length!==1?'s':''}</span>
+        <span onclick="blocLimpiar()">Borrar las hechas</span></div>`;
+      h+=hechas.slice(0,6).map(x=>`<div class="bloc-it list">
+        <input type="checkbox" checked onchange="blocTog(${x.id})">
+        <span class="bloc-tx">${escH(x.txt)}</span>
+        <button class="bloc-del" onclick="blocDel(${x.id})" title="Borrar">✕</button>
+      </div>`).join('');
+    }
+  }
+  el.innerHTML=h;
+}
+function blocLimpiar(){
+  const n=(pendientes||[]).filter(x=>x.done).length;
+  if(!n)return;
+  if(!confirm('Borrar '+n+' nota'+(n!==1?'s':'')+' ya hecha'+(n!==1?'s':'')+'. ¿Seguir?'))return;
+  pendientes=pendientes.filter(x=>!x.done);
+  savePend();renderBloc();
+  try{if(document.getElementById('pend-list'))renderPendientes();}catch(e){}
+  try{updCntPend();}catch(e){}
+}
+function sbarMenu(ev){
+  if(ev)ev.stopPropagation();
+  const pop=document.getElementById('sbar-pop');if(!pop)return;
+  if(pop.classList.contains('ab')){sbarCerrar();return;}
+  const b=ev&&ev.currentTarget?ev.currentTarget.getBoundingClientRect():{bottom:46,right:window.innerWidth-14};
+  pop.classList.add('ab');
+  pop.style.top=(b.bottom+6)+'px';
+  pop.style.left=Math.max(8,Math.min(b.right-pop.offsetWidth,window.innerWidth-pop.offsetWidth-8))+'px';
+  try{_pintarManda();}catch(e){}
+  setTimeout(()=>document.addEventListener('click',sbarCerrar,{once:true}),0);
+}
+function sbarCerrar(){
+  const pop=document.getElementById('sbar-pop');
+  if(pop)pop.classList.remove('ab');
+}
+async function traerUltimo(){
+  if(_trayendo)return;
+  const btn=document.getElementById('btn-traer-ya');
+  _trayendo=true;
+  if(btn){btn.innerHTML='<span>⬇</span>Trayendo…';btn.disabled=true;btn.style.opacity='.7';}
+  try{
+    if(_MANDA){
+      if(confirm('Esta computadora está en modo "manda": lo que tiene cargado no se puede cambiar '+
+        'desde la nube.\n\nAceptar = apagar el modo y traer todo lo del estudio.\n'+
+        'Cancelar = traer igual, pero sólo lo que falte acá.')){
+        _MANDA=false;localStorage.removeItem('ga_manda');localStorage.removeItem('ga_manda_dia');
+        try{_pintarManda();}catch(e){}
+      }
+    }
+    const antes=(causas||[]).length, huella=_huellaCausas();
+    _bajadaManual=true;
+    let llego=false;
+    // 1) el estado del estudio
+    try{
+      const r=await fetch(FB_MAESTRO+'?t='+Date.now(),{cache:'no-store'});
+      if(r.ok){
+        const m=await r.json();
+        if(m&&m.v&&m.datos&&_adoptarEstado(m.datos)){_marcarAdoptado(m.v);llego=true;}
+      }
+    }catch(e){}
+    // 2) causa por causa
+    try{if(await bajarCausas())llego=true;}catch(e){}
+    // 3) el bloque completo
+    try{
+      const r=await fetch(FB_URL,{cache:'no-store'});
+      if(r.ok){
+        const d=await r.json();
+        if(d&&Array.isArray(d.causas)&&d.causas.length){applyPayload(d);lastRemoteTS=d.v||0;llego=true;}
+      }
+    }catch(e){}
+    _bajadaManual=false;
+    try{_sacarAvisoTrabada();}catch(e){}
+    renderR();updBadges();try{updToolsCounts();renderBan();}catch(e){}
+    const despues=(causas||[]).length, nuevas=despues-antes;
+    const hora=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    if(!llego){
+      _avisoGuardado('⚠ No se pudo traer nada: la nube no respondió. Probá de nuevo en un momento.','mal');
+    }else if(huella===_huellaCausas()&&!nuevas){
+      _avisoGuardado('⬇️ Ya tenías lo último del estudio · '+despues+' causas. No cambió nada.');
+    }else{
+      _avisoGuardado('⬇️ Traído a las '+hora+' · ahora <b>'+despues+' causas</b>'+
+        (nuevas>0?' ('+nuevas+' que no tenías)':nuevas<0?'':'')+
+        '. Revisá que esté todo antes de ponerte a trabajar.');
+    }
+  }catch(e){
+    _bajadaManual=false;
+    _avisoGuardado('⚠ No se pudo traer: '+escH(String(e&&e.message||e)),'mal');
+  }
+  if(btn){btn.innerHTML='<span>⬇</span>Traer';btn.disabled=false;btn.style.opacity='';}
+  _trayendo=false;
+}
 async function guardarAhora(forzarPublicar){
   if(_guardandoYa)return;
   const btn=document.getElementById('btn-guardar-ya');
   _guardandoYa=true;
-  const textoOrig=btn?btn.textContent:'';
-  if(btn){btn.textContent='Guardando…';btn.disabled=true;btn.style.opacity='.7';}
+  if(btn){btn.innerHTML='<span>💾</span>Guardando…';btn.disabled=true;btn.style.opacity='.7';}
   try{
     // 1) que quede en el disco de esta computadora, pase lo que pase
     const enDisco=svl('ga_c',causas)&&svl('ga_a',audiencias)&&svl('ga_g',gastos)&&svl('ga_e',extraj);
@@ -2882,7 +3154,7 @@ async function guardarAhora(forzarPublicar){
   }catch(e){
     _avisoGuardado('⚠ No se pudo completar el guardado: '+escH(String(e&&e.message||e)),'mal');
   }
-  if(btn){btn.textContent=textoOrig||'💾 Guardar ahora';btn.disabled=false;btn.style.opacity='';}
+  if(btn){btn.innerHTML='<span>💾</span>Guardar';btn.disabled=false;btn.style.opacity='';}
   _guardandoYa=false;
 }
 /* el otro camino del aviso: descartar lo de acá y traer el estado del estudio */
@@ -3037,6 +3309,7 @@ function goP(p){
     const cc=document.getElementById('cfg-copias');if(cc)cc.innerHTML=panelCopias();
     try{renderEspacio();}catch(e){}
     try{renderRescates();}catch(e){}
+    try{renderVuelta();}catch(e){}
     const me=document.getElementById('maestro-est');
     if(me)me.textContent=_maestroLocal
       ? 'Esta computadora está al día con el estado publicado el '+new Date(_maestroLocal).toLocaleString('es-AR')
@@ -3133,10 +3406,7 @@ function updBadges(){
   try{
     const trabada=!_puedeSubir()&&(causas||[]).length>0;
     const bg=document.getElementById('btn-guardar-ya');
-    if(bg){
-      const hayQue=trabada||_hayPendientes();
-      bg.style.background=hayQue?'#C0392B':'var(--navy)';
-    }
+    if(bg)bg.classList.toggle('pend',!!(trabada||_hayPendientes()));
     if(trabada)_avisarSincTrabada(); else _sacarAvisoTrabada();
   }catch(e){}
   renderBannerAlertas();
@@ -5173,6 +5443,107 @@ function renderRescates(){
     </div>`).join('')+
     `<button class="btn gh" style="margin-top:10px;font-size:11px" onclick="_rescates=[];localStorage.removeItem('ga_rescates');renderRescates()">Vaciar la lista</button>`;
 }
+/* v4.5 — puntos a los que se puede volver, guardados en esta computadora */
+function _puntosDeVuelta(){
+  const out=[];
+  const leer=(k,nom)=>{
+    try{
+      const b=JSON.parse(localStorage.getItem(k)||'null');
+      if(b&&Array.isArray(b.causas)&&b.causas.length)out.push({k,t:b.t||0,nom,causas:b.causas,completa:true});
+    }catch(e){}
+  };
+  leer('ga_antes_adoptar','Justo antes de la última puesta al día');
+  leer('ga_antes_recuperar','Justo antes de la última recuperación');
+  /* v4.7 — pila de vueltas atrás: cada vez que volvés a un punto se guarda el
+     estado previo, así podés retroceder varias veces seguidas si te equivocaste. */
+  try{
+    const pila=JSON.parse(localStorage.getItem('ga_vueltas')||'[]')||[];
+    pila.slice().reverse().forEach((b,i)=>{
+      if(b&&Array.isArray(b.causas)&&b.causas.length)
+        out.push({k:'ga_vueltas:'+b.t,t:b.t||0,
+          nom:i===0?'Justo antes de la última vuelta atrás':'Antes de una vuelta anterior',
+          causas:b.causas,completa:true});
+    });
+  }catch(e){}
+  (copiasDisponibles()||[]).slice().reverse().forEach(f=>{
+    try{
+      const b=JSON.parse(localStorage.getItem('ga_bk_'+f)||'null');
+      if(b&&Array.isArray(b.causas)&&b.causas.length)
+        out.push({k:'ga_bk_'+f,t:0,fecha:f,nom:'Copia automática del '+f.split('-').reverse().join('/'),
+                  causas:b.causas,completa:!b.liviana});
+    }catch(e){}
+  });
+  return out;
+}
+function renderVuelta(){
+  const el=document.getElementById('cfg-vuelta');if(!el)return;
+  const l=_puntosDeVuelta();
+  const ahoraN=(causas||[]).length,ahoraA=(causas||[]).filter(c=>c.est==='archivada').length;
+  if(!l.length){
+    el.innerHTML='<div style="font-size:11.5px;color:var(--text3)">Todavía no hay puntos guardados en esta computadora.</div>';
+    return;
+  }
+  el.innerHTML='<div style="font-size:11px;color:var(--text3);margin-bottom:9px">'+
+      'Ahora tenés <b>'+ahoraN+' causas</b> ('+ahoraA+' archivadas). '+
+      'Volver a un punto <b>reemplaza</b> lo que hay, lo marca como lo más reciente y lo publica como '+
+      'estado del estudio, así ninguna otra computadora lo puede pisar. Lo actual se guarda por si querés deshacer.</div>'+
+    l.map(x=>{
+      const arch=x.causas.filter(c=>c.est==='archivada').length;
+      const cuando=x.t?new Date(x.t).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+      return `<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--text)">${escH(x.nom)}</div>
+          <div style="font-size:10.5px;color:var(--text3)">${cuando?cuando+' · ':''}${x.causas.length} causas · ${arch} archivadas${x.completa?'':' · sin el texto de los escritos'}</div>
+        </div>
+        <button class="btn gh gh-navy" style="font-size:11px;padding:4px 11px;white-space:nowrap"
+          onclick="volverAPunto('${x.k}')">Volver a este punto</button>
+      </div>`;
+    }).join('');
+}
+async function volverAPunto(k){
+  const p=_puntosDeVuelta().find(x=>x.k===k);
+  if(!p){alert('No encuentro ese punto.');return;}
+  const _antesDeTodo=JSON.parse(JSON.stringify(causas||[]));
+  const arch=p.causas.filter(c=>c.est==='archivada').length;
+  const ahoraN=(causas||[]).length,ahoraA=(causas||[]).filter(c=>c.est==='archivada').length;
+  const enPunto=new Set(p.causas.map(c=>String(c.id)));
+  const extras=(causas||[]).filter(c=>c&&c.id!=null&&!enPunto.has(String(c.id))).length;
+  if(!confirm('VOLVER A UN PUNTO ANTERIOR\n\n'+p.nom+'\n'+
+    p.causas.length+' causas ('+arch+' archivadas)\n\n'+
+    'Ahora tenés '+ahoraN+' causas ('+ahoraA+' archivadas).\n'+
+    (extras?'Hay '+extras+' causa(s) que ahora están y que este punto no tiene: esas se conservan igual.\n':'')+
+    '\nSe reemplaza lo que hay por este punto, se marca como lo más reciente y se publica como estado '+
+    'del estudio. Lo actual queda guardado para poder deshacer.\n\n¿Seguir?'))return;
+  try{
+    const pila=JSON.parse(localStorage.getItem('ga_vueltas')||'[]')||[];
+    pila.push({t:Date.now(),causas:_antesDeTodo});
+    while(pila.length>5)pila.shift();
+    localStorage.setItem('ga_vueltas',JSON.stringify(pila));
+  }catch(e){}
+  const previas={};(causas||[]).forEach(c=>{if(c&&c.id!=null)previas[String(c.id)]=c;});
+  const ahora=Date.now();
+  const nuevas=p.causas.map(c=>{
+    const x=Object.assign({},c);
+    const vieja=previas[String(x.id)];
+    // una copia liviana no guarda el texto de los escritos: se conserva el que hay
+    if(vieja&&Array.isArray(vieja.escritos)&&vieja.escritos.length&&
+       (!p.completa||!Array.isArray(x.escritos)||!x.escritos.length))x.escritos=vieja.escritos;
+    x.lastTouch=ahora;x._fts=x._fts||{};
+    _CAMPOS_TEXTO.forEach(c2=>{x._fts[c2]=ahora;});   // todo este punto manda, incluso lo vacío
+    return x;
+  });
+  // las causas que este punto no tiene se conservan: nunca se borra una causa en silencio
+  (causas||[]).forEach(c=>{if(c&&c.id!=null&&!enPunto.has(String(c.id)))nuevas.push(c);});
+  causas=nuevas;
+  _MANDA=true;localStorage.setItem('ga_manda','1');localStorage.setItem('ga_manda_dia',todayISO());
+  try{_pintarManda();}catch(e){}
+  try{_sombra={};marcarCambios();}catch(e){}
+  sC();renderR();updBadges();try{updToolsCounts();}catch(e){}
+  await guardarAhora(true);
+  try{renderVuelta();renderRescates();}catch(e){}
+  _avisoGuardado('⏪ Volviste a: <b>'+escH(p.nom)+'</b> · '+causas.length+' causas. '+
+    'Quedó publicado como estado del estudio y esta computadora manda por hoy.');
+}
 function renderEspacio(){
   const el=document.getElementById('cfg-espacio');if(!el)return;
   const r=espacioResumen();
@@ -5896,6 +6267,7 @@ if(localStorage.getItem('ga_version') !== APP_VERSION){
 }
 document.getElementById('sb-week').textContent=`Semana ${fmt2(LUN)} – ${fmt2(VIE)}`;
 try{_pintarManda();}catch(e){}
+try{renderBloc();}catch(e){}
 /* v4.4 — si el modo venía prendido de otro día, avisar que ya se apagó */
 if(_mandaVencido)setTimeout(()=>{try{
   _avisoGuardado('📌 El modo <b>"esta computadora manda"</b> se apagó solo porque cambió el día. '+
@@ -6542,8 +6914,10 @@ function renderPendientes(){
   }
   el.innerHTML=h;
   updCntPend();
+  try{renderBloc();}catch(e){}
 }
 updCntPend();
+try{renderBloc();}catch(e){}
 // ═══════════════════════════════════════════════
 // SEGUIMIENTO DE INACTIVIDAD
 // ═══════════════════════════════════════════════
