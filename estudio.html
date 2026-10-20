@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v4.9</title>
+<title>Gudiño Cabrera y Asociados — v5.0</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -5343,8 +5343,39 @@ function renderRescates(){
     `<button class="btn gh" style="margin-top:10px;font-size:11px" onclick="_rescates=[];localStorage.removeItem('ga_rescates');renderRescates()">Vaciar la lista</button>`;
 }
 /* v4.5 — puntos a los que se puede volver, guardados en esta computadora */
+/* v5.0 — PUNTOS SEGUROS: los anclás vos cuando el sistema está como tiene que
+   estar. No rotan ni se pisan: quedan hasta que los borres. */
+function _segurosLeer(){
+  try{return JSON.parse(localStorage.getItem('ga_seguros')||'[]')||[];}catch(e){return [];}
+}
+function anclarEstado(){
+  const n=(causas||[]).length, a=(causas||[]).filter(c=>c.est==='archivada').length;
+  const nom=prompt('ANCLAR ESTE ESTADO\n\nQueda guardado como punto seguro y no se borra solo.\n'+
+    'Vas a poder volver acá cuando quieras.\n\nPonele un nombre:',
+    'Sistema corregido · '+new Date().toLocaleDateString('es-AR'));
+  if(nom===null)return;
+  const seg=_segurosLeer();
+  seg.push({t:Date.now(),nom:(nom||'').trim()||'Punto seguro',causas:JSON.parse(JSON.stringify(causas||[]))});
+  while(seg.length>5)seg.shift();
+  if(!svl('ga_seguros',seg)){alert('No se pudo anclar: no hay espacio. Liberá espacio en Config. / Online.');return;}
+  renderVuelta();
+  _avisoGuardado('📌 Anclado: <b>'+escH(nom)+'</b> · '+n+' causas ('+a+' archivadas). '+
+    'Queda en la lista de puntos hasta que lo borres.');
+}
+function borrarAncla(t){
+  const seg=_segurosLeer();
+  const x=seg.find(y=>String(y.t)===String(t));
+  if(!x)return;
+  if(!confirm('Borrar el punto seguro «'+x.nom+'».\n\nNo toca nada de lo que tenés cargado. ¿Seguir?'))return;
+  svl('ga_seguros',seg.filter(y=>String(y.t)!==String(t)));
+  renderVuelta();
+}
 function _puntosDeVuelta(){
   const out=[];
+  _segurosLeer().slice().reverse().forEach(x=>{
+    if(x&&Array.isArray(x.causas)&&x.causas.length)
+      out.push({k:'ga_seguros:'+x.t,t:x.t,nom:'📌 '+(x.nom||'Punto seguro'),causas:x.causas,completa:true,ancla:x.t});
+  });
   const leer=(k,nom)=>{
     try{
       const b=JSON.parse(localStorage.getItem(k)||'null');
@@ -5382,7 +5413,12 @@ function renderVuelta(){
     el.innerHTML='<div style="font-size:11.5px;color:var(--text3)">Todavía no hay puntos guardados en esta computadora.</div>';
     return;
   }
-  el.innerHTML='<div style="font-size:11px;color:var(--text3);margin-bottom:9px">'+
+  el.innerHTML='<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px">'+
+      '<button class="btn gh gh-navy" style="font-size:11.5px;padding:5px 12px" onclick="anclarEstado()">'+
+      '📌 Anclar este estado</button>'+
+      '<span style="font-size:10.5px;color:var(--text3)">Guardalo como punto seguro cuando el sistema esté como tiene que estar: no rota ni se pisa.</span>'+
+    '</div>'+
+    '<div style="font-size:11px;color:var(--text3);margin-bottom:9px">'+
       'Ahora tenés <b>'+ahoraN+' causas</b> ('+ahoraA+' archivadas). '+
       'Volver a un punto <b>reemplaza</b> lo que hay, lo marca como lo más reciente y lo publica como '+
       'estado del estudio, así ninguna otra computadora lo puede pisar. Lo actual se guarda por si querés deshacer.</div>'+
@@ -5396,6 +5432,8 @@ function renderVuelta(){
         </div>
         <button class="btn gh gh-navy" style="font-size:11px;padding:4px 11px;white-space:nowrap"
           onclick="volverAPunto('${x.k}')">Volver a este punto</button>
+        ${x.ancla?`<button class="btn gh" style="font-size:11px;padding:4px 9px;white-space:nowrap;color:#C0392B"
+          onclick="borrarAncla('${x.ancla}')" title="Borrar este punto seguro">🗑</button>`:''}
       </div>`;
     }).join('');
 }
