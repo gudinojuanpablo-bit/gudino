@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Gelasio:wght@600;700&display=swap" rel="stylesheet">
-<title>Gudiño Cabrera y Asociados — v5.2</title>
+<title>Gudiño Cabrera y Asociados — v5.3</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
@@ -1921,7 +1921,7 @@ const FB_COPIAS=FB_RAIZ+'/copias';
    corriendo una más vieja que la que publicó otra, avisa y se actualiza sola
    con un botón: antes había que acordarse de recargar forzado, y una máquina
    desactualizada es justo la que puede pisar los datos buenos. */
-const APP_VER='5.2';
+const APP_VER='5.3';
 function _verMayor(a,b){
   const x=String(a||'0').split('.').map(n=>parseInt(n)||0);
   const y=String(b||'0').split('.').map(n=>parseInt(n)||0);
@@ -2022,7 +2022,7 @@ async function subirCausasCambiadas(){
   if(!_puedeSubir())return false;
   const cambios={},huellas={};
   (causas||[]).forEach(c=>{
-    if(!c||c.id==null)return;
+    if(!c||c.id==null||c._semilla)return;      // v5.3 — la foto vieja no se sube
     const h=_huella(c);
     if(_subidas[c.id]!==h){cambios[String(c.id)]=c;huellas[String(c.id)]=h;}
   });
@@ -2167,7 +2167,7 @@ function setSyncStatus(s){
   banner.style.display=(s==='err')?'block':'none';
 }
 
-function getPayload(){return{v:Date.now(),verApp:APP_VER,causas,movidas:[...movidas],movF,movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos,turBorrados,ramBorrados,audBorradas,vglobBorrados};}
+function getPayload(){return{v:Date.now(),verApp:APP_VER,causas:(causas||[]).filter(c=>!c._semilla),movidas:[...movidas],movF,movidasSK:SK,gastos,audiencias,extraj,feriados,mailCfg,tareasRam,pendientes,vglob,revisiones,revBorradas,turnos,turBorrados,ramBorrados,audBorradas,vglobBorrados};}
 /* v371 — antes, lo que bajaba de la nube REEMPLAZABA la lista de causas entera.
    Si la otra computadora tenía una copia sin lo último cargado acá (por ejemplo
    las carátulas completas), ese trabajo se perdía sin aviso. Ahora se fusiona
@@ -2325,6 +2325,9 @@ function _marcaDe(c,k){
 function _fusionarCausa(mia,remota){
   if(!mia)return remota;
   if(!remota)return mia;
+  /* v5.3 — la foto vieja del archivo nunca le gana a una causa de verdad */
+  if(mia._semilla&&!remota._semilla){const r=Object.assign({},remota);delete r._semilla;return r;}
+  if(remota._semilla&&!mia._semilla)return mia;
   const mNueva=(mia.lastTouch||0)>(remota.lastTouch||0);
   const base=Object.assign({},mNueva?remota:mia,mNueva?mia:remota);   // gana la más nueva
   /* campo por campo: gana el que se editó más tarde. Si ninguno tiene marca,
@@ -2428,7 +2431,11 @@ function fusionarCausas(remotas,soloExistentes){
     if(soloExistentes&&!mapa.has(k))return;            // no crear causas que hoy no están
     mapa.set(k,_fusionarCausa(mapa.get(k),r));
   });
-  return [...mapa.values()];
+  let fuera=[...mapa.values()];
+  /* v5.3 — si llegaron causas de verdad, la foto vieja que quedó suelta se va:
+     no tiene sentido mezclar un registro de mayo con el del estudio. */
+  if((remotas||[]).some(r=>r&&!r._semilla))fuera=fuera.filter(c=>!c._semilla);
+  return fuera;
 }
 /* Copia de seguridad automática antes de aplicar lo que baja de la nube.
    Guarda las últimas 5; sirve para volver atrás si algo se borró. */
@@ -2656,7 +2663,7 @@ function _marcarAdoptado(v){
   _maestroLocal=v;localStorage.setItem('ga_maestro_v',String(v));
 }
 function _estadoCompleto(){
-  return {verApp:APP_VER,causas,turnos,gastos,audiencias,extraj,tareasRam,pendientes,revisiones,feriados,mailCfg,vglob,
+  return {verApp:APP_VER,causas:(causas||[]).filter(c=>!c._semilla),turnos,gastos,audiencias,extraj,tareasRam,pendientes,revisiones,feriados,mailCfg,vglob,
     movidas:[...movidas],movF,movidasSK:SK,audBorradas,vglobBorrados};
 }
 /* v4.2 — fusión genérica por id para las listas que no tienen una propia.
@@ -6288,7 +6295,12 @@ const APP_VERSION = '2026-05-14-v4';
 if(localStorage.getItem('ga_version') !== APP_VERSION){
   Object.keys(localStorage).filter(k=>k.startsWith('ga_')||k.startsWith('ld')).forEach(k=>localStorage.removeItem(k));
   localStorage.setItem('ga_version', APP_VERSION);
-  causas=C0.map(c=>({...c}));
+  /* v5.3 — las causas que trae el archivo son una FOTO VIEJA del registro, no
+     datos nuevos. Antes se cargaban sin marca y initLastTouch les ponía la hora
+     actual, así que le ganaban a todo lo de la nube: una computadora recién
+     estrenada (o con el navegador limpio) retrotraía el estudio entero a esa
+     foto y después lo publicaba. Ahora nacen marcadas y con fecha antigua. */
+  causas=C0.map(c=>({...c,_semilla:1,lastTouch:1,_fts:{}}));
   audiencias=A0.map(a=>({...a}));
   gastos=G0.map(g=>({...g}));
   extraj=EXT0.map(e=>({...e}));
@@ -6955,11 +6967,12 @@ try{renderBloc();}catch(e){}
 function touchCausa(id){
   id=parseInt(id);
   const c=causas.find(x=>x.id===id);
-  if(c){c.lastTouch=Date.now();}
+  if(c){delete c._semilla;c.lastTouch=Date.now();}   // v5.3 — tocarla la vuelve real
 }
 function initLastTouch(){
   // Para causas sin lastTouch: usar fecha del último historial, o arrancar el reloj ahora
   causas.forEach(c=>{
+    if(c._semilla){c.lastTouch=c.lastTouch||1;return;}   // v5.3 — la foto vieja no se rejuvenece
     if(!c.lastTouch){
       const h=historial[c.id];
       if(h&&h.length&&h[0].d){
